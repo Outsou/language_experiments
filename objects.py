@@ -1,0 +1,29 @@
+from mesa import Agent
+
+
+class Wall(Agent):
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+
+class Resource(Agent):
+    def __init__(self, unique_id, model, color, spawn_points):
+        super().__init__(unique_id, model)
+        self._color = color
+        self._spawn_points = spawn_points
+
+    @property
+    def color(self):
+        return self._color
+
+    @property
+    def spawn_points(self):
+        return self._spawn_points
+
+class DropPoint(Agent):
+    def __init__(self, unique_id, model, color):
+        super().__init__(unique_id, model)
+        self.color = color
+        self._resource_count = 0
+
+    def add_resources(self, amount):
+        self._resource_count += 1
