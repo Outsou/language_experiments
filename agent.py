@@ -3,6 +3,10 @@ from objects import Resource, DropPoint
 import random
 import numpy as np
 from search.astar import astar
+from memory import ExplicitMemory
+from objects import Wall
+import random
+import string
 
 
 class AgentBasic(Agent):
@@ -18,6 +22,7 @@ class AgentBasic(Agent):
                          'destination_reached': self._pick_or_drop}
         self._fast_states = ['no_resource', 'has_resource']
         self.color = color
+        self.memory = ExplicitMemory()
 
     def _find_nearest(self, objects):
         nearest = objects[0]
@@ -30,7 +35,7 @@ class AgentBasic(Agent):
         return nearest
 
     def _find_nearest_resource(self):
-        self._path = astar(self.model.map, self.pos, self._find_nearest(self.model.resources).pos)[1:]
+        self._path = astar(self.model.map, self.pos, self._find_nearest(self.model.resources).pos, False)[1:]
         self._state = 'moving'
 
     def _find_nearest_drop_point(self):
@@ -72,11 +77,52 @@ class AgentBasic(Agent):
             self._state= 'no_resource'
 
     def _pick_or_drop(self):
-        neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=1)
+        neighbors = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False, radius=1)
         if self._resource_count < 1:
             self._pick(neighbors)
         else:
             self._drop(neighbors)
+
+    def transmit_word(self, word, speaker):
+        # Neither has word for this
+        state = self._get_state()
+        if word is None:
+            if self.memory.get_word(state) is None:
+                length = 5
+                new_word = ''.join(random.choice(string.ascii_uppercase) for _ in range(length))
+                known_words = self.memory.get_all_words()
+                while new_word in known_words:
+                    new_word = ''.join(random.choice(string.ascii_uppercase) for _ in range(length))
+                self.memory.associate_word(state, new_word)
+                self.memory.add_memory(state, 0)
+                speaker.transmit_word(new_word, self)
+            else:
+                known_word = self.memory.get_word(state)
+                self.memory.associate_word(state, known_word)
+                self.memory.add_memory(state, 0)
+                speaker.transmit_word(known_word, self)
+        else:
+            self.memory.associate_word(state, word)
+            self.memory.add_memory(state, 0)
+
+    def _pick_word(self, state):
+        return self.memory.get_word(state)
+
+    def _get_state(self):
+        state = []
+        for x in range(self.pos[0] - 1, self.pos[0] + 2):
+            state.append([])
+            for y in range(self.pos[1] - 1, self.pos[1] + 2):
+                state[-1].append(SYMBOLS[type(self.model.grid[x][y])])
+        state[1][1] = SYMBOLS['self']
+        return tuple(tuple(x) for x in state)
+
+    def _speak(self):
+        neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=1)
+        word = self._pick_word(self._get_state())
+        for neighbor in neighbors:
+            if type(neighbor) is AgentBasic:
+                neighbor.transmit_word(word, self)
 
     def finish_move(self, change_path):
         if change_path or (len(self._path) > 1 and not self.model.grid.is_cell_empty(self._path[0])):
@@ -86,6 +132,8 @@ class AgentBasic(Agent):
             new_path = astar(map, self.pos, self._path[-1], False)[1:]
             if len(new_path) == 0:
                 return
+            if len(new_path) - len(self._path) > 3:
+                self._speak()
             self._path = new_path
         self.model.grid.move_agent(self, self._path[0])
         del self._path[0]
@@ -97,3 +145,13 @@ class AgentBasic(Agent):
             self._actions[self._state]()
         self._actions[self._state]()
         print('STATE: {}'.format(self._state))
+
+
+SYMBOLS = {
+    AgentBasic: 'A',
+    Wall: 'W',
+    Resource: 'R',
+    DropPoint: 'D',
+    type(None): '.',
+    'self': 'X'
+}
