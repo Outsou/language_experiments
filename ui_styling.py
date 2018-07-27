@@ -7,7 +7,10 @@ PORTRAYALS = {
     AgentBasic: {
         "Color": "green",
         "Layer": 0,
-        "r": 0.8
+        "scale": 0.8,
+        "heading_x": 1,
+        "heading_y": 1,
+        "Shape": "arrowHead"
     },
     Wall: {
         "Color": "grey",
@@ -45,6 +48,18 @@ def agent_portrayal(agent):
             try:
                 color = agent.color
                 portrayal[key] = color
+            except AttributeError:
+                pass
+        if key == 'heading_x':
+            try:
+                heading_x = agent.heading_x
+                portrayal[key] = heading_x
+            except AttributeError:
+                pass
+        if key == 'heading_y':
+            try:
+                heading_y = agent.heading_y
+                portrayal[key] = heading_y
             except AttributeError:
                 pass
 

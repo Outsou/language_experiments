@@ -1,6 +1,5 @@
 from mesa import Agent
 from objects import Resource, DropPoint
-import random
 import numpy as np
 from search.astar import astar
 from memory import ExplicitMemory
@@ -23,6 +22,8 @@ class AgentBasic(Agent):
         self._fast_states = ['no_resource', 'has_resource']
         self.color = color
         self.memory = ExplicitMemory()
+        self.heading_x = 1
+        self.heading_y = 0
 
     def _find_nearest(self, objects):
         nearest = objects[0]
@@ -115,7 +116,18 @@ class AgentBasic(Agent):
             for y in range(self.pos[1] - 1, self.pos[1] + 2):
                 state[-1].append(SYMBOLS[type(self.model.grid[x][y])])
         state[1][1] = SYMBOLS['self']
+        state = self._rotate_state(state)
         return tuple(tuple(x) for x in state)
+
+    def _rotate_state(self, state):
+        state = np.array(state)
+        if self.heading_x == 1:
+            state = np.rot90(state)
+        elif self.heading_y == -1:
+            state = np.rot90(state, 2)
+        elif self.heading_x == -1:
+            state = np.rot90(state, 3)
+        return state
 
     def _speak(self):
         neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=1)
@@ -125,6 +137,7 @@ class AgentBasic(Agent):
                 neighbor.transmit_word(word, self)
 
     def finish_move(self, change_path):
+        old_pos = self.pos
         if change_path or (len(self._path) > 1 and not self.model.grid.is_cell_empty(self._path[0])):
             x, y = self._path[0]
             map = np.copy(self.model.map)
@@ -132,19 +145,39 @@ class AgentBasic(Agent):
             new_path = astar(map, self.pos, self._path[-1], False)[1:]
             if len(new_path) == 0:
                 return
-            if len(new_path) - len(self._path) > 3:
+            if len(new_path) - len(self._path) > 5:
+                self._update_direction(old_pos, self._path[0])
                 self._speak()
             self._path = new_path
         self.model.grid.move_agent(self, self._path[0])
         del self._path[0]
         if len(self._path) < 2:
             self._state = 'destination_reached'
+        self._update_direction(old_pos, self.pos)
+
+    def _update_direction(self, old_pos, new_pos):
+        if old_pos[0] < new_pos[0]:
+            # Going right
+            self.heading_x = 1
+            self.heading_y = 0
+        elif old_pos[0] > new_pos[0]:
+            # Going left
+            self.heading_x = -1
+            self.heading_y = 0
+        elif old_pos[1] < new_pos[1]:
+            # Going up
+            self.heading_x = 0
+            self.heading_y = 1
+        elif old_pos[1] > new_pos[1]:
+            # Going down
+            self.heading_x = 0
+            self.heading_y = -1
 
     def step(self):
         while self._state in self._fast_states:
             self._actions[self._state]()
         self._actions[self._state]()
-        print('STATE: {}'.format(self._state))
+        # print('STATE: {}'.format(self._state))
 
 
 SYMBOLS = {

@@ -7,7 +7,6 @@ from objects import Resource, DropPoint, Wall
 from mesa.datacollection import DataCollector
 from agent import AgentBasic
 from search.util import build_map
-from utils import intersect
 import random
 
 
@@ -78,9 +77,12 @@ class CoopaModel(Model):
             C, D, agent2 = self.move_queue[1]
             agents = [agent1, agent2]
             random.shuffle(agents)
-            if intersect(A, B, C, D):
+            if A == D and B == C:
                 agents[0].finish_move(True)
                 agents[1].finish_move(False)
+            elif  B == D:
+                agents[1].finish_move(False)
+                agents[0].finish_move(True)
             else:
                 if B == C:
                     agent2.finish_move(False)
@@ -92,8 +94,6 @@ class CoopaModel(Model):
         elif len(self.move_queue) == 1:
             self.move_queue[0][2].finish_move(False)
         self.move_queue = []
-
-
 
     def queue_move(self, start, end, agent):
         self.move_queue.append((start, end, agent))

@@ -94,7 +94,9 @@ def get_line(start, end):
     return cells
 
 
-def intersect(A,B,C,D):
-    if (A == D and B == C) or B == D:
-        return True
-    return False
+def print_state(state):
+    for i in range(len(state[0])):
+        row = ''
+        for j in range(len(state[0])):
+            row += state[j][i]
+        print(row)
