@@ -87,27 +87,18 @@ class AgentBasic(Agent):
     def transmit_word(self, word, speaker):
         # Neither has word for this
         state = self._get_state()
-        if word is None:
-            if self.memory.get_word(state) is None:
-                length = 5
-                new_word = ''.join(random.choice(string.ascii_uppercase) for _ in range(length))
-                known_words = self.memory.get_all_words()
-                while new_word in known_words:
-                    new_word = ''.join(random.choice(string.ascii_uppercase) for _ in range(length))
-                self.memory.associate_word(state, new_word)
-                self.memory.add_memory(state, 0)
-                speaker.transmit_word(new_word, self)
-            else:
-                known_word = self.memory.get_word(state)
-                self.memory.associate_word(state, known_word)
-                self.memory.add_memory(state, 0)
-                speaker.transmit_word(known_word, self)
-        else:
-            self.memory.associate_word(state, word)
-            self.memory.add_memory(state, 0)
+        self.memory.associate_word(state, word)
+        self.memory.add_memory(state, 0)
 
     def _pick_word(self, state):
-        return self.memory.get_word(state)
+        word = self.memory.get_word(state)
+        if word is None:
+            length = 5
+            word = ''.join(random.choice(string.ascii_uppercase) for _ in range(length))
+            known_words = self.memory.get_all_words()
+            while word in known_words:
+                word = ''.join(random.choice(string.ascii_uppercase) for _ in range(length))
+        return word
 
     def _get_state(self):
         state = []
@@ -135,6 +126,7 @@ class AgentBasic(Agent):
         for neighbor in neighbors:
             if type(neighbor) is AgentBasic:
                 neighbor.transmit_word(word, self)
+        return word
 
     def finish_move(self, change_path):
         old_pos = self.pos
@@ -147,7 +139,10 @@ class AgentBasic(Agent):
                 return
             if len(new_path) - len(self._path) > 5:
                 self._update_direction(old_pos, self._path[0])
-                self._speak()
+                word = self._speak()
+                state = self._get_state()
+                self.memory.associate_word(state, word)
+                self.memory.add_memory(state, len(self._path) - len(new_path))
             self._path = new_path
         self.model.grid.move_agent(self, self._path[0])
         del self._path[0]
