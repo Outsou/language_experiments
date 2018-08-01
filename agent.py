@@ -2,15 +2,15 @@ from mesa import Agent
 from objects import Resource, DropPoint
 import numpy as np
 from search.astar import astar
-from memory import ExplicitMemory
+from memory import MFAssociationMemory
 from objects import Wall
 import random
-import string
 
 
 class AgentBasic(Agent):
-    def __init__(self, unique_id, model, color):
+    def __init__(self, unique_id, model, color, state_rotation=False):
         super().__init__(unique_id, model)
+        self.state_rotation = state_rotation
         self._resource_count = 0
         self._resource_color = None
         self._state = 'no_resource'
@@ -21,7 +21,7 @@ class AgentBasic(Agent):
                          'destination_reached': self._pick_or_drop}
         self._fast_states = ['no_resource', 'has_resource']
         self.color = color
-        self.memory = ExplicitMemory()
+        self.memory = MFAssociationMemory()
         self.heading_x = 1
         self.heading_y = 0
 
@@ -84,21 +84,9 @@ class AgentBasic(Agent):
         else:
             self._drop(neighbors)
 
-    def transmit_word(self, word, speaker):
-        # Neither has word for this
-        state = self._get_state()
-        self.memory.associate_word(state, word)
-        self.memory.add_memory(state, 0)
-
-    def _pick_word(self, state):
-        word = self.memory.get_word(state)
-        if word is None:
-            length = 5
-            word = ''.join(random.choice(string.ascii_uppercase) for _ in range(length))
-            known_words = self.memory.get_all_words()
-            while word in known_words:
-                word = ''.join(random.choice(string.ascii_uppercase) for _ in range(length))
-        return word
+    def transmit_form(self, form):
+        meaning = self._get_state()
+        self.memory.strengthen_meaning(meaning, form)
 
     def _get_state(self):
         state = []
@@ -107,7 +95,8 @@ class AgentBasic(Agent):
             for y in range(self.pos[1] - 1, self.pos[1] + 2):
                 state[-1].append(SYMBOLS[type(self.model.grid[x][y])])
         state[1][1] = SYMBOLS['self']
-        state = self._rotate_state(state)
+        if self.state_rotation:
+            state = self._rotate_state(state)
         return tuple(tuple(x) for x in state)
 
     def _rotate_state(self, state):
@@ -122,11 +111,15 @@ class AgentBasic(Agent):
 
     def _speak(self):
         neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=1)
-        word = self._pick_word(self._get_state())
+        meaning = self._get_state()
+        form = self.memory.get_form(meaning)
+        if form is None:
+            form = self.memory.invent_form()
+            self.memory.create_association(meaning, form)
+        self.memory.strengthen_form(meaning, form)
         for neighbor in neighbors:
             if type(neighbor) is AgentBasic:
-                neighbor.transmit_word(word, self)
-        return word
+                neighbor.transmit_form(form, self)
 
     def finish_move(self, change_path):
         old_pos = self.pos
@@ -139,10 +132,7 @@ class AgentBasic(Agent):
                 return
             if len(new_path) - len(self._path) > 5:
                 self._update_direction(old_pos, self._path[0])
-                word = self._speak()
-                state = self._get_state()
-                self.memory.associate_word(state, word)
-                self.memory.add_memory(state, len(self._path) - len(new_path))
+                self._speak()
             self._path = new_path
         self.model.grid.move_agent(self, self._path[0])
         del self._path[0]
