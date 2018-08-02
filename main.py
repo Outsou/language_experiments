@@ -15,7 +15,7 @@ def test2():
     times = []
     start_time = time.time()
     timing_steps = 10000
-    steps = 200000
+    steps = 100000
     for i in range(1, steps + 1):
         if i % timing_steps == 0:
             times.append(time.time() - start_time)

@@ -110,14 +110,14 @@ class AgentBasic(Agent):
             state = np.rot90(state, 3)
         return state
 
-    def _speak(self):
+    def _speak(self, utility):
         neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=1)
         meaning = self._get_state()
         form = self.memory.get_form(meaning)
         if form is None:
             form = self.memory.invent_form()
             self.memory.create_association(meaning, form)
-        self.memory.strengthen_form(meaning, form)
+        self.memory.strengthen_form(meaning, form, utility)
         for neighbor in neighbors:
             if type(neighbor) is AgentBasic:
                 neighbor.transmit_form(form)
@@ -133,7 +133,7 @@ class AgentBasic(Agent):
                 return
             if len(new_path) - len(self._path) > self.importance_threshold:
                 self._update_direction(old_pos, self._path[0])
-                self._speak()
+                self._speak(len(self._path) - len(new_path))
             self._path = new_path
         self.model.grid.move_agent(self, self._path[0])
         del self._path[0]

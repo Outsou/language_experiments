@@ -40,38 +40,45 @@ class MFAssociationMemory:
         self.min = 0
         self.max = 1
         self.known_forms = set()
+        self.a = 0.1
 
     def create_association(self, meaning, form):
         if meaning not in self.association_dict:
-            self.association_dict[meaning] = {}
-            self.association_dict[meaning][form] = self.increment
+            self.association_dict[meaning] = {form: {'score': self.increment, 'utility': 0}}
         elif form not in self.association_dict[meaning]:
-            self.association_dict[meaning][form] = self.min
+            self.association_dict[meaning][form] = {'score': self.min, 'utility': 0}
         self.known_forms.add(form)
 
-    def strengthen_form(self, meaning, form):
+    def strengthen_form(self, meaning, form, utility):
         for associated_form in self.association_dict[meaning].keys():
             if associated_form != form:
-                self.association_dict[meaning][associated_form] = max(
-                    self.min, round(self.association_dict[meaning][associated_form] - self.increment, 1))
-        self.association_dict[meaning][form] = min(self.max,
-                                                   round(self.association_dict[meaning][form] + self.increment, 1))
+                self.association_dict[meaning][associated_form]['score'] = max(
+                    self.min,
+                    round(self.association_dict[meaning][associated_form]['score'] - self.increment, 1))
+        self.association_dict[meaning][form]['score'] = min(
+            self.max,
+            round(self.association_dict[meaning][form]['score'] + self.increment, 1))
+        old_util = self.association_dict[meaning][form]['utility']
+        self.association_dict[meaning][form]['utility'] = (1 - self.a) * old_util + self.a * utility
 
     def strengthen_meaning(self, meaning, form):
         for associated_meaning in self.association_dict.keys():
             if associated_meaning != meaning and form in self.association_dict[associated_meaning]:
-                self.association_dict[associated_meaning][form] = max(
-                    self.min, round(self.association_dict[associated_meaning][form] - self.increment, 1))
+                self.association_dict[associated_meaning][form]['score'] = max(
+                    self.min,
+                    round(self.association_dict[associated_meaning][form]['score'] - self.increment, 1))
         if meaning not in self.association_dict:
             self.association_dict[meaning] = {}
         if form not in self.association_dict[meaning]:
-            self.association_dict[meaning][form] = self.min
-        self.association_dict[meaning][form] = min(self.max,
-                                                   round(self.association_dict[meaning][form] + self.increment, 1))
+            self.association_dict[meaning][form] = {'score': self.min, 'utility': 0}
+        self.association_dict[meaning][form]['score'] = min(
+            self.max,
+            round(self.association_dict[meaning][form]['score'] + self.increment, 1))
 
     def weaken_association(self, meaning, form):
-        self.association_dict[meaning][form] = max(self.min,
-                                                   round(self.association_dict[meaning][form] - self.increment, 1))
+        self.association_dict[meaning][form]['score'] = max(
+            self.min,
+            round(self.association_dict[meaning][form]['score'] - self.increment, 1))
 
     def invent_form(self):
         length = 5
@@ -83,7 +90,8 @@ class MFAssociationMemory:
     def get_form(self, meaning):
         if meaning not in self.association_dict:
             return None
-        form, score = max(self.association_dict[meaning].items(), key=operator.itemgetter(1))
+        forms = [(x[0], x[1]['score'], x[1]['utility']) for x in self.association_dict[meaning].items()]
+        form, score, utility = max(forms, key=operator.itemgetter(1))
         return form if score > 0 else None
 
     def get_meaning(self, form):
@@ -91,7 +99,7 @@ class MFAssociationMemory:
         score = -1
         for meaning, forms in self.association_dict.items():
             if form in forms:
-                if forms[form] > score:
-                    score = forms[form]
+                if forms[form]['score'] > score:
+                    score = forms[form]['score']
                     strongest = meaning
         return strongest if score > 0 else None
