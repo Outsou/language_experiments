@@ -53,22 +53,25 @@ class MFAssociationMemory:
         for associated_form in self.association_dict[meaning].keys():
             if associated_form != form:
                 self.association_dict[meaning][associated_form] = max(
-                    self.min, self.association_dict[meaning][associated_form] - self.increment)
-        self.association_dict[meaning][form] = min(self.max, self.association_dict[meaning][form] + self.increment)
+                    self.min, round(self.association_dict[meaning][associated_form] - self.increment, 1))
+        self.association_dict[meaning][form] = min(self.max,
+                                                   round(self.association_dict[meaning][form] + self.increment, 1))
 
     def strengthen_meaning(self, meaning, form):
         for associated_meaning in self.association_dict.keys():
             if associated_meaning != meaning and form in self.association_dict[associated_meaning]:
                 self.association_dict[associated_meaning][form] = max(
-                    self.min, self.association_dict[associated_meaning][form] - self.increment)
+                    self.min, round(self.association_dict[associated_meaning][form] - self.increment, 1))
         if meaning not in self.association_dict:
             self.association_dict[meaning] = {}
         if form not in self.association_dict[meaning]:
             self.association_dict[meaning][form] = self.min
-        self.association_dict[meaning][form] = max(self.min, self.association_dict[meaning][form] + self.increment)
+        self.association_dict[meaning][form] = min(self.max,
+                                                   round(self.association_dict[meaning][form] + self.increment, 1))
 
     def weaken_association(self, meaning, form):
-        self.association_dict[meaning][form] = max(self.min, self.association_dict[meaning][form] - self.increment)
+        self.association_dict[meaning][form] = max(self.min,
+                                                   round(self.association_dict[meaning][form] - self.increment, 1))
 
     def invent_form(self):
         length = 5
@@ -80,8 +83,8 @@ class MFAssociationMemory:
     def get_form(self, meaning):
         if meaning not in self.association_dict:
             return None
-        form = max(self.association_dict[meaning].iteritems(), key=operator.itemgetter(1))[0]
-        return form
+        form, score = max(self.association_dict[meaning].items(), key=operator.itemgetter(1))
+        return form if score > 0 else None
 
     def get_meaning(self, form):
         strongest = None
@@ -91,4 +94,4 @@ class MFAssociationMemory:
                 if forms[form] > score:
                     score = forms[form]
                     strongest = meaning
-        return strongest
+        return strongest if score > 0 else None

@@ -24,6 +24,7 @@ class AgentBasic(Agent):
         self.memory = MFAssociationMemory()
         self.heading_x = 1
         self.heading_y = 0
+        self.importance_threshold = 10
 
     def _find_nearest(self, objects):
         nearest = objects[0]
@@ -125,12 +126,12 @@ class AgentBasic(Agent):
         old_pos = self.pos
         if change_path or (len(self._path) > 1 and not self.model.grid.is_cell_empty(self._path[0])):
             x, y = self._path[0]
-            map = np.copy(self.model.map)
-            map[x][y] = 1
-            new_path = astar(map, self.pos, self._path[-1], False)[1:]
+            env_map = np.copy(self.model.map)
+            env_map[x][y] = 1
+            new_path = astar(env_map, self.pos, self._path[-1], False)[1:]
             if len(new_path) == 0:
                 return
-            if len(new_path) - len(self._path) > 5:
+            if len(new_path) - len(self._path) > self.importance_threshold:
                 self._update_direction(old_pos, self._path[0])
                 self._speak()
             self._path = new_path
@@ -166,7 +167,8 @@ class AgentBasic(Agent):
 
 
 SYMBOLS = {
-    AgentBasic: 'A',
+    # AgentBasic: 'A',
+    AgentBasic: '.',
     Wall: 'W',
     Resource: 'R',
     DropPoint: 'D',
