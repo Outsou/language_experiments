@@ -89,7 +89,7 @@ def astar(map, start, goal, moore=True):
         if node.pos == start:
             # print("Path to {} found.".format(node.pos))
             path = construct_path(node)
-            print(path)
+            # print(path)
             return path
 
         for n_pos in get_neighbors(map, node.pos, moore=moore):

@@ -23,6 +23,7 @@ class CoopaModel(Model):
         self.drop_points = []
         self.resources = []
         self.move_queue = []
+        self.agents = []
 
         self.layout.draw(self.grid)
 
@@ -30,10 +31,12 @@ class CoopaModel(Model):
         a = AgentBasic(0, self, 'green')
         self.schedule.add(a)
         self.grid.position_agent(a, 4, 2)
+        self.agents.append(a)
 
         a = AgentBasic(1, self, 'black')
         self.schedule.add(a)
         self.grid.position_agent(a, 4, 15)
+        self.agents.append(a)
 
         # Spawn drop points
         drop_point = DropPoint(2, self, 'blue')

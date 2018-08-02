@@ -40,7 +40,7 @@ class AgentBasic(Agent):
         self._state = 'moving'
 
     def _find_nearest_drop_point(self):
-        drop_points = [dp  for dp in self.model.drop_points if dp.color == self._resource_color]
+        drop_points = [dp for dp in self.model.drop_points if dp.color == self._resource_color]
         self._path = astar(self.model.map, self.pos, self._find_nearest(drop_points).pos, False)[1:]
         self._state = 'moving'
 
@@ -119,7 +119,7 @@ class AgentBasic(Agent):
         self.memory.strengthen_form(meaning, form)
         for neighbor in neighbors:
             if type(neighbor) is AgentBasic:
-                neighbor.transmit_form(form, self)
+                neighbor.transmit_form(form)
 
     def finish_move(self, change_path):
         old_pos = self.pos
