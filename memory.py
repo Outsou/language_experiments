@@ -1,5 +1,4 @@
 import random
-import string
 import operator
 
 
@@ -81,10 +80,20 @@ class MFAssociationMemory:
             round(self.association_dict[meaning][form]['score'] - self.increment, 1))
 
     def invent_form(self):
-        length = 5
-        form = ''.join(random.choice(string.ascii_uppercase) for _ in range(length))
+        def create_form(length):
+            vowels = ['A', 'E', 'I', 'O', 'U', 'Y']
+            consonants = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M',
+                          'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Z']
+            form = ''
+            for _ in range(length):
+                form += random.choice(consonants)
+                form += random.choice(vowels)
+            return form
+
+        length = random.choice(range(3)) + 1
+        form = create_form(length)
         while form in self.known_forms:
-            form = ''.join(random.choice(string.ascii_uppercase) for _ in range(length))
+            form = create_form(length)
         return form
 
     def get_form(self, meaning):
