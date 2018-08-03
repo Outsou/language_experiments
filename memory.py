@@ -66,7 +66,7 @@ class MFAssociationMemory:
         self._update_utility(meaning, utility)
         self.meaning_stats[meaning]['speaker'] += 1
 
-    def strengthen_meaning(self, meaning, form, utility):
+    def strengthen_meaning(self, meaning, form):
         for associated_meaning in self.mf_dict.keys():
             if associated_meaning != meaning and form in self.mf_dict[associated_meaning]:
                 self.mf_dict[associated_meaning][form] = max(
@@ -80,7 +80,6 @@ class MFAssociationMemory:
         self.mf_dict[meaning][form] = min(
             self.max,
             round(self.mf_dict[meaning][form] + self.increment, 1))
-        self._update_utility(meaning, utility)
         self.meaning_stats[meaning]['listener'] += 1
 
     def weaken_association(self, meaning, form):

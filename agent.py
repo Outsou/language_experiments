@@ -87,7 +87,7 @@ class AgentBasic(Agent):
 
     def transmit_form(self, form):
         meaning = self._get_state()
-        self.memory.strengthen_meaning(meaning, form, 0.0)
+        self.memory.strengthen_meaning(meaning, form)
 
     def _get_state(self):
         state = []

@@ -10,7 +10,7 @@ def test2():
     start_time = time.time()
     period_start = time.time()
     timing_steps = 10000
-    steps = 10000
+    steps = 100000
     for i in range(1, steps + 1):
         if i % timing_steps == 0:
             times.append(time.time() - period_start)
