@@ -8,12 +8,13 @@ def test2():
     model = CoopaModel(60, 60)
     times = []
     start_time = time.time()
+    period_start = time.time()
     timing_steps = 10000
     steps = 100000
     for i in range(1, steps + 1):
         if i % timing_steps == 0:
-            times.append(time.time() - start_time)
-            start_time = time.time()
+            times.append(time.time() - period_start)
+            period_start = time.time()
             print('Time left: {}'.format(sum(times) / len(times) * ((steps - i) / timing_steps)))
         model.step()
     print()
@@ -23,6 +24,7 @@ def test2():
             print(form)
             print()
         print('-----------------------------')
+    print('Simulation took: {}'.format(time.time() - start_time))
 
 
 if __name__ == "__main__":

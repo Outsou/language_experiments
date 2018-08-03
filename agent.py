@@ -24,7 +24,7 @@ class AgentBasic(Agent):
         self.memory = MFAssociationMemory()
         self.heading_x = 1
         self.heading_y = 0
-        self.importance_threshold = 8
+        self.importance_threshold = 7
 
     def _find_nearest(self, objects):
         nearest = objects[0]
