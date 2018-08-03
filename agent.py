@@ -24,7 +24,7 @@ class AgentBasic(Agent):
         self.memory = MFAssociationMemory()
         self.heading_x = 1
         self.heading_y = 0
-        self.importance_threshold = 10
+        self.importance_threshold = 8
 
     def _find_nearest(self, objects):
         nearest = objects[0]
@@ -122,13 +122,17 @@ class AgentBasic(Agent):
             if type(neighbor) is AgentBasic:
                 neighbor.transmit_form(form)
 
+    def _reroute(self):
+        x, y = self._path[0]
+        env_map = np.copy(self.model.map)
+        env_map[x][y] = 1
+        new_path = astar(env_map, self.pos, self._path[-1], False)[1:]
+        return new_path
+
     def finish_move(self, change_path):
         old_pos = self.pos
         if change_path or (len(self._path) > 1 and not self.model.grid.is_cell_empty(self._path[0])):
-            x, y = self._path[0]
-            env_map = np.copy(self.model.map)
-            env_map[x][y] = 1
-            new_path = astar(env_map, self.pos, self._path[-1], False)[1:]
+            new_path = self._reroute()
             if len(new_path) == 0:
                 return
             if len(new_path) - len(self._path) > self.importance_threshold:
@@ -158,6 +162,9 @@ class AgentBasic(Agent):
             # Going down
             self.heading_x = 0
             self.heading_y = -1
+
+    def get_reroute_length(self):
+        return len(self._reroute())
 
     def step(self):
         while self._state in self._fast_states:

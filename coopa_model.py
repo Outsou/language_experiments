@@ -78,8 +78,18 @@ class CoopaModel(Model):
         if len(self.move_queue) > 1:
             A, B, agent1 = self.move_queue[0]
             C, D, agent2 = self.move_queue[1]
-            agents = [agent1, agent2]
-            random.shuffle(agents)
+
+            a1_reroute = agent1.get_reroute_length()
+            a2_reroute = agent2.get_reroute_length()
+
+            if a1_reroute <= a2_reroute:
+                agents = [agent1, agent2]
+            else:
+                agents = [agent2, agent1]
+
+            if a1_reroute == a2_reroute:
+                random.shuffle(agents)
+
             if A == D and B == C:
                 agents[0].finish_move(True)
                 agents[1].finish_move(False)

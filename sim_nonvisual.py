@@ -1,12 +1,6 @@
 from coopa_model import CoopaModel
-from server import server
 from utils import print_state
 import time
-
-
-def start_visualization_server():
-    server.port = 8521  # The default
-    server.launch()
 
 
 def test2():
@@ -32,5 +26,4 @@ def test2():
 
 
 if __name__ == "__main__":
-    # start_visualization_server()
     test2()
