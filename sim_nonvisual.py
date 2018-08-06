@@ -5,7 +5,7 @@ import time
 
 def test2():
     print('Running Test2...')
-    model = CoopaModel(60, 60)
+    model = CoopaModel()
     times = []
     start_time = time.time()
     period_start = time.time()
@@ -20,10 +20,11 @@ def test2():
     print()
     for agent in model.agents:
         for meaning, form in agent.memory.mf_dict.items():
-            print_state(meaning)
-            print(form)
-            print(agent.memory.meaning_stats[meaning])
-            print()
+            if type(meaning) is tuple:
+                print_state(meaning)
+                print(form)
+                print(agent.memory.meaning_stats[meaning])
+                print()
         print('-----------------------------')
     print('Simulation took: {}'.format(time.time() - start_time))
 

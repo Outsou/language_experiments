@@ -13,7 +13,9 @@ import random
 class CoopaModel(Model):
     """A model with some number of agents."""
 
-    def __init__(self, width, height):
+    def __init__(self):
+        width = 10
+        height = 18
         self.running = True
         self.grid = SingleGrid(width, height, False)  # True=toroidal
         self.schedule = RandomActivation(self)
@@ -26,17 +28,6 @@ class CoopaModel(Model):
         self.agents = []
 
         self.layout.draw(self.grid)
-
-        # Spawn agents
-        a = AgentBasic(0, self, 'green')
-        self.schedule.add(a)
-        self.grid.position_agent(a, 4, 2)
-        self.agents.append(a)
-
-        a = AgentBasic(1, self, 'black')
-        self.schedule.add(a)
-        self.grid.position_agent(a, 4, 15)
-        self.agents.append(a)
 
         # Spawn drop points
         drop_point = DropPoint(2, self, 'blue')
@@ -69,6 +60,17 @@ class CoopaModel(Model):
         self.map[8][3] = 1
         self.map[1][14] = 1
         self.map[8][14] = 1
+
+        # Spawn agents
+        a = AgentBasic(0, self, 'green')
+        self.schedule.add(a)
+        self.grid.position_agent(a, 4, 2)
+        self.agents.append(a)
+
+        a = AgentBasic(1, self, 'black')
+        self.schedule.add(a)
+        self.grid.position_agent(a, 4, 15)
+        self.agents.append(a)
 
     def step(self):
         self.schedule.step()

@@ -13,5 +13,4 @@ grid = CanvasGrid(agent_portrayal, 10, 18, 200, 360)
 
 server = ModularServer(CoopaModel,
                        [grid],
-                       "Coopa Model",
-                       {"width": 60, "height": 60})
+                       "Coopa Model")

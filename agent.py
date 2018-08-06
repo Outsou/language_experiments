@@ -5,6 +5,8 @@ from search.astar import astar
 from memory import MFAssociationMemory
 from objects import Wall
 import random
+import math
+from disc_tree import DiscriminationTree
 
 
 class AgentBasic(Agent):
@@ -25,6 +27,10 @@ class AgentBasic(Agent):
         self.heading_x = 1
         self.heading_y = 0
         self.importance_threshold = 7
+        self.x_tree = DiscriminationTree((0, 9))
+        self.y_tree = DiscriminationTree((0, 17))
+        self.last_disc_form = None
+        self.avoidable_objs = None
 
     def _find_nearest(self, objects):
         nearest = objects[0]
@@ -36,13 +42,36 @@ class AgentBasic(Agent):
                 min_dist = dist
         return nearest
 
+    def _get_map(self):
+        map = np.copy(self.model.map)
+        if self.avoidable_objs is not None:
+            for obj in self.avoidable_objs:
+                map[obj] = 1
+        return map
+
     def _find_nearest_resource(self):
-        self._path = astar(self.model.map, self.pos, self._find_nearest(self.model.resources).pos, False)[1:]
+        map = self._get_map()
+        self._path = astar(map, self.pos, self._find_nearest(self.model.resources).pos, False)[1:]
         self._state = 'moving'
+
+    def _get_highest_meaning_on_path(self):
+        max_meaning = None
+        max_utility = -math.inf
+        for pos in self._path:
+            meaning = self._get_neighborhood(pos)
+            utility = self.memory.get_utility(meaning)
+            if utility is not None and abs(utility) > max_utility:
+                max_utility = abs(utility)
+                max_meaning = meaning
+        return max_meaning
 
     def _find_nearest_drop_point(self):
         drop_points = [dp for dp in self.model.drop_points if dp.color == self._resource_color]
-        self._path = astar(self.model.map, self.pos, self._find_nearest(drop_points).pos, False)[1:]
+        map = self._get_map()
+        self._path = astar(map, self.pos, self._find_nearest(drop_points).pos, False)[1:]
+        meaning = self._get_highest_meaning_on_path()
+        if meaning is not None:
+            self._play_guessing_game(meaning)
         self._state = 'moving'
 
     def _move(self):
@@ -85,20 +114,39 @@ class AgentBasic(Agent):
         else:
             self._drop(neighbors)
 
-    def transmit_form(self, form):
-        meaning = self._get_state()
+    def utility_transmit(self, form):
+        meaning = self._get_neighborhood(self.pos)
         self.memory.strengthen_meaning(meaning, form)
 
-    def _get_state(self):
-        state = []
-        for x in range(self.pos[0] - 1, self.pos[0] + 2):
-            state.append([])
-            for y in range(self.pos[1] - 1, self.pos[1] + 2):
-                state[-1].append(SYMBOLS[type(self.model.grid[x][y])])
-        state[1][1] = SYMBOLS['self']
+    def guessing_transmit(self, meaning_form, disc_form):
+        self.last_disc_form = None
+        self.avoidable_objs = None
+        meaning = self.memory.get_meaning(meaning_form)
+        if meaning is None:
+            return
+        discriminator = self.memory.get_meaning(disc_form)
+        if discriminator is None:
+            self.last_disc_form = disc_form
+            return
+        objects = self._get_objects(meaning)
+        disc_objects = []
+        low, high = discriminator.range
+        for obj in objects:
+            if low <= obj[0] <= high:
+                disc_objects.append(obj)
+        if len(disc_objects) > 0:
+            self.avoidable_objs = disc_objects
+
+    def _get_neighborhood(self, pos):
+        neighborhood = []
+        for x in range(pos[0] - 1, pos[0] + 2):
+            neighborhood.append([])
+            for y in range(pos[1] - 1, pos[1] + 2):
+                neighborhood[-1].append(SYMBOLS[type(self.model.grid[x][y])])
+        neighborhood[1][1] = SYMBOLS['self']
         if self.state_rotation:
-            state = self._rotate_state(state)
-        return tuple(tuple(x) for x in state)
+            neighborhood = self._rotate_state(neighborhood)
+        return tuple(tuple(x) for x in neighborhood)
 
     def _rotate_state(self, state):
         state = np.array(state)
@@ -110,9 +158,48 @@ class AgentBasic(Agent):
             state = np.rot90(state, 3)
         return state
 
-    def _speak(self, utility):
+    def _get_objects(self, meaning):
+        objects = []
+        shape = self.model.map.shape
+        for x in range(1, shape[0] - 1):
+            for y in range(1, shape[1] - 1):
+                neighborhood = self._get_neighborhood((x, y))
+                if neighborhood == meaning:
+                    objects.append((x, y))
+        return objects
+
+    def _discriminate(self, all_objects, topic_objects):
+        discrimination_dict = {}
+        for obj in all_objects:
+            discriminator = self.x_tree.discriminate(obj[0])
+            if discriminator not in discrimination_dict:
+                discrimination_dict[discriminator] = set()
+            discrimination_dict[discriminator].add(obj)
+        topic_set = set(topic_objects)
+        for discriminator, objs in discrimination_dict.items():
+            if objs == topic_set:
+                return discriminator
+        # Discrimination failed
+        self.x_tree.grow()
+        return None
+
+    def _play_guessing_game(self, meaning):
+        '''TODO: how to make the best guessing gaem ever without direct feedback?'''
+        meaning_form = self.memory.get_form(meaning)
+        objects = self._get_objects(meaning)
+        topic_objects = [obj for obj in objects if obj in self._path]
+        discriminator = self._discriminate(objects, topic_objects)
+        disc_form = self.memory.get_form(discriminator)
+        if disc_form is None:
+            disc_form = self.memory.invent_form()
+            self.memory.create_association(discriminator, disc_form)
+        for agent in self.model.agents:
+            if agent != self:
+                agent.guessing_transmit(meaning_form, disc_form)
+
+    def _play_utility_game(self, utility):
         neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=1)
-        meaning = self._get_state()
+        meaning = self._get_neighborhood(self.pos)
         form = self.memory.get_form(meaning)
         if form is None:
             form = self.memory.invent_form()
@@ -120,7 +207,7 @@ class AgentBasic(Agent):
         self.memory.strengthen_form(meaning, form, utility)
         for neighbor in neighbors:
             if type(neighbor) is AgentBasic:
-                neighbor.transmit_form(form)
+                neighbor.utility_transmit(form)
 
     def _reroute(self):
         x, y = self._path[0]
@@ -137,7 +224,7 @@ class AgentBasic(Agent):
                 return
             if len(new_path) - len(self._path) > self.importance_threshold:
                 self._update_direction(old_pos, self._path[0])
-                self._speak(len(self._path) - len(new_path))
+                self._play_utility_game(len(self._path) - len(new_path))
             self._path = new_path
         self.model.grid.move_agent(self, self._path[0])
         del self._path[0]

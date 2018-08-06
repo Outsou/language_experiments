@@ -120,3 +120,9 @@ class MFAssociationMemory:
                     score = forms[form]
                     strongest = meaning
         return strongest if score > 0 else None
+
+    def get_utility(self, meaning):
+        return None if meaning not in self.meaning_stats else self.meaning_stats[meaning]['utility']
+
+    def make_form_known(self, form):
+        self.known_forms.add(form)

@@ -1,5 +1,5 @@
 class Categoriser:
-    def __init__(self, range, parent):
+    def __init__(self, range, parent=None):
         self.parent = parent
         self.range = range
         self.child1 = None
@@ -21,6 +21,13 @@ class Categoriser:
         else:
             self.parent.child2 = None
 
+    def discriminate(self, value):
+        if self.child1 is not None and self.child1.range[0] <= value <= self.child1.range[1]:
+            return self.child1.discriminate(value)
+        elif self.child2 is not None and self.child2.range[0] <= value <= self.child2.range[1]:
+            return self.child2.discriminate(value)
+        return self
+
 class DiscriminationTree:
     def __init__(self, range):
         self.root = Categoriser(range, None)
@@ -33,3 +40,10 @@ class DiscriminationTree:
                 _increase(categoriser.child2)
             categoriser.age += 1
         _increase(self.root)
+
+    def discriminate(self, value):
+        '''Returns the lowest node (discriminator) in the tree that contains the value.'''
+        return self.root.discriminate(value)
+
+    def grow(self):
+        self.root.grow()
