@@ -31,6 +31,7 @@ class AgentBasic(Agent):
         self.y_tree = DiscriminationTree((0, 17))
         self.last_disc_form = None
         self.avoidable_objs = None
+        self.last_discriminator = None
 
     def _find_nearest(self, objects):
         nearest = objects[0]
@@ -114,20 +115,21 @@ class AgentBasic(Agent):
         else:
             self._drop(neighbors)
 
-    def utility_transmit(self, form):
+    def observational_transmit(self, form):
         meaning = self._get_neighborhood(self.pos)
         self.memory.strengthen_meaning(meaning, form)
 
     def guessing_transmit(self, meaning_form, disc_form):
-        self.last_disc_form = None
+        self.last_disc_form = disc_form
+        self.last_discriminator = None
         self.avoidable_objs = None
         meaning = self.memory.get_meaning(meaning_form)
         if meaning is None:
             return
         discriminator = self.memory.get_meaning(disc_form)
         if discriminator is None:
-            self.last_disc_form = disc_form
             return
+        self.last_discriminator = discriminator
         objects = self._get_objects(meaning)
         disc_objects = []
         low, high = discriminator.range
@@ -197,7 +199,7 @@ class AgentBasic(Agent):
             if agent != self:
                 agent.guessing_transmit(meaning_form, disc_form)
 
-    def _play_utility_game(self, utility):
+    def _play_observational_game(self, utility):
         neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=1)
         meaning = self._get_neighborhood(self.pos)
         form = self.memory.get_form(meaning)
@@ -207,7 +209,7 @@ class AgentBasic(Agent):
         self.memory.strengthen_form(meaning, form, utility)
         for neighbor in neighbors:
             if type(neighbor) is AgentBasic:
-                neighbor.utility_transmit(form)
+                neighbor.observational_transmit(form)
 
     def _reroute(self):
         x, y = self._path[0]
@@ -215,6 +217,11 @@ class AgentBasic(Agent):
         env_map[x][y] = 1
         new_path = astar(env_map, self.pos, self._path[-1], False)[1:]
         return new_path
+
+    def _grow_tree(self):
+        if self.last_disc_form is None:
+            return
+        self.x_tree.grow()
 
     def finish_move(self, change_path):
         old_pos = self.pos
@@ -224,7 +231,8 @@ class AgentBasic(Agent):
                 return
             if len(new_path) - len(self._path) > self.importance_threshold:
                 self._update_direction(old_pos, self._path[0])
-                self._play_utility_game(len(self._path) - len(new_path))
+                self._play_observational_game(len(self._path) - len(new_path))
+                self._grow_tree()
             self._path = new_path
         self.model.grid.move_agent(self, self._path[0])
         del self._path[0]
