@@ -105,7 +105,6 @@ class CoopaModel(Model):
                 else:
                     agent1.finish_move(False)
                     agent2.finish_move(False)
-
         elif len(self.move_queue) == 1:
             self.move_queue[0][2].finish_move(False)
         self.move_queue = []

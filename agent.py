@@ -36,27 +36,29 @@ class AgentBasic(Agent):
         self.stat_dict = {'obs_game_init': 0,
                           'travel_distance': 0,
                           'resources_delivered': 0}
+        self.map = np.copy(self.model.map)
 
-    def _find_nearest(self, objects):
-        nearest = objects[0]
-        min_dist = np.linalg.norm(np.array(self.pos) - np.array(objects[0].pos))
+    def _find_nearest(self, objects, env_map):
+        best_path = astar(env_map, self.pos, objects[0].pos, False)[1:]
+        min_dist = len(best_path)
         for obj in objects[1:]:
-            dist = np.linalg.norm(np.array(self.pos) - np.array(obj.pos))
-            if dist < min_dist:
-                nearest = obj
+            path = astar(env_map, self.pos, obj.pos, False)[1:]
+            dist = len(path)
+            if dist > 0 and dist < min_dist:
                 min_dist = dist
-        return nearest
+                best_path = path
+        return best_path
 
-    def _get_map(self):
+    def _update_map(self):
         map = np.copy(self.model.map)
         if self.avoidable_objs is not None:
             for obj in self.avoidable_objs:
                 map[obj] = 1
-        return map
+        self.map = map
 
-    def _find_nearest_resource(self, map):
-        map = self._get_map()
-        self._path = astar(map, self.pos, self._find_nearest(self.model.resources).pos, False)[1:]
+    def _find_nearest_resource(self):
+        path = self._find_nearest(self.model.resources, self.map)
+        self._path = path
         self._state = 'moving'
 
     def _get_highest_meaning_on_path(self):
@@ -72,11 +74,11 @@ class AgentBasic(Agent):
 
     def _find_nearest_drop_point(self):
         drop_points = [dp for dp in self.model.drop_points if dp.color == self._resource_color]
-        map = self._get_map()
-        self._path = astar(map, self.pos, self._find_nearest(drop_points).pos, False)[1:]
-        meaning = self._get_highest_meaning_on_path()
-        if meaning is not None:
-            self._play_guessing_game(meaning)
+        path = self._find_nearest(drop_points, self.map)
+        self._path = path
+        # meaning = self._get_highest_meaning_on_path()
+        # if meaning is not None:
+        #     self._play_guessing_game(meaning)
         self._state = 'moving'
 
     def _move(self):
@@ -233,6 +235,7 @@ class AgentBasic(Agent):
         for agent in self.model.agents:
             if agent != self:
                 agent.guessing_transmit(meaning_form, disc_form)
+                self._update_map()
 
     def _play_observational_game(self, utility):
         neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=1)
@@ -250,7 +253,12 @@ class AgentBasic(Agent):
         x, y = self._path[0]
         env_map = np.copy(self.model.map)
         env_map[x][y] = 1
-        new_path = astar(env_map, self.pos, self._path[-1], False)[1:]
+        end_x, end_y = self._path[-1]
+        if type(self.model.grid[end_x][end_y]) is DropPoint:
+            drop_points = [dp for dp in self.model.drop_points if dp.color == self._resource_color]
+            new_path = self._find_nearest(drop_points, env_map)
+        else:
+            new_path = astar(env_map, self.pos, self._path[-1], False)[1:]
         return new_path
 
     def _grow_tree(self):
