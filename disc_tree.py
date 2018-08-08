@@ -9,6 +9,8 @@ class Categoriser:
         self.age = 0
 
     def grow(self):
+        if self.child1 is not None or self.child2 is not None:
+            return
         middle = int(self.range[1] / 2)
         range1 = (self.range[0], middle)
         range2 = (middle + 1, self.range[1])

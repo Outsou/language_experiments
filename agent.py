@@ -232,7 +232,7 @@ class AgentBasic(Agent):
             if len(new_path) - len(self._path) > self.importance_threshold:
                 self._update_direction(old_pos, self._path[0])
                 self._play_observational_game(len(self._path) - len(new_path))
-                self._grow_tree()
+                # self._grow_tree()
             self._path = new_path
         self.model.grid.move_agent(self, self._path[0])
         del self._path[0]
