@@ -28,6 +28,16 @@ def test2():
         print('-----------------------------')
     print('Simulation took: {}'.format(time.time() - start_time))
 
+    collisions = 0
+    travel_distance = 0
+    resources_delivered = 0
+    for agent in model.agents:
+        collisions += agent.stat_dict['obs_game_init']
+        travel_distance += agent.stat_dict['travel_distance']
+        resources_delivered += agent.stat_dict['resources_delivered']
+    print('Collisions: {}'.format(collisions))
+    print('Travel distance: {}'.format(travel_distance))
+    print('Resources delivered: {}'.format(resources_delivered))
 
 if __name__ == "__main__":
     test2()

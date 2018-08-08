@@ -32,6 +32,10 @@ class AgentBasic(Agent):
         self.last_disc_form = None
         self.avoidable_objs = None
         self.last_discriminator = None
+        self.last_meaning = None
+        self.stat_dict = {'obs_game_init': 0,
+                          'travel_distance': 0,
+                          'resources_delivered': 0}
 
     def _find_nearest(self, objects):
         nearest = objects[0]
@@ -50,7 +54,7 @@ class AgentBasic(Agent):
                 map[obj] = 1
         return map
 
-    def _find_nearest_resource(self):
+    def _find_nearest_resource(self, map):
         map = self._get_map()
         self._path = astar(map, self.pos, self._find_nearest(self.model.resources).pos, False)[1:]
         self._state = 'moving'
@@ -103,6 +107,7 @@ class AgentBasic(Agent):
                     neighbor.add_resources(self._resource_count)
                     self._resource_count = 0
                     self._state = 'no_resource'
+                    self.stat_dict['resources_delivered'] += 1
         if self._resource_count > 0:
             self._state = 'has_resource'
         else:
@@ -124,6 +129,7 @@ class AgentBasic(Agent):
         self.last_discriminator = None
         self.avoidable_objs = None
         meaning = self.memory.get_meaning(meaning_form)
+        self.last_meaning = meaning
         if meaning is None:
             return
         discriminator = self.memory.get_meaning(disc_form)
@@ -138,6 +144,36 @@ class AgentBasic(Agent):
                 disc_objects.append(obj)
         if len(disc_objects) > 0:
             self.avoidable_objs = disc_objects
+
+    def _get_relevant_discriminator(self, meaning):
+        objects = self._get_objects(meaning)
+        discriminators = {}
+        relevant_discriminator = None
+        for obj in objects:
+            discriminator = self.x_tree.discriminate(obj[0])
+            if discriminator not in discriminators:
+                discriminators[discriminator] = []
+            discriminators[discriminator].append(obj)
+            if obj == self.pos:
+                relevant_discriminator = discriminator
+        if len(discriminators.keys()) < 2:
+            return None
+        return relevant_discriminator
+
+    def _handle_collision(self):
+        if self.last_disc_form is None:
+            return
+        meaning = self._get_neighborhood(self.pos)
+        if meaning != self.last_meaning:
+            return
+        relevant_discriminator = self._get_relevant_discriminator(meaning)
+        if relevant_discriminator is None:
+            # Failed to discriminate
+            self._grow_tree()
+            return
+        if not self.memory.is_associated(relevant_discriminator, self.last_disc_form):
+            self.memory.create_association(relevant_discriminator, self.last_disc_form)
+        self.memory.strengthen_meaning(relevant_discriminator, self.last_disc_form)
 
     def _get_neighborhood(self, pos):
         neighborhood = []
@@ -186,7 +222,6 @@ class AgentBasic(Agent):
         return None
 
     def _play_guessing_game(self, meaning):
-        '''TODO: how to make the best guessing gaem ever without direct feedback?'''
         meaning_form = self.memory.get_form(meaning)
         objects = self._get_objects(meaning)
         topic_objects = [obj for obj in objects if obj in self._path]
@@ -232,9 +267,11 @@ class AgentBasic(Agent):
             if len(new_path) - len(self._path) > self.importance_threshold:
                 self._update_direction(old_pos, self._path[0])
                 self._play_observational_game(len(self._path) - len(new_path))
-                # self._grow_tree()
+                self.stat_dict['obs_game_init'] += 1
+                self._handle_collision()
             self._path = new_path
         self.model.grid.move_agent(self, self._path[0])
+        self.stat_dict['travel_distance'] += 1
         del self._path[0]
         if len(self._path) < 2:
             self._state = 'destination_reached'

@@ -126,3 +126,8 @@ class MFAssociationMemory:
 
     def make_form_known(self, form):
         self.known_forms.add(form)
+
+    def is_associated(self, meaning, form):
+        if meaning not in self.mf_dict or form not in self.mf_dict[meaning]:
+            return False
+        return True
