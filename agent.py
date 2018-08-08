@@ -26,7 +26,7 @@ class AgentBasic(Agent):
         self.memory = MFAssociationMemory()
         self.heading_x = 1
         self.heading_y = 0
-        self.importance_threshold = 7
+        self.importance_threshold = 5
         self.x_tree = DiscriminationTree((0, 9))
         self.y_tree = DiscriminationTree((0, 17))
         self.last_disc_form = None
@@ -76,9 +76,9 @@ class AgentBasic(Agent):
         drop_points = [dp for dp in self.model.drop_points if dp.color == self._resource_color]
         path = self._find_nearest(drop_points, self.map)
         self._path = path
-        # meaning = self._get_highest_meaning_on_path()
-        # if meaning is not None:
-        #     self._play_guessing_game(meaning)
+        meaning = self._get_highest_meaning_on_path()
+        if meaning is not None:
+            self._play_guessing_game(meaning)
         self._state = 'moving'
 
     def _move(self):
