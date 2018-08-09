@@ -30,15 +30,15 @@ class CoopaModel(Model):
         self.layout.draw(self.grid)
 
         # Spawn drop points
-        drop_point = DropPoint(2, self, 'blue')
+        drop_point = DropPoint(2, self, 'orange')
         self.grid.place_agent(drop_point, (1, 2))
         self.drop_points.append(drop_point)
 
-        drop_point = DropPoint(3, self, 'blue')
+        drop_point = DropPoint(3, self, 'pink')
         self.grid.place_agent(drop_point, (8, 2))
         self.drop_points.append(drop_point)
 
-        drop_point = DropPoint(4, self, 'red')
+        drop_point = DropPoint(4, self, 'blue')
         self.grid.place_agent(drop_point, (1, 15))
         self.drop_points.append(drop_point)
 
@@ -47,11 +47,11 @@ class CoopaModel(Model):
         self.drop_points.append(drop_point)
 
         # Spawn resources
-        resource = Resource(6, self, 'red', ((1, 3), (8, 3)))
+        resource = Resource(6, self, 'red', {'red': (1, 3), 'blue': (8, 3)})
         self.grid.place_agent(resource, (1, 3))
         self.resources.append(resource)
 
-        resource = Resource(7, self, 'blue', ((1, 14), (8, 14)))
+        resource = Resource(7, self, 'pink', {'pink': (1, 14), 'orange': (8, 14)})
         self.grid.place_agent(resource, (1, 14))
         self.resources.append(resource)
 

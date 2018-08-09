@@ -1,4 +1,5 @@
 from mesa import Agent
+import random
 
 
 class Wall(Agent):
@@ -15,9 +16,11 @@ class Resource(Agent):
     def color(self):
         return self._color
 
-    @property
-    def spawn_points(self):
-        return self._spawn_points
+    def respawn(self):
+        self.model.grid.remove_agent(self)
+        color, point = random.choice(list(self._spawn_points.items()))
+        self._color = color
+        self.model.grid.place_agent(self, point)
 
 class DropPoint(Agent):
     def __init__(self, unique_id, model, color):

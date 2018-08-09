@@ -38,6 +38,22 @@ def test2():
     print('Collisions: {}'.format(collisions))
     print('Travel distance: {}'.format(travel_distance))
     print('Resources delivered: {}'.format(resources_delivered))
+    print()
+    return resources_delivered, collisions
 
 if __name__ == "__main__":
-    test2()
+    resources_delivered = []
+    collisions = []
+    times = []
+    runs = 30
+    for i in range(1, runs + 1):
+        start_time = time.time()
+        print('Starting run {}'.format(i))
+        run_delivered, run_collisions = test2()
+        resources_delivered.append(run_delivered)
+        collisions.append(run_collisions)
+        times.append(time.time() - start_time)
+        print('Finished run, time left {}'.format(sum(times) / len(times) * (runs - i)))
+        print()
+    print(resources_delivered)
+    print(collisions)

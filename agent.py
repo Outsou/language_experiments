@@ -26,7 +26,7 @@ class AgentBasic(Agent):
         self.memory = MFAssociationMemory()
         self.heading_x = 1
         self.heading_y = 0
-        self.importance_threshold = 5
+        self.importance_threshold = 7
         self.x_tree = DiscriminationTree((0, 9))
         self.y_tree = DiscriminationTree((0, 17))
         self.last_disc_form = None
@@ -93,10 +93,7 @@ class AgentBasic(Agent):
                 self._resource_count += 1
                 self._resource_color = neighbor.color
                 self._state = 'has_resource'
-                spawn_points = neighbor.spawn_points
-                self.model.grid.remove_agent(neighbor)
-                spawn_point = random.choice(spawn_points)
-                self.model.grid.place_agent(neighbor, spawn_point)
+                neighbor.respawn()
         if self._resource_count < 1:
             self._state = 'no_resource'
         else:
