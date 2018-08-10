@@ -1,4 +1,6 @@
 import numpy as np
+from graphviz import Graph, nohtml
+
 
 def _line_special_cases(x1, y1, x2, y2, dx, dy):
     # Check zero length
@@ -23,6 +25,7 @@ def _line_special_cases(x1, y1, x2, y2, dx, dy):
         return diagonal_points
 
     return None
+
 
 def get_line(start, end):
     # Setup initial conditions
@@ -100,3 +103,33 @@ def print_state(state):
         for j in range(len(state[0])):
             row += state[j][i]
         print(row)
+
+
+def create_graph(disc_tree, memory):
+    def create_node(g, i, node):
+        form = memory.get_form(node)
+        if form is None:
+            form = 'NONAME'
+        g.node(str(i), nohtml('{} {}'.format(form, node.range)))
+
+    g = Graph('g', filename='btree.gv', node_attr={'shape': 'record', 'height': '.1'})
+
+    i = 0
+    nodes = [(disc_tree.root, i)]
+    create_node(g, i, disc_tree.root)
+    # g.node(str(i), nohtml(str(disc_tree.root.range)))
+    while len(nodes) > 0:
+        child_nodes = []
+        for node in nodes:
+            if node[0].child1 is not None:
+                i += 1
+                create_node(g, i, node[0].child1)
+                g.edge(str(node[1]), str(i))
+                child_nodes.append((node[0].child1, i))
+            if node[0].child2 is not None:
+                i += 1
+                create_node(g, i, node[0].child2)
+                g.edge(str(node[1]), str(i))
+                child_nodes.append((node[0].child2, i))
+        nodes = child_nodes
+    g.view()

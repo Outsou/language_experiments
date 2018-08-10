@@ -26,7 +26,7 @@ class AgentBasic(Agent):
         self.memory = MFAssociationMemory()
         self.heading_x = 1
         self.heading_y = 0
-        self.importance_threshold = 9
+        self.importance_threshold = 0
         self.discriminator = Discriminator([(0, 9), (0, 17)])
         self.last_disc_form = None
         self.avoidable_objs = None
