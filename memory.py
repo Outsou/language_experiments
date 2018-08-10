@@ -2,36 +2,6 @@ import random
 import operator
 
 
-class ExplicitMemory:
-    def __init__(self):
-        self.max_consequences = 5
-        self.mem = {}
-        self.word_associations = {}
-
-    def add_memory(self, concept, consequence):
-        if concept not in self.mem:
-            self.mem[concept] = []
-        self.mem[concept].append(consequence)
-        if len(self.mem[concept]) > self.max_consequences:
-            del self.mem[concept][0]
-
-    def invoke_memory(self, concept):
-        if concept not in self.mem:
-            return None
-        return sum(self.mem[concept]) / len(self.mem[concept])
-
-    def associate_word(self, concept, word):
-        self.word_associations[concept] = word
-
-    def get_word(self, state):
-        if state not in self.word_associations:
-            return None
-        return self.word_associations[state]
-
-    def get_all_words(self):
-        return self.word_associations.keys()
-
-
 class MFAssociationMemory:
     def __init__(self):
         self.mf_dict = {}
@@ -44,12 +14,15 @@ class MFAssociationMemory:
 
     def _update_utility(self, meaning, utility):
         old_util = self.meaning_stats[meaning]['utility']
-        self.meaning_stats[meaning]['utility'] = (1 - self.a) * old_util + self.a * utility
+        if old_util is None:
+            self.meaning_stats[meaning]['utility'] = utility
+        else:
+            self.meaning_stats[meaning]['utility'] = (1 - self.a) * old_util + self.a * utility
 
     def create_association(self, meaning, form):
         if meaning not in self.mf_dict:
             self.mf_dict[meaning] = {form: self.increment}
-            self.meaning_stats[meaning] = {'utility': 0.0, 'speaker': 0, 'listener': 0}
+            self.meaning_stats[meaning] = {'utility': None, 'speaker': 0, 'listener': 0}
         elif form not in self.mf_dict[meaning]:
             self.mf_dict[meaning][form] = self.min
         self.known_forms.add(form)
@@ -74,7 +47,7 @@ class MFAssociationMemory:
                     round(self.mf_dict[associated_meaning][form] - self.increment, 1))
         if meaning not in self.mf_dict:
             self.mf_dict[meaning] = {}
-            self.meaning_stats[meaning] = {'utility': 0.0, 'speaker': 0, 'listener': 0}
+            self.meaning_stats[meaning] = {'utility': None, 'speaker': 0, 'listener': 0}
         if form not in self.mf_dict[meaning]:
             self.mf_dict[meaning][form] = self.min
         self.mf_dict[meaning][form] = min(
@@ -98,7 +71,7 @@ class MFAssociationMemory:
                 form += random.choice(vowels)
             return form
 
-        length = random.choice(range(3)) + 1
+        length = 4
         form = create_form(length)
         while form in self.known_forms:
             form = create_form(length)
@@ -107,7 +80,7 @@ class MFAssociationMemory:
     def get_form(self, meaning):
         if meaning not in self.mf_dict:
             return None
-        forms = [x for x in self.mf_dict[meaning].items() if x[0] != 'utility']
+        forms = [x for x in self.mf_dict[meaning].items()]
         form, score = max(forms, key=operator.itemgetter(1))
         return form if score > 0 else None
 
