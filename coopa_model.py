@@ -75,6 +75,11 @@ class CoopaModel(Model):
     def step(self):
         self.schedule.step()
         self.move_agents()
+        self.finish_step()
+
+    def finish_step(self):
+        for agent in self.agents:
+            agent.finish_step()
 
     def move_agents(self):
         if len(self.move_queue) > 1:

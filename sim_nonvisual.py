@@ -3,7 +3,7 @@ from utils import print_state
 import time
 
 
-def test2():
+def test2(run_id):
     print('Running Test2...')
     model = CoopaModel()
     times = []
@@ -35,6 +35,8 @@ def test2():
         collisions += agent.stat_dict['obs_game_init']
         travel_distance += agent.stat_dict['travel_distance']
         resources_delivered += agent.stat_dict['resources_delivered']
+        for j in range(len(agent.stat_dict['disc_trees'][-1])):
+            agent.stat_dict['disc_trees'][-1][j].render(filename='{}_{}_run{}'.format(agent.color, j, run_id), directory='results')
     print('Collisions: {}'.format(collisions))
     print('Travel distance: {}'.format(travel_distance))
     print('Resources delivered: {}'.format(resources_delivered))
@@ -45,11 +47,11 @@ if __name__ == "__main__":
     resources_delivered = []
     collisions = []
     times = []
-    runs = 30
+    runs = 1
     for i in range(1, runs + 1):
         start_time = time.time()
         print('Starting run {}'.format(i))
-        run_delivered, run_collisions = test2()
+        run_delivered, run_collisions = test2(i)
         resources_delivered.append(run_delivered)
         collisions.append(run_collisions)
         times.append(time.time() - start_time)

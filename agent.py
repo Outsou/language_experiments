@@ -7,6 +7,7 @@ from objects import Wall
 import random
 import math
 from disc_tree import Discriminator
+from utils import create_graphs
 
 
 class AgentBasic(Agent):
@@ -34,7 +35,8 @@ class AgentBasic(Agent):
         self.last_meaning = None
         self.stat_dict = {'obs_game_init': 0,
                           'travel_distance': 0,
-                          'resources_delivered': 0}
+                          'resources_delivered': 0,
+                          'disc_trees': []}
         self.map = np.copy(self.model.map)
 
     def _find_nearest(self, objects, env_map):
@@ -324,6 +326,9 @@ class AgentBasic(Agent):
             self._actions[self._state]()
         self._actions[self._state]()
         # print('STATE: {}'.format(self._state))
+
+    def finish_step(self):
+        self.stat_dict['disc_trees'].append(create_graphs(self.discriminator, self.memory))
 
 
 # The symbols used to create the 3x3 neighborhood grid.
