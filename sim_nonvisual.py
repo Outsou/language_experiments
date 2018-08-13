@@ -4,9 +4,8 @@ import time
 import os
 
 
-def test2(run_id, result_dir_suffix, play_guessing):
+def test2(run_id, directory, play_guessing):
     print('Running Test2...')
-    directory = 'results_{}'.format(result_dir_suffix)
     model = CoopaModel(play_guessing)
     times = []
     start_time = time.time()
@@ -59,14 +58,19 @@ if __name__ == "__main__":
     runs = 30
     play_guessing = False
     date_time = time.strftime("%d-%m-%-y_%H:%M:%S")
+    directory = 'results_{}'.format(date_time)
     for i in range(1, runs + 1):
         start_time = time.time()
         print('Starting run {}'.format(i))
-        run_delivered, run_collisions = test2(i, date_time, play_guessing)
+        run_delivered, run_collisions = test2(i, directory, play_guessing)
         resources_delivered.append(run_delivered)
         collisions.append(run_collisions)
         times.append(time.time() - start_time)
         print('Finished run, time left {}'.format(sum(times) / len(times) * (runs - i)))
         print()
+
+    with open(os.path.join(directory, 'final.txt'), 'w') as text_file:
+        print('Delivered: {}'.format(resources_delivered), file=text_file)
+        print('Collsions: {}'.format(collisions), file=text_file)
     print(resources_delivered)
     print(collisions)

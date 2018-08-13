@@ -1,5 +1,6 @@
 import numpy as np
 from graphviz import Graph, nohtml
+import operator
 
 
 def _line_special_cases(x1, y1, x2, y2, dx, dy):
@@ -109,9 +110,16 @@ def get_neighborhood_str(neighborhood):
 
 def create_graphs(discriminator, memory, format='png'):
     def create_node(g, i, node):
-        form = memory.get_form(node)
-        if form is None:
-            form = ''
+        if node not in memory.mf_dict:
+            best_forms = []
+        else:
+            forms = [x for x in memory.mf_dict[node].items()]
+            forms.sort(key=operator.itemgetter(1), reverse=True)
+            best_forms = []
+            best_score = forms[0][1]
+            while len(forms) > 0 and forms[0][1] == best_score:
+                best_forms.append(forms.pop(0)[0])
+        form = ', '.join(best_forms)
         g.node(str(i), nohtml('{} {}'.format(form, node.range)))
 
     graphs = []
