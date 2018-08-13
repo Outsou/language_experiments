@@ -39,6 +39,7 @@ class AgentBasic(Agent):
                           'resources_delivered': 0,
                           'disc_trees': []}
         self.map = np.copy(self.model.map)
+        self.collided = None
 
     def _find_nearest(self, objects, env_map):
         '''Finds the nearest object in objects and returns the path to it.'''
@@ -141,15 +142,19 @@ class AgentBasic(Agent):
             self._drop(neighbors)
 
     def observational_transmit(self, form):
-        '''Speaker uses this to transmit form to listener in the observational game.'''
+        '''Speaker uses this to transmit form to hearer in the observational game.'''
         meaning = self._get_neighborhood(self.pos)
         self.memory.strengthen_meaning(meaning, form)
 
     def guessing_transmit(self, meaning_form, disc_form):
-        '''Speaker uses this to transmit forms to the listener in the guessing game.'''
+        '''Speaker uses this to transmit forms to the hearer in the guessing game.'''
+        if self.collided is False and self.last_discriminator is not None:
+            self.memory.strengthen_meaning(self.last_discriminator, self.last_disc_form)
+
         self.last_disc_form = disc_form
         self.last_discriminator = None
         self.avoidable_objs = None
+        self.collided = False
         meaning = self.memory.get_meaning(meaning_form)
         self.last_meaning = meaning
         if meaning is None:
@@ -175,6 +180,8 @@ class AgentBasic(Agent):
         meaning = self._get_neighborhood(self.pos)
         if meaning != self.last_meaning:
             return
+
+        self.collided = True
 
         objects = self._get_objects(meaning)
         relevant_discriminators = self.discriminator.get_relevant_discriminators(self.pos, objects)
@@ -244,6 +251,8 @@ class AgentBasic(Agent):
         if disc_form is None:
             disc_form = self.memory.invent_form()
             self.memory.create_association(discriminator, disc_form)
+        self.memory.report_form_use(discriminator, disc_form)
+        # self.memory.strengthen_form(discriminator, disc_form)
         for agent in self.model.agents:
             if agent != self:
                 agent.guessing_transmit(meaning_form, disc_form)
@@ -257,6 +266,7 @@ class AgentBasic(Agent):
         if form is None:
             form = self.memory.invent_form()
             self.memory.create_association(meaning, form)
+        self.memory.report_form_use(meaning, form)
         self.memory.strengthen_form(meaning, form, utility)
         for neighbor in neighbors:
             if type(neighbor) is AgentBasic:

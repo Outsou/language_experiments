@@ -119,7 +119,11 @@ def create_graphs(discriminator, memory, format='png'):
             best_score = forms[0][1]
             while len(forms) > 0 and forms[0][1] == best_score:
                 best_forms.append(forms.pop(0)[0])
-        form = ', '.join(best_forms)
+        form_counts = ['{} {}'.format(x, memory.meaning_stats[node]['use_counts'][x])
+                       if x in memory.meaning_stats[node]['use_counts']
+                       else '{} {}'.format(x, 0)
+                       for x in best_forms]
+        form = ', '.join(form_counts)
         g.node(str(i), nohtml('{} {}'.format(form, node.range)))
 
     graphs = []

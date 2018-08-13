@@ -2,16 +2,17 @@ from coopa_model import CoopaModel
 from utils import get_neighborhood_str
 import time
 import os
+import numpy as np
 
 
-def test2(run_id, directory, play_guessing):
-    print('Running Test2...')
+def run_experiment(run_id, directory, play_guessing):
+    print('Running experiment...')
     model = CoopaModel(play_guessing)
     times = []
     start_time = time.time()
     period_start = time.time()
     timing_steps = 10000
-    steps = 100000
+    steps = 50000
     for i in range(1, steps + 1):
         if i % timing_steps == 0:
             times.append(time.time() - period_start)
@@ -56,13 +57,13 @@ if __name__ == "__main__":
     collisions = []
     times = []
     runs = 30
-    play_guessing = False
+    play_guessing = True
     date_time = time.strftime("%d-%m-%-y_%H:%M:%S")
     directory = 'results_{}'.format(date_time)
     for i in range(1, runs + 1):
         start_time = time.time()
         print('Starting run {}'.format(i))
-        run_delivered, run_collisions = test2(i, directory, play_guessing)
+        run_delivered, run_collisions = run_experiment(i, directory, play_guessing)
         resources_delivered.append(run_delivered)
         collisions.append(run_collisions)
         times.append(time.time() - start_time)
@@ -70,7 +71,7 @@ if __name__ == "__main__":
         print()
 
     with open(os.path.join(directory, 'final.txt'), 'w') as text_file:
-        print('Delivered: {}'.format(resources_delivered), file=text_file)
-        print('Collsions: {}'.format(collisions), file=text_file)
-    print(resources_delivered)
-    print(collisions)
+        print('Delivered: {}, avg: {}'.format(resources_delivered, np.mean(resources_delivered)), file=text_file)
+        print('Collsions: {}, avg: {}'.format(collisions, np.mean(collisions)), file=text_file)
+    # print(resources_delivered)
+    # print(collisions)
