@@ -97,15 +97,17 @@ def get_line(start, end):
     return cells
 
 
-def print_state(state):
-    for i in range(len(state[0])):
+def get_neighborhood_str(neighborhood):
+    str = ''
+    for i in range(len(neighborhood[0])):
         row = ''
-        for j in range(len(state[0])):
-            row += state[j][i]
-        print(row)
+        for j in range(len(neighborhood[0])):
+            row += neighborhood[j][i]
+        str += row + '\n'
+    return str
 
 
-def create_graphs(discriminator, memory):
+def create_graphs(discriminator, memory, format='png'):
     def create_node(g, i, node):
         form = memory.get_form(node)
         if form is None:
@@ -115,7 +117,7 @@ def create_graphs(discriminator, memory):
     graphs = []
 
     for disc_tree in discriminator.trees:
-        g = Graph('g', node_attr={'shape': 'record', 'height': '.1'})
+        g = Graph('g', node_attr={'shape': 'record', 'height': '.1'}, format=format)
 
         i = 0
         nodes = [(disc_tree.root, i)]

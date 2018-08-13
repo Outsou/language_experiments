@@ -13,7 +13,7 @@ import random
 class CoopaModel(Model):
     """A model with some number of agents."""
 
-    def __init__(self):
+    def __init__(self, play_guessing):
         width = 10
         height = 18
         self.running = True
@@ -62,12 +62,12 @@ class CoopaModel(Model):
         self.map[8][14] = 1
 
         # Spawn agents
-        a = AgentBasic(0, self, 'green')
+        a = AgentBasic(0, self, 'green', guessing_game=play_guessing)
         self.schedule.add(a)
         self.grid.position_agent(a, 4, 2)
         self.agents.append(a)
 
-        a = AgentBasic(1, self, 'black')
+        a = AgentBasic(1, self, 'black', guessing_game=play_guessing)
         self.schedule.add(a)
         self.grid.position_agent(a, 4, 15)
         self.agents.append(a)

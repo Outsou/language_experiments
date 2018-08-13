@@ -1,11 +1,13 @@
 from coopa_model import CoopaModel
-from utils import print_state
+from utils import get_neighborhood_str
 import time
+import os
 
 
-def test2(run_id):
+def test2(run_id, result_dir_suffix, play_guessing):
     print('Running Test2...')
-    model = CoopaModel()
+    directory = 'results_{}'.format(result_dir_suffix)
+    model = CoopaModel(play_guessing)
     times = []
     start_time = time.time()
     period_start = time.time()
@@ -18,15 +20,14 @@ def test2(run_id):
             print('Time left: {}'.format(sum(times) / len(times) * ((steps - i) / timing_steps)))
         model.step()
     print()
+    result_str = ''
     for agent in model.agents:
+        result_str += '***************** AGENT {} *****************\n\n'.format(agent.color)
         for meaning, form in agent.memory.mf_dict.items():
             if type(meaning) is tuple:
-                print_state(meaning)
-                print(form)
-                print(agent.memory.meaning_stats[meaning])
-                print()
-        print('-----------------------------')
-    print('Simulation took: {}'.format(time.time() - start_time))
+                result_str += get_neighborhood_str(meaning) + '\n'
+                result_str += str(form) + '\n'
+                result_str += str(agent.memory.meaning_stats[meaning]) + '\n\n'
 
     collisions = 0
     travel_distance = 0
@@ -36,10 +37,18 @@ def test2(run_id):
         travel_distance += agent.stat_dict['travel_distance']
         resources_delivered += agent.stat_dict['resources_delivered']
         for j in range(len(agent.stat_dict['disc_trees'][-1])):
-            agent.stat_dict['disc_trees'][-1][j].render(filename='{}_{}_run{}'.format(agent.color, j, run_id), directory='results')
-    print('Collisions: {}'.format(collisions))
-    print('Travel distance: {}'.format(travel_distance))
-    print('Resources delivered: {}'.format(resources_delivered))
+            chan = 'x' if j == 0 else 'y'
+            agent.stat_dict['disc_trees'][-1][j].render(filename='run{}_{}_{}'.format(run_id, agent.color, chan),
+                                                        directory=directory, cleanup=True)
+    result_str += 'Collisions: {}\n'.format(collisions)
+    result_str += 'Travel distance: {}\n'.format(travel_distance)
+    result_str += 'Resources delivered: {}\n'.format(resources_delivered)
+
+    with open(os.path.join(directory, 'run{}.txt'.format(run_id)), 'w') as text_file:
+        print(result_str, file=text_file)
+
+    print(result_str)
+    print('Simulation took: {}'.format(time.time() - start_time))
     print()
     return resources_delivered, collisions
 
@@ -47,11 +56,13 @@ if __name__ == "__main__":
     resources_delivered = []
     collisions = []
     times = []
-    runs = 1
+    runs = 30
+    play_guessing = False
+    date_time = time.strftime("%d-%m-%-y_%H:%M:%S")
     for i in range(1, runs + 1):
         start_time = time.time()
         print('Starting run {}'.format(i))
-        run_delivered, run_collisions = test2(i)
+        run_delivered, run_collisions = test2(i, date_time, play_guessing)
         resources_delivered.append(run_delivered)
         collisions.append(run_collisions)
         times.append(time.time() - start_time)

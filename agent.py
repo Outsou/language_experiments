@@ -11,8 +11,9 @@ from utils import create_graphs
 
 
 class AgentBasic(Agent):
-    def __init__(self, unique_id, model, color, neighborhood_rotation=False):
+    def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True):
         super().__init__(unique_id, model)
+        self._guessing_game = guessing_game
         self.neighborhood_rotation = neighborhood_rotation
         self._resource_count = 0
         self._resource_color = None
@@ -78,9 +79,10 @@ class AgentBasic(Agent):
             self._update_map()
             path = self._find_nearest(drop_points, self.map)
         self._path = path
-        meaning = self._get_highest_meaning_on_path()
-        if meaning is not None:
-            self._play_guessing_game(meaning)
+        if self._guessing_game:
+            meaning = self._get_highest_meaning_on_path()
+            if meaning is not None:
+                self._play_guessing_game(meaning)
         self._state = 'moving'
 
     def _get_highest_meaning_on_path(self):
