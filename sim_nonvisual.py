@@ -58,7 +58,7 @@ if __name__ == "__main__":
     times = []
     runs = 30
     play_guessing = True
-    date_time = time.strftime("%d-%m-%-y_%H:%M:%S")
+    date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     directory = 'results_{}'.format(date_time)
     for i in range(1, runs + 1):
         start_time = time.time()

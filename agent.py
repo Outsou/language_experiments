@@ -28,7 +28,7 @@ class AgentBasic(Agent):
         self.memory = MFAssociationMemory()
         self.heading_x = 1
         self.heading_y = 0
-        self.importance_threshold = 0
+        self.importance_threshold = 8
         self.discriminator = Discriminator([(0, 9), (0, 17)])
         self.last_disc_form = None
         self.avoidable_objs = None
@@ -48,7 +48,7 @@ class AgentBasic(Agent):
         for obj in objects:
             path = astar(env_map, self.pos, obj.pos, False)[1:]
             dist = len(path)
-            if dist > 0 and dist < min_dist:
+            if 0 < dist < min_dist:
                 min_dist = dist
                 best_path = path
         return best_path
@@ -148,7 +148,7 @@ class AgentBasic(Agent):
 
     def guessing_transmit(self, meaning_form, disc_form):
         '''Speaker uses this to transmit forms to the hearer in the guessing game.'''
-        if self.collided is False and self.last_discriminator is not None:
+        if self.collided is False and self.last_discriminator is not None and self.avoidable_objs is not None:
             self.memory.strengthen_meaning(self.last_discriminator, self.last_disc_form)
 
         self.last_disc_form = disc_form
@@ -244,6 +244,8 @@ class AgentBasic(Agent):
 
     def _play_guessing_game(self, meaning):
         '''Start the guessing game as the speaker.'''
+
+
         meaning_form = self.memory.get_form(meaning)
         objects = self._get_objects(meaning)
         topic_objects = [obj for obj in objects if obj in self._path]
