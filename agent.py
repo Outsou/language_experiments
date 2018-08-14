@@ -171,6 +171,7 @@ class AgentBasic(Agent):
                 disc_objects.append(obj)
         if len(disc_objects) > 0:
             self.avoidable_objs = disc_objects
+            self._update_map()
 
     def _handle_collision(self):
         '''Handles learning when failure in communication has resulted in a collision.'''
@@ -247,6 +248,8 @@ class AgentBasic(Agent):
         objects = self._get_objects(meaning)
         topic_objects = [obj for obj in objects if obj in self._path]
         discriminator = self._discriminate(objects, topic_objects)
+        if discriminator is None:
+            return
         disc_form = self.memory.get_form(discriminator)
         if disc_form is None:
             disc_form = self.memory.invent_form()
@@ -256,7 +259,6 @@ class AgentBasic(Agent):
         for agent in self.model.agents:
             if agent != self:
                 agent.guessing_transmit(meaning_form, disc_form)
-                self._update_map()
 
     def _play_observational_game(self, utility):
         '''Start the observational game as the speaker.'''
