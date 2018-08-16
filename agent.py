@@ -102,6 +102,7 @@ class AgentBasic(Agent):
     def start_observational_game(self, hearer, reroute, utility):
         if abs(utility) >= self.importance_threshold:
             self._play_observational_game(utility, hearer)
+            self._handle_collision()
         self._path = reroute
 
     def _game_check(self, neighbor):
@@ -113,6 +114,7 @@ class AgentBasic(Agent):
             if len(own_reroute) > 0 and own_utility >= neighbor_utility:
                 if abs(own_utility) >= self.importance_threshold:
                     self._play_observational_game(own_utility, neighbor)
+                    self._handle_collision()
                 self._path = own_reroute
             else:
                 neighbor.start_observational_game(self, neighbor_reroute, neighbor_utility)
