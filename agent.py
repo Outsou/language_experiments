@@ -99,10 +99,38 @@ class AgentBasic(Agent):
                 max_meaning = meaning
         return max_meaning
 
+    def start_observational_game(self, hearer, reroute, utility):
+        if abs(utility) >= self.importance_threshold:
+            self._play_observational_game(utility, hearer)
+        self._path = reroute
+
+    def _game_check(self, neighbor):
+        if len(neighbor._path) > 0 and neighbor._path[0] == self.pos:
+            own_reroute = self._reroute()
+            own_utility = len(self._path) - len(own_reroute)
+            neighbor_reroute = neighbor._reroute()
+            neighbor_utility = len(neighbor._path) - len(neighbor_reroute)
+            if len(own_reroute) > 0 and own_utility >= neighbor_utility:
+                if abs(own_utility) >= self.importance_threshold:
+                    self._play_observational_game(own_utility, neighbor)
+                self._path = own_reroute
+            else:
+                neighbor.start_observational_game(self, neighbor_reroute, neighbor_utility)
+
     def _move(self):
-        '''Queues the agent's next move.'''
+        '''Moves the agent and initiates observational game if needed.'''
         if len(self._path) > 1:
-            self.model.queue_move(self.pos, self._path[0], self)
+            x, y = self._path[0]
+            if self.model.grid.is_cell_empty(self._path[0]):
+                old_pos = self.pos
+                self.model.grid.move_agent(self, self._path[0])
+                self.stat_dict['travel_distance'] += 1
+                del self._path[0]
+                if len(self._path) < 2:
+                    self._state = 'destination_reached'
+                self._update_direction(old_pos, self.pos)
+            elif type(self.model.grid[x][y]) is AgentBasic:
+                self._game_check(self.model.grid[x][y])
         else:
             self._state = 'destination_reached'
 
@@ -244,8 +272,6 @@ class AgentBasic(Agent):
 
     def _play_guessing_game(self, meaning):
         '''Start the guessing game as the speaker.'''
-
-
         meaning_form = self.memory.get_form(meaning)
         objects = self._get_objects(meaning)
         topic_objects = [obj for obj in objects if obj in self._path]
@@ -262,9 +288,9 @@ class AgentBasic(Agent):
             if agent != self:
                 agent.guessing_transmit(meaning_form, disc_form)
 
-    def _play_observational_game(self, utility):
+    def _play_observational_game(self, utility, hearer):
         '''Start the observational game as the speaker.'''
-        neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=1)
+        self.stat_dict['obs_game_init'] += 1
         meaning = self._get_neighborhood(self.pos)
         form = self.memory.get_form(meaning)
         if form is None:
@@ -272,9 +298,7 @@ class AgentBasic(Agent):
             self.memory.create_association(meaning, form)
         self.memory.report_form_use(meaning, form)
         self.memory.strengthen_form(meaning, form, utility)
-        for neighbor in neighbors:
-            if type(neighbor) is AgentBasic:
-                neighbor.observational_transmit(form)
+        hearer.observational_transmit(form)
 
     def _reroute(self):
         '''Finds a new route to destination assuming that the first step in the current route is blocked.'''
@@ -289,30 +313,25 @@ class AgentBasic(Agent):
             new_path = astar(env_map, self.pos, self._path[-1], False)[1:]
         return new_path
 
-    def finish_move(self, change_path):
-        '''
-        Actually moves the agent.
+    # def finish_move(self, change_path):
+    #     '''
+    #     Actually moves the agent.
+    #
+    #     :param change_path:
+    #         Determines if the agent needs to calculate a new route.
+    #     '''
+    #     old_pos = self.pos
+    #     if change_path or (len(self._path) > 1 and not self.model.grid.is_cell_empty(self._path[0])):
+    #         new_path = self._reroute()
+    #         if len(new_path) == 0:
+    #             return
+    #         if len(new_path) - len(self._path) > self.importance_threshold:
+    #             self._update_direction(old_pos, self._path[0])
+    #             self._play_observational_game(len(self._path) - len(new_path))
+    #             self.stat_dict['obs_game_init'] += 1
+    #             self._handle_collision()
+    #         self._path = new_path
 
-        :param change_path:
-            Determines if the agent needs to calculate a new route.
-        '''
-        old_pos = self.pos
-        if change_path or (len(self._path) > 1 and not self.model.grid.is_cell_empty(self._path[0])):
-            new_path = self._reroute()
-            if len(new_path) == 0:
-                return
-            if len(new_path) - len(self._path) > self.importance_threshold:
-                self._update_direction(old_pos, self._path[0])
-                self._play_observational_game(len(self._path) - len(new_path))
-                self.stat_dict['obs_game_init'] += 1
-                self._handle_collision()
-            self._path = new_path
-        self.model.grid.move_agent(self, self._path[0])
-        self.stat_dict['travel_distance'] += 1
-        del self._path[0]
-        if len(self._path) < 2:
-            self._state = 'destination_reached'
-        self._update_direction(old_pos, self.pos)
 
     def _update_direction(self, old_pos, new_pos):
         '''Changes agent to face it's movement direction.'''

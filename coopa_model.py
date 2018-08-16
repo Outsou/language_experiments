@@ -74,45 +74,45 @@ class CoopaModel(Model):
 
     def step(self):
         self.schedule.step()
-        self.move_agents()
+        # self.move_agents()
         self.finish_step()
 
     def finish_step(self):
         for agent in self.agents:
             agent.finish_step()
 
-    def move_agents(self):
-        if len(self.move_queue) > 1:
-            A, B, agent1 = self.move_queue[0]
-            C, D, agent2 = self.move_queue[1]
-
-            a1_reroute = agent1.get_reroute_length()
-            a2_reroute = agent2.get_reroute_length()
-
-            if a1_reroute <= a2_reroute:
-                agents = [agent1, agent2]
-            else:
-                agents = [agent2, agent1]
-
-            if a1_reroute == a2_reroute:
-                random.shuffle(agents)
-
-            if A == D and B == C:
-                agents[0].finish_move(True)
-                agents[1].finish_move(False)
-            elif  B == D:
-                agents[1].finish_move(False)
-                agents[0].finish_move(True)
-            else:
-                if B == C:
-                    agent2.finish_move(False)
-                    agent1.finish_move(False)
-                else:
-                    agent1.finish_move(False)
-                    agent2.finish_move(False)
-        elif len(self.move_queue) == 1:
-            self.move_queue[0][2].finish_move(False)
-        self.move_queue = []
+    # def move_agents(self):
+    #     if len(self.move_queue) > 1:
+    #         A, B, agent1 = self.move_queue[0]
+    #         C, D, agent2 = self.move_queue[1]
+    #
+    #         a1_reroute = agent1.get_reroute_length()
+    #         a2_reroute = agent2.get_reroute_length()
+    #
+    #         if a1_reroute <= a2_reroute:
+    #             agents = [agent1, agent2]
+    #         else:
+    #             agents = [agent2, agent1]
+    #
+    #         if a1_reroute == a2_reroute:
+    #             random.shuffle(agents)
+    #
+    #         if A == D and B == C:
+    #             agents[0].finish_move(True)
+    #             agents[1].finish_move(False)
+    #         elif  B == D:
+    #             agents[1].finish_move(False)
+    #             agents[0].finish_move(True)
+    #         else:
+    #             if B == C:
+    #                 agent2.finish_move(False)
+    #                 agent1.finish_move(False)
+    #             else:
+    #                 agent1.finish_move(False)
+    #                 agent2.finish_move(False)
+    #     elif len(self.move_queue) == 1:
+    #         self.move_queue[0][2].finish_move(False)
+    #     self.move_queue = []
 
     def queue_move(self, start, end, agent):
         self.move_queue.append((start, end, agent))
