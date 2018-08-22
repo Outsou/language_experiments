@@ -116,6 +116,8 @@ class AgentBasic(Agent):
                     self._play_observational_game(own_utility, neighbor)
                     self._handle_collision()
                 self._path = own_reroute
+            # elif len(own_reroute) == 0 and len(neighbor_reroute) == 0:
+            #     self._change_destination()
             else:
                 neighbor.start_observational_game(self, neighbor_reroute, neighbor_utility)
 
@@ -304,9 +306,11 @@ class AgentBasic(Agent):
 
     def _reroute(self):
         '''Finds a new route to destination assuming that the first step in the current route is blocked.'''
-        x, y = self._path[0]
+        neighborhood = self.model.grid.get_neighbors(self.pos, False)
         env_map = np.copy(self.model.map)
-        env_map[x][y] = 1
+        for neighbor in neighborhood:
+            x, y = neighbor.pos
+            env_map[x][y] = 1
         end_x, end_y = self._path[-1]
         if type(self.model.grid[end_x][end_y]) is DropPoint:
             drop_points = [dp for dp in self.model.drop_points if dp.color == self._resource_color]
@@ -314,26 +318,6 @@ class AgentBasic(Agent):
         else:
             new_path = astar(env_map, self.pos, self._path[-1], False)[1:]
         return new_path
-
-    # def finish_move(self, change_path):
-    #     '''
-    #     Actually moves the agent.
-    #
-    #     :param change_path:
-    #         Determines if the agent needs to calculate a new route.
-    #     '''
-    #     old_pos = self.pos
-    #     if change_path or (len(self._path) > 1 and not self.model.grid.is_cell_empty(self._path[0])):
-    #         new_path = self._reroute()
-    #         if len(new_path) == 0:
-    #             return
-    #         if len(new_path) - len(self._path) > self.importance_threshold:
-    #             self._update_direction(old_pos, self._path[0])
-    #             self._play_observational_game(len(self._path) - len(new_path))
-    #             self.stat_dict['obs_game_init'] += 1
-    #             self._handle_collision()
-    #         self._path = new_path
-
 
     def _update_direction(self, old_pos, new_pos):
         '''Changes agent to face it's movement direction.'''

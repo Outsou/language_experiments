@@ -9,7 +9,7 @@ from ui_styling import agent_portrayal, PORTRAYALS, AGENT_TYPES
 agent_type = UserSettableParameter('choice', 'Agent type', value=sorted(AGENT_TYPES.keys(), reverse=True)[0],
                                    choices=sorted(AGENT_TYPES.keys()))
 
-grid = CanvasGrid(agent_portrayal, 10, 18, 200, 360)
+grid = CanvasGrid(agent_portrayal, 10, 20, 200, 400)
 
 server = ModularServer(CoopaModel,
                        [grid],

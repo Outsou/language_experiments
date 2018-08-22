@@ -15,7 +15,7 @@ class CoopaModel(Model):
 
     def __init__(self, play_guessing):
         width = 10
-        height = 18
+        height = 20
         self.running = True
         self.grid = SingleGrid(width, height, False)  # True=toroidal
         self.schedule = RandomActivation(self)
@@ -31,45 +31,55 @@ class CoopaModel(Model):
 
         # Spawn drop points
         drop_point = DropPoint(2, self, 'orange')
-        self.grid.place_agent(drop_point, (1, 2))
+        self.grid.place_agent(drop_point, (1, 1))
         self.drop_points.append(drop_point)
 
         drop_point = DropPoint(3, self, 'pink')
-        self.grid.place_agent(drop_point, (8, 2))
+        self.grid.place_agent(drop_point, (8, 1))
         self.drop_points.append(drop_point)
 
         drop_point = DropPoint(4, self, 'blue')
-        self.grid.place_agent(drop_point, (1, 15))
+        self.grid.place_agent(drop_point, (1, 18))
         self.drop_points.append(drop_point)
 
         drop_point = DropPoint(5, self, 'red')
-        self.grid.place_agent(drop_point, (8, 15))
+        self.grid.place_agent(drop_point, (8, 18))
         self.drop_points.append(drop_point)
 
         # Spawn resources
-        resource = Resource(6, self, 'red', {'red': (1, 3), 'blue': (8, 3)})
-        self.grid.place_agent(resource, (1, 3))
+        resource = Resource(6, self, 'red', {'red': (1, 4), 'blue': (8, 4)})
+        self.grid.place_agent(resource, (1, 4))
         self.resources.append(resource)
 
-        resource = Resource(7, self, 'pink', {'pink': (1, 14), 'orange': (8, 14)})
-        self.grid.place_agent(resource, (1, 14))
+        resource = Resource(7, self, 'pink', {'pink': (1, 15), 'orange': (8, 15)})
+        self.grid.place_agent(resource, (1, 15))
         self.resources.append(resource)
 
         self.map = build_map(self.grid, (Wall, DropPoint))
-        self.map[1][3] = 1
-        self.map[8][3] = 1
-        self.map[1][14] = 1
-        self.map[8][14] = 1
+        self.map[1][4] = 1
+        self.map[8][4] = 1
+        self.map[1][15] = 1
+        self.map[8][15] = 1
 
         # Spawn agents
         a = AgentBasic(0, self, 'green', guessing_game=play_guessing)
         self.schedule.add(a)
-        self.grid.position_agent(a, 4, 2)
+        self.grid.position_agent(a, 4, 3)
         self.agents.append(a)
 
         a = AgentBasic(1, self, 'black', guessing_game=play_guessing)
         self.schedule.add(a)
-        self.grid.position_agent(a, 4, 15)
+        self.grid.position_agent(a, 4, 16)
+        self.agents.append(a)
+
+        a = AgentBasic(8, self, 'brown', guessing_game=play_guessing)
+        self.schedule.add(a)
+        self.grid.position_agent(a, 7, 16)
+        self.agents.append(a)
+
+        a = AgentBasic(8, self, 'red', guessing_game=play_guessing)
+        self.schedule.add(a)
+        self.grid.position_agent(a, 7, 3)
         self.agents.append(a)
 
     def step(self):
