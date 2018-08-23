@@ -7,17 +7,14 @@ from objects import Resource, DropPoint, Wall
 from mesa.datacollection import DataCollector
 from agent import AgentBasic
 from search.util import build_map
-import random
 
 
 class CoopaModel(Model):
     """A model with some number of agents."""
 
     def __init__(self, play_guessing):
-        width = 10
-        height = 20
         self.running = True
-        self.grid = SingleGrid(width, height, False)  # True=toroidal
+        self.grid = SingleGrid(Layout.width, Layout.height, False)  # True=toroidal
         self.schedule = RandomActivation(self)
         self.message_dispatcher = MessageDispatcher()
         self.layout = Layout()
@@ -77,10 +74,10 @@ class CoopaModel(Model):
         self.grid.position_agent(a, 7, 16)
         self.agents.append(a)
 
-        a = AgentBasic(8, self, 'red', guessing_game=play_guessing)
-        self.schedule.add(a)
-        self.grid.position_agent(a, 7, 3)
-        self.agents.append(a)
+        # a = AgentBasic(8, self, 'red', guessing_game=play_guessing)
+        # self.schedule.add(a)
+        # self.grid.position_agent(a, 7, 3)
+        # self.agents.append(a)
 
     def step(self):
         self.schedule.step()

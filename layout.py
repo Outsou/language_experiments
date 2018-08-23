@@ -2,6 +2,9 @@ from objects import Wall
 import random
 
 class Layout:
+    width = 10
+    height = 20
+
     def draw_room_from_point (self, grid, x, y, size):
         len =  size
         for i in range(len):

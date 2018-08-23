@@ -29,7 +29,7 @@ class AgentBasic(Agent):
         self.heading_x = 1
         self.heading_y = 0
         self.importance_threshold = 8
-        self.discriminator = Discriminator([(0, 9), (0, 17)])
+        self.discriminator = Discriminator([(0, model.grid.width - 1), (0, model.grid.height - 1)])
         self.last_disc_form = None
         self.avoidable_objs = None
         self.last_discriminator = None
