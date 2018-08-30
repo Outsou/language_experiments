@@ -116,8 +116,6 @@ class AgentBasic(Agent):
                     self._play_observational_game(own_utility, neighbor)
                     self._handle_collision()
                 self._path = own_reroute
-            # elif len(own_reroute) == 0 and len(neighbor_reroute) == 0:
-            #     self._change_destination()
             else:
                 neighbor.start_observational_game(self, neighbor_reroute, neighbor_utility)
 
@@ -166,7 +164,7 @@ class AgentBasic(Agent):
             self._state= 'no_resource'
 
     def _pick_or_drop(self):
-        '''Determines whether to pick up or drop a resrouce.'''
+        '''Determines whether to pick up or drop a resource.'''
         neighbors = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False, radius=1)
         if self._resource_count < 1:
             self._pick(neighbors)
