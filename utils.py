@@ -1,4 +1,7 @@
 import numpy as np
+from graphviz import Graph, nohtml
+import operator
+
 
 def _line_special_cases(x1, y1, x2, y2, dx, dy):
     # Check zero length
@@ -23,6 +26,7 @@ def _line_special_cases(x1, y1, x2, y2, dx, dy):
         return diagonal_points
 
     return None
+
 
 def get_line(start, end):
     # Setup initial conditions
@@ -94,9 +98,57 @@ def get_line(start, end):
     return cells
 
 
-def print_state(state):
-    for i in range(len(state[0])):
+def get_neighborhood_str(neighborhood):
+    str = ''
+    for i in range(len(neighborhood[0])):
         row = ''
-        for j in range(len(state[0])):
-            row += state[j][i]
-        print(row)
+        for j in range(len(neighborhood[0])):
+            row += neighborhood[j][i]
+        str += row + '\n'
+    return str
+
+
+def create_graphs(discriminator, memory, format='png'):
+    def create_node(g, i, node):
+        if node not in memory.mf_dict:
+            best_forms = []
+        else:
+            forms = [x for x in memory.mf_dict[node].items()]
+            forms.sort(key=operator.itemgetter(1), reverse=True)
+            best_forms = []
+            best_score = forms[0][1]
+            while len(forms) > 0 and forms[0][1] == best_score:
+                best_forms.append(forms.pop(0))
+        form_counts = ['{} {}/{}'.format(x[0], memory.meaning_stats[node]['use_counts'][x[0]], x[1])
+                       if x[0] in memory.meaning_stats[node]['use_counts']
+                       else '{} {}/{}'.format(x[0], 0, x[1])
+                       for x in best_forms]
+        form = ', '.join(form_counts)
+        g.node(str(i), nohtml('{} {}'.format(form, node.range)))
+
+    graphs = []
+
+    for disc_tree in discriminator.trees:
+        g = Graph('g', node_attr={'shape': 'record', 'height': '.1'}, format=format)
+
+        i = 0
+        nodes = [(disc_tree.root, i)]
+        create_node(g, i, disc_tree.root)
+        # g.node(str(i), nohtml(str(disc_tree.root.range)))
+        while len(nodes) > 0:
+            child_nodes = []
+            for node in nodes:
+                if node[0].child1 is not None:
+                    i += 1
+                    create_node(g, i, node[0].child1)
+                    g.edge(str(node[1]), str(i))
+                    child_nodes.append((node[0].child1, i))
+                if node[0].child2 is not None:
+                    i += 1
+                    create_node(g, i, node[0].child2)
+                    g.edge(str(node[1]), str(i))
+                    child_nodes.append((node[0].child2, i))
+            nodes = child_nodes
+
+        graphs.append(g)
+    return graphs
