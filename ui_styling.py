@@ -1,6 +1,6 @@
 from agent import AgentBasic
 from objects import Wall
-from objects import Resource, DropPoint
+from objects import Resource, DropPoint, Shelf, ActionCenter
 
 
 PORTRAYALS = {
@@ -14,6 +14,20 @@ PORTRAYALS = {
     },
     Wall: {
         "Color": "grey",
+        "Layer": 0,
+        "w": 1,
+        "h": 1,
+        "Shape": "rect"
+    },
+    Shelf: {
+        "Color": "brown",
+        "Layer": 0,
+        "w": 1,
+        "h": 1,
+        "Shape": "rect"
+    },
+    ActionCenter: {
+        "Color": "red",
         "Layer": 0,
         "w": 1,
         "h": 1,

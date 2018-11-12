@@ -30,3 +30,19 @@ class DropPoint(Agent):
 
     def add_resources(self, amount):
         self._resource_count += 1
+
+class Shelf(Agent):
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+
+class ActionCenter(Agent):
+    def __init__(self, unique_id, model, shelves):
+        super().__init__(unique_id, model)
+        self._shelves = shelves
+        self._items = 0
+
+    def drop_item(self):
+        self._items += 1
+
+    def get_mission(self):
+        return random.choice(self._shelves)

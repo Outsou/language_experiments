@@ -1,40 +1,39 @@
-from objects import Wall
-import random
+from objects import Wall, Shelf, ActionCenter
+from agent import AgentBasic
+
 
 class Layout:
-    width = 10
-    height = 20
+    width = 7
+    height = 13
 
-    def draw_room_from_point (self, grid, x, y, size):
-        len =  size
-        for i in range(len):
-            grid.place_agent(Wall(i, self), (x+i, y))
-            grid.place_agent(Wall(i, self), (x+i, y-len))
-            grid.place_agent(Wall(i, self), (x, y-i))
-            grid.place_agent(Wall(i, self), (x+len, y-i))
-
-    def draw_block_from_point (self, grid, x, y, width, height):
+    def draw_block_from_point (self, grid, x, y, width, height, cls):
+        cells = []
         for w in range(width):
             for h in range(height):
-                grid.place_agent(Wall(w+h, self), (x+w, y+h))
+                cell = (x+w, y+h)
+                cells.append(cell)
+                grid.place_agent(cls(w+h, self), cell)
+        return cells
 
+    def create_world(self, model, play_guessing):
+        # Side walls
+        self.draw_block_from_point(model.grid, 0, 1, 1, 11, Wall)
+        self.draw_block_from_point(model.grid, 6, 1, 1, 11, Wall)
 
-    def draw(self, grid):
-        # Middle left walls
-        self.draw_block_from_point(grid, 1, 5, 2, 10)
-        # self.draw_block_from_point(grid, 1, 6, 1, 8)
+        # Top and bottom
+        self.draw_block_from_point(model.grid, 0, 0, 7, 1, Wall)
+        self.draw_block_from_point(model.grid, 0, 12, 7, 1, Wall)
 
-        # Middle middle wall
-        self.draw_block_from_point(grid, 4, 5, 2, 10)
+        shelf_cells = []
 
-        # Middle right walls
-        self.draw_block_from_point(grid, 7, 5, 2, 10)
-        # self.draw_block_from_point(grid, 8, 6, 1, 8)
+        # Shelves
+        shelf_cells += self.draw_block_from_point(model.grid, 1, 1, 1, 8, Shelf)
+        shelf_cells += self.draw_block_from_point(model.grid, 3, 1, 1, 8, Shelf)
+        shelf_cells += self.draw_block_from_point(model.grid, 5, 1, 1, 8, Shelf)
 
-        # Surrounding walls
-        self.draw_block_from_point(grid, 0, 1, 1, 18)
-        self.draw_block_from_point(grid, 9, 1, 1, 18)
-        self.draw_block_from_point(grid, 0, 0, 10, 1)
-        self.draw_block_from_point(grid, 0, 19, 10, 1)
-        # self.draw_block_from_point(grid, 2, 1, 6, 1)
-        # self.draw_block_from_point(grid, 2, 18, 6, 1)
+        # Action center
+        action_center = ActionCenter(0, model, shelf_cells)
+        model.grid.place_agent(action_center, (3, 11))
+
+        return {'action_center': action_center}
+

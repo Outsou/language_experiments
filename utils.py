@@ -100,7 +100,7 @@ def get_line(start, end):
 
 def get_neighborhood_str(neighborhood):
     str = ''
-    for i in range(len(neighborhood[0])):
+    for i in reversed(range(len(neighborhood[0]))):
         row = ''
         for j in range(len(neighborhood[0])):
             row += neighborhood[j][i]

@@ -3,10 +3,11 @@ from mesa.time import RandomActivation
 from mesa.space import SingleGrid
 from message_dispatcher import MessageDispatcher
 from layout import Layout
-from objects import Resource, DropPoint, Wall
+from objects import Wall, Shelf, ActionCenter
 from mesa.datacollection import DataCollector
-from agent import AgentBasic
 from search.util import build_map
+from agent import AgentBasic
+import random
 
 
 class CoopaModel(Model):
@@ -19,107 +20,53 @@ class CoopaModel(Model):
         self.message_dispatcher = MessageDispatcher()
         self.layout = Layout()
         self.datacollector = DataCollector()  # An agent attribute
-        self.drop_points = []
-        self.resources = []
-        self.move_queue = []
+        # self.move_queue = []
         self.agents = []
+        self.action_center = self.layout.create_world(self, play_guessing)['action_center']
+        self.map = build_map(self.grid, (Wall, Shelf, ActionCenter))
+        self.not_moved = []
 
-        self.layout.draw(self.grid)
-
-        # Spawn drop points
-        drop_point = DropPoint(2, self, 'orange')
-        self.grid.place_agent(drop_point, (1, 1))
-        self.drop_points.append(drop_point)
-
-        drop_point = DropPoint(3, self, 'pink')
-        self.grid.place_agent(drop_point, (8, 1))
-        self.drop_points.append(drop_point)
-
-        drop_point = DropPoint(4, self, 'blue')
-        self.grid.place_agent(drop_point, (1, 18))
-        self.drop_points.append(drop_point)
-
-        drop_point = DropPoint(5, self, 'red')
-        self.grid.place_agent(drop_point, (8, 18))
-        self.drop_points.append(drop_point)
-
-        # Spawn resources
-        resource = Resource(6, self, 'red', {'red': (1, 4), 'blue': (8, 4)})
-        self.grid.place_agent(resource, (1, 4))
-        self.resources.append(resource)
-
-        resource = Resource(7, self, 'pink', {'pink': (1, 15), 'orange': (8, 15)})
-        self.grid.place_agent(resource, (1, 15))
-        self.resources.append(resource)
-
-        self.map = build_map(self.grid, (Wall, DropPoint))
-        self.map[1][4] = 1
-        self.map[8][4] = 1
-        self.map[1][15] = 1
-        self.map[8][15] = 1
-
-        # Spawn agents
+        # Agents
+        self.agents = []
         a = AgentBasic(0, self, 'green', guessing_game=play_guessing)
         self.schedule.add(a)
-        self.grid.position_agent(a, 4, 3)
+        self.grid.position_agent(a, 4, 9)
         self.agents.append(a)
 
-        a = AgentBasic(1, self, 'black', guessing_game=play_guessing)
+        a = AgentBasic(0, self, 'blue', guessing_game=play_guessing)
         self.schedule.add(a)
-        self.grid.position_agent(a, 4, 16)
+        self.grid.position_agent(a, 2, 9)
         self.agents.append(a)
 
-        a = AgentBasic(8, self, 'brown', guessing_game=play_guessing)
+        a = AgentBasic(0, self, 'black', guessing_game=play_guessing)
         self.schedule.add(a)
-        self.grid.position_agent(a, 7, 16)
+        self.grid.position_agent(a, 3, 9)
         self.agents.append(a)
 
-        # a = AgentBasic(8, self, 'red', guessing_game=play_guessing)
-        # self.schedule.add(a)
-        # self.grid.position_agent(a, 7, 3)
-        # self.agents.append(a)
+        a = AgentBasic(0, self, 'purple', guessing_game=play_guessing)
+        self.schedule.add(a)
+        self.grid.position_agent(a, 5, 9)
+        self.agents.append(a)
 
     def step(self):
         self.schedule.step()
-        # self.move_agents()
+
+        self.not_moved = [a for a in self.agents]
+        random.shuffle(self.not_moved)
+
+        while len(self.not_moved) > 0:
+            for agent in self.not_moved:
+                if agent._move():
+                    self.not_moved.remove(agent)
+
         self.finish_step()
+
+    def has_agent_moved(self, agent):
+        return not agent in self.not_moved
 
     def finish_step(self):
         for agent in self.agents:
             agent.finish_step()
 
-    # def move_agents(self):
-    #     if len(self.move_queue) > 1:
-    #         A, B, agent1 = self.move_queue[0]
-    #         C, D, agent2 = self.move_queue[1]
-    #
-    #         a1_reroute = agent1.get_reroute_length()
-    #         a2_reroute = agent2.get_reroute_length()
-    #
-    #         if a1_reroute <= a2_reroute:
-    #             agents = [agent1, agent2]
-    #         else:
-    #             agents = [agent2, agent1]
-    #
-    #         if a1_reroute == a2_reroute:
-    #             random.shuffle(agents)
-    #
-    #         if A == D and B == C:
-    #             agents[0].finish_move(True)
-    #             agents[1].finish_move(False)
-    #         elif  B == D:
-    #             agents[1].finish_move(False)
-    #             agents[0].finish_move(True)
-    #         else:
-    #             if B == C:
-    #                 agent2.finish_move(False)
-    #                 agent1.finish_move(False)
-    #             else:
-    #                 agent1.finish_move(False)
-    #                 agent2.finish_move(False)
-    #     elif len(self.move_queue) == 1:
-    #         self.move_queue[0][2].finish_move(False)
-    #     self.move_queue = []
-
-    def queue_move(self, start, end, agent):
-        self.move_queue.append((start, end, agent))
+    # def queue_move(self, start, end, agent):
+    #     self.move_queue.append((start, end, agent))
