@@ -20,36 +20,29 @@ class AgentBasic(Agent):
         self.memory = MFAssociationMemory()
         self.heading_x = 1
         self.heading_y = 0
-        self.importance_threshold = 1
         self.discriminator = Discriminator([(0, model.grid.width - 1), (0, model.grid.height - 1)])
-        self.last_disc_form = None
-        self.avoidable_objs = None
-        self.last_discriminator = None
-        self.last_meaning = None
         self.stat_dict = {'obs_game_init': 0,
                           'items_delivered': 0,
                           'disc_trees': []}
         self.map = np.copy(self.model.map)
-        self.collided = None
         self._has_item = False
         self._backing_off = False
         self._backing_info = None
         self._age = 0
+        self.last_broadcast = None
+        # self.importance_threshold = 1
+        # self.last_disc_form = None
+        # self.avoidable_objs = None
+        # self.last_discriminator = None
+        # self.last_meaning = None
+        # self.collided = None
 
-    def _update_map(self):
-        '''Adds blockages to the maps for cells the agent thinks should be avoided.'''
-        map = np.copy(self.model.map)
-        if self.avoidable_objs is not None:
-            for obj in self.avoidable_objs:
-                map[obj] = 1
-        self.map = map
-
-    def _get_highest_meaning_on_path(self):
+    def _get_highest_meaning_on_path(self, path):
         '''Finds out the most important thing on the agent's path.
         Importance is determined by absolute value of a meaning's perceived utility.'''
         max_meaning = None
         max_utility = -math.inf
-        for pos in self._path:
+        for pos in path:
             meaning = self._get_neighborhood(pos)
             utility = self.memory.get_utility(meaning)
             if utility is not None and abs(utility) > max_utility:
@@ -57,33 +50,8 @@ class AgentBasic(Agent):
                 max_meaning = meaning
         return max_meaning
 
-    def start_observational_game(self, hearer, reroute, utility):
-        if abs(utility) >= self.importance_threshold:
-            self._play_observational_game(utility, hearer)
-            self._handle_collision()
-        self._path = reroute
-
-    def _game_check(self, neighbor):
-        if len(neighbor._path) > 0 and neighbor._path[0] == self.pos:
-            own_reroute = self._reroute()
-            neighbor_reroute = neighbor._reroute()
-
-            # Neither can reroute
-            if len(own_reroute) == len(neighbor_reroute) == 0:
-                pass
-
-            # own_utility = len(self._path) - len(own_reroute)
-            # neighbor_utility = len(neighbor._path) - len(neighbor_reroute)
-            #
-            # if len(own_reroute) > 0 and own_utility >= neighbor_utility:
-            #     if abs(own_utility) >= self.importance_threshold:
-            #         self._play_observational_game(own_utility, neighbor)
-            #         self._handle_collision()
-            #     self._path = own_reroute
-            # else:
-            #     neighbor.start_observational_game(self, neighbor_reroute, neighbor_utility)
-
     def _get_free_neighbors(self):
+        '''Returns the coordinates of the cells around the agent that are empty.'''
         free = []
         x, y = self.pos
         for cell in [(x, y - 1), (x, y + 1), (x - 1, y), (x + 1, y)]:
@@ -92,12 +60,13 @@ class AgentBasic(Agent):
         return free
 
     def _handle_backing_move(self):
+        '''Used to move when the agent is backing, i.e. giving way to another agent.'''
         neighbors = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False, radius=1)
         self.map = np.copy(self.model.map)
         for neighbor in neighbors:
             x, y = neighbor.pos
             self.map[x][y] = 1
-        path = self._calculate_path()
+        path = self._calculate_path(self.map)
         if len(path) > 0:
             # Route is clear, stop backing
             self._path = path
@@ -115,6 +84,8 @@ class AgentBasic(Agent):
         return False
 
     def _handle_normal_move(self):
+        '''Used to move normally, i.e. when the agent is not giving way to another agent.
+        Starts backing movement and an observational game if needed.'''
         x, y = self._path[0]
         if self.model.grid.is_cell_empty(self._path[0]):
             # Path is free, just move
@@ -124,6 +95,7 @@ class AgentBasic(Agent):
             self._update_direction(old_pos, self.pos)
             return True
 
+        # Path is not free
         neighbor = self.model.grid[x][y]
         if type(neighbor) is AgentBasic:
             reroute = self._reroute()
@@ -144,8 +116,8 @@ class AgentBasic(Agent):
                 return True
         return False
 
-    def _move(self):
-        '''Moves the agent and initiates observational game if needed.'''
+    def move(self):
+        '''Moves the agent.'''
         if len(self._path) > 1:
             if self._backing_off:
                 return self._handle_backing_move()
@@ -184,34 +156,6 @@ class AgentBasic(Agent):
         if len(disc_objects) > 0:
             self.avoidable_objs = disc_objects
             # self._update_map()
-
-    def _handle_collision(self):
-        '''Handles learning when failure in communication has resulted in a collision.'''
-        if self.last_disc_form is None:
-            return
-
-        meaning = self._get_neighborhood(self.pos)
-        if meaning != self.last_meaning:
-            return
-
-        self.collided = True
-
-        objects = self._get_objects(meaning)
-        relevant_discriminators = self.discriminator.get_relevant_discriminators(self.pos, objects)
-        if self.last_discriminator is not None:
-            if self.last_discriminator in relevant_discriminators:
-                relevant_discriminators.remove(self.last_discriminator)
-            self.memory.weaken_association(self.last_discriminator, self.last_disc_form)
-
-        if len(relevant_discriminators) < 1:
-            self.discriminator.grow()
-            return
-
-        relevant_discriminator = random.choice(relevant_discriminators)
-
-        if not self.memory.is_associated(relevant_discriminator, self.last_disc_form):
-            self.memory.create_association(relevant_discriminator, self.last_disc_form)
-        self.memory.strengthen_meaning(relevant_discriminator, self.last_disc_form)
 
     def _get_neighborhood(self, pos):
         '''Returns the 3x3 grid around the agent.'''
@@ -253,24 +197,6 @@ class AgentBasic(Agent):
         if discriminator is None:
             self.discriminator.grow()
         return discriminator
-
-    def _play_guessing_game(self, meaning):
-        '''Start the guessing game as the speaker.'''
-        meaning_form = self.memory.get_form(meaning)
-        objects = self._get_objects(meaning)
-        topic_objects = [obj for obj in objects if obj in self._path]
-        discriminator = self._discriminate(objects, topic_objects)
-        if discriminator is None:
-            return
-        disc_form = self.memory.get_form(discriminator)
-        if disc_form is None:
-            disc_form = self.memory.invent_form()
-            self.memory.create_association(discriminator, disc_form)
-        self.memory.report_form_use(discriminator, disc_form)
-        # self.memory.strengthen_form(discriminator, disc_form)
-        for agent in self.model.agents:
-            if agent != self:
-                agent.guessing_transmit(meaning_form, disc_form)
 
     def _play_observational_game(self, hearer):
         '''Start the observational game as the speaker.'''
@@ -318,14 +244,49 @@ class AgentBasic(Agent):
         '''Gets the length of the new route if the agent has to reroute.'''
         return len(self._reroute())
 
-    def _calculate_path(self):
-        return astar(self.map, self.pos, self._destination, False)[1:]
+    def _calculate_path(self, map):
+        return astar(map, self.pos, self._destination, False)[1:]
+
+    def _ask_if_path_free(self, path):
+        meaning = self._get_highest_meaning_on_path(path)
+        place_form = self.memory.get_form(meaning)
+        objects = self._get_objects(meaning)
+        topic_objects = [obj for obj in objects if obj in self._path]
+        discriminator = self._discriminate(objects, topic_objects)
+        if discriminator is not None:
+            disc_form = self.memory.get_form(discriminator)
+            if disc_form is None:
+                disc_form = self.memory.invent_form()
+                self.memory.create_association(discriminator, disc_form)
+            self.memory.report_form_use(discriminator, disc_form)
+            return self.model.ask_broadcast(place_form, disc_form)
+
+    def _broadcast_ask(self):
+        option1 = self._calculate_path(self.map)
+        map = np.copy(self.map)
+        map[option1[-2]] = 1
+        option2 = self._calculate_path(map)
+
+        if len(option2) == 0:
+            # Only one option
+            return option1
+
+        # First ask if option1 is free
+        if self._ask_if_path_free(option1):
+            return option1
+        # If option1 wasn't free, check option2
+        if self._ask_if_path_free(option2):
+            return option2
+
+        # If no path was free, use option1
+        return option1
+        # self.memory.strengthen_form(discriminator, disc_form)
 
     def step(self):
         self._age += 1
         self.map = np.copy(self.model.map)
         if self._path is None or len(self._path) == 0:
-            self._path = self._calculate_path()
+            self._path = self._calculate_path(self.map)
 
     def finish_step(self):
         self.stat_dict['disc_trees'].append(create_graphs(self.discriminator, self.memory))
@@ -339,15 +300,97 @@ class AgentBasic(Agent):
                 if self._has_item:
                     self.stat_dict['items_delivered'] += 1
                 self._has_item = False
+                # path = self._broadcast_ask()
+                # self._path = path
+                self._path = self._calculate_path(self.map)
             else:
                 self._destination = self.model.action_center.pos
                 self._has_item = True
-            self._path = self._calculate_path()
+                self._path = self._calculate_path(self.map)
             # if self._guessing_game:
             #     meaning = self._get_highest_meaning_on_path()
             #     if meaning is not None:
             #         self._play_guessing_game(meaning)
 
+    # def _update_map(self):
+    #     '''Adds blockages to the maps for cells the agent thinks should be avoided.'''
+    #     map = np.copy(self.model.map)
+    #     if self.avoidable_objs is not None:
+    #         for obj in self.avoidable_objs:
+    #             map[obj] = 1
+    #     self.map = map
+
+    # def start_observational_game(self, hearer, reroute, utility):
+    #     if abs(utility) >= self.importance_threshold:
+    #         self._play_observational_game(utility, hearer)
+    #         self._handle_collision()
+    #     self._path = reroute
+
+    # def _game_check(self, neighbor):
+    #     if len(neighbor._path) > 0 and neighbor._path[0] == self.pos:
+    #         own_reroute = self._reroute()
+    #         neighbor_reroute = neighbor._reroute()
+    #
+    #         # Neither can reroute
+    #         if len(own_reroute) == len(neighbor_reroute) == 0:
+    #             pass
+    #
+    #         # own_utility = len(self._path) - len(own_reroute)
+    #         # neighbor_utility = len(neighbor._path) - len(neighbor_reroute)
+    #         #
+    #         # if len(own_reroute) > 0 and own_utility >= neighbor_utility:
+    #         #     if abs(own_utility) >= self.importance_threshold:
+    #         #         self._play_observational_game(own_utility, neighbor)
+    #         #         self._handle_collision()
+    #         #     self._path = own_reroute
+    #         # else:
+    #         #     neighbor.start_observational_game(self, neighbor_reroute, neighbor_utility)
+
+    # def _handle_collision(self):
+    #     '''Handles learning when failure in communication has resulted in a collision.'''
+    #     if self.last_disc_form is None:
+    #         return
+    #
+    #     meaning = self._get_neighborhood(self.pos)
+    #     if meaning != self.last_meaning:
+    #         return
+    #
+    #     self.collided = True
+    #
+    #     objects = self._get_objects(meaning)
+    #     relevant_discriminators = self.discriminator.get_relevant_discriminators(self.pos, objects)
+    #     if self.last_discriminator is not None:
+    #         if self.last_discriminator in relevant_discriminators:
+    #             relevant_discriminators.remove(self.last_discriminator)
+    #         self.memory.weaken_association(self.last_discriminator, self.last_disc_form)
+    #
+    #     if len(relevant_discriminators) < 1:
+    #         self.discriminator.grow()
+    #         return
+    #
+    #     relevant_discriminator = random.choice(relevant_discriminators)
+    #
+    #     if not self.memory.is_associated(relevant_discriminator, self.last_disc_form):
+    #         self.memory.create_association(relevant_discriminator, self.last_disc_form)
+    #     self.memory.strengthen_meaning(relevant_discriminator, self.last_disc_form)
+
+    # def _play_guessing_game(self, meaning):
+    #     '''Start the guessing game as the speaker.'''
+    #     meaning_form = self.memory.get_form(meaning)
+    #     objects = self._get_objects(meaning)
+    #     topic_objects = [obj for obj in objects if obj in self._path]
+    #     discriminator = self._discriminate(objects, topic_objects)
+    #     if discriminator is None:
+    #         return
+    #     disc_form = self.memory.get_form(discriminator)
+    #     if disc_form is None:
+    #         disc_form = self.memory.invent_form()
+    #         self.memory.create_association(discriminator, disc_form)
+    #     self.memory.report_form_use(discriminator, disc_form)
+    #     # self.memory.strengthen_form(discriminator, disc_form)
+    #     for agent in self.model.agents:
+    #         if agent != self:
+    #             agent.guessing_transmit(meaning_form, disc_form)
 
 # The symbols used to create the 3x3 neighborhood grid.
 SYMBOLS = {
