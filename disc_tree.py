@@ -61,18 +61,18 @@ class Discriminator:
             self.trees.append(DiscriminationTree(ranges[i], i))
 
     def discriminate(self, all_objects, topic_objects):
-        '''Returns the discriminator that perfectly discriminates topic objects from all objects.'''
+        '''Returns the categoriser that perfectly discriminates topic objects from all objects.'''
         topic_set = set(topic_objects)
         for i in range(len(self.trees)):
             discrimination_dict = {}
             for obj in all_objects:
-                discriminator = self.trees[i].discriminate(obj[i])
-                if discriminator not in discrimination_dict:
-                    discrimination_dict[discriminator] = set()
-                discrimination_dict[discriminator].add(obj)
-            for discriminator, objs in discrimination_dict.items():
+                categoriser = self.trees[i].discriminate(obj[i])
+                if categoriser not in discrimination_dict:
+                    discrimination_dict[categoriser] = set()
+                discrimination_dict[categoriser].add(obj)
+            for categoriser, objs in discrimination_dict.items():
                 if objs == topic_set:
-                    return discriminator
+                    return categoriser
         # Discrimination failed :(
         return None
 

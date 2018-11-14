@@ -68,7 +68,12 @@ class CoopaModel(Model):
         for agent in self.agents:
             agent.finish_step()
 
-    def ask_broadcast(self, place_form, disc_form):
+    def broadcast_question(self, place_form, disc_form, asker):
+        '''Returns False if even one agent opposes the plan. Otherwise True.'''
+        for agent in self.agents:
+            if agent is not asker:
+                if not agent.ask_if_free(place_form, disc_form):
+                    return False
         return True
 
     # def queue_move(self, start, end, agent):

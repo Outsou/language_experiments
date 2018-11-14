@@ -29,7 +29,7 @@ class AgentBasic(Agent):
         self._backing_off = False
         self._backing_info = None
         self._age = 0
-        self.last_broadcast = None
+        self._last_broadcast = None
         # self.importance_threshold = 1
         # self.last_disc_form = None
         # self.avoidable_objs = None
@@ -125,38 +125,6 @@ class AgentBasic(Agent):
                 return self._handle_normal_move()
         return True
 
-    def observational_transmit(self, form):
-        '''Speaker uses this to transmit form to hearer in the observational game.'''
-        meaning = self._get_neighborhood(self.pos)
-        self.memory.strengthen_meaning(meaning, form)
-
-    def guessing_transmit(self, meaning_form, disc_form):
-        '''Speaker uses this to transmit forms to the hearer in the guessing game.'''
-        if self.collided is False and self.last_discriminator is not None and self.avoidable_objs is not None:
-            self.memory.strengthen_meaning(self.last_discriminator, self.last_disc_form)
-
-        self.last_disc_form = disc_form
-        self.last_discriminator = None
-        self.avoidable_objs = None
-        self.collided = False
-        meaning = self.memory.get_meaning(meaning_form)
-        self.last_meaning = meaning
-        if meaning is None:
-            return
-        discriminator = self.memory.get_meaning(disc_form)
-        if discriminator is None:
-            return
-        self.last_discriminator = discriminator
-        objects = self._get_objects(meaning)
-        disc_objects = []
-        low, high = discriminator.range
-        for obj in objects:
-            if low <= obj[discriminator.channel] <= high:
-                disc_objects.append(obj)
-        if len(disc_objects) > 0:
-            self.avoidable_objs = disc_objects
-            # self._update_map()
-
     def _get_neighborhood(self, pos):
         '''Returns the 3x3 grid around the agent.'''
         neighborhood = []
@@ -192,11 +160,35 @@ class AgentBasic(Agent):
         return objects
 
     def _discriminate(self, all_objects, topic_objects):
-        '''Finds a discriminator that can discriminate the topic objects from all objects.'''
-        discriminator = self.discriminator.discriminate(all_objects, topic_objects)
-        if discriminator is None:
+        '''Finds a categoriser that can discriminate the topic objects from all objects.'''
+        categoriser = self.discriminator.discriminate(all_objects, topic_objects)
+        if categoriser is None:
             self.discriminator.grow()
-        return discriminator
+        return categoriser
+
+    def observational_transmit(self, form):
+        '''Speaker uses this to transmit form to hearer in the observational game.'''
+        meaning = self._get_neighborhood(self.pos)
+        self.memory.strengthen_meaning(meaning, form)
+
+    def guessing_transmit(self, disc_form):
+        if self._last_broadcast is None or self._last_broadcast['categoriser'] is None:
+            return
+        current_place = self._get_neighborhood(self.pos)
+        if current_place != self._last_broadcast['place']:
+            return
+        self.memory.strengthen_meaning(self._last_broadcast['categoriser'], disc_form)
+
+    def _play_guessing_game(self, place_form, hearer):
+        if self._last_broadcast is None:
+            return
+        if self._last_broadcast['place_form'] is not place_form:
+            return
+        categoriser = self._last_broadcast['categoriser']
+        low, high = categoriser.range
+        if not low <= self.pos[categoriser.channel] <= high:
+            return
+        hearer.guessing_transmit(self._last_broadcast['disc_form'])
 
     def _play_observational_game(self, hearer):
         '''Start the observational game as the speaker.'''
@@ -209,6 +201,8 @@ class AgentBasic(Agent):
         self.memory.report_form_use(meaning, form)
         self.memory.strengthen_form(meaning, form)
         hearer.observational_transmit(form)
+        if self._guessing_game:
+            self._play_guessing_game(form, hearer)
         return meaning
 
     def _reroute(self):
@@ -247,36 +241,81 @@ class AgentBasic(Agent):
     def _calculate_path(self, map):
         return astar(map, self.pos, self._destination, False)[1:]
 
-    def _ask_if_path_free(self, path):
-        meaning = self._get_highest_meaning_on_path(path)
-        place_form = self.memory.get_form(meaning)
-        objects = self._get_objects(meaning)
-        topic_objects = [obj for obj in objects if obj in self._path]
-        discriminator = self._discriminate(objects, topic_objects)
-        if discriminator is not None:
-            disc_form = self.memory.get_form(discriminator)
+    def ask_if_free(self, place_form, disc_form):
+        '''Used to ask an agent if a place is free.'''
+        place = self.memory.get_meaning(place_form)
+        if place is None:
+            return True
+        categoriser = self.memory.get_meaning(disc_form)
+        if categoriser is None:
+            return True
+        objects = self._get_objects(place)
+        low, high = categoriser.range
+        for obj in objects:
+            if low <= obj[categoriser.channel] <= high:
+                if obj in self._path:
+                    return False
+        return True
+
+    def _get_forms_for_path(self, path):
+        place = self._get_highest_meaning_on_path(path)
+        if place is None:
+            return None, None, None, None
+        place_form = self.memory.get_form(place)
+        objects = self._get_objects(place)
+        topic_objects = [obj for obj in objects if obj in path]
+        categoriser = self._discriminate(objects, topic_objects)
+        if categoriser is not None:
+            disc_form = self.memory.get_form(categoriser)
             if disc_form is None:
                 disc_form = self.memory.invent_form()
-                self.memory.create_association(discriminator, disc_form)
-            self.memory.report_form_use(discriminator, disc_form)
-            return self.model.ask_broadcast(place_form, disc_form)
+                self.memory.create_association(categoriser, disc_form)
+        else:
+            disc_form = None
+        return place, place_form, categoriser, disc_form
 
-    def _broadcast_ask(self):
+    # def _ask_if_path_free(self, path):
+    #     '''Checks if a path is okay with other agents.'''
+    #     place, place_form, categoriser, disc_form = self._get_forms_for_path(path)
+    #     self.memory.report_form_use(categoriser, disc_form)
+    #     return self.model.broadcast_question(place_form, disc_form, self)
+
+    def _get_options(self):
         option1 = self._calculate_path(self.map)
         map = np.copy(self.map)
         map[option1[-2]] = 1
         option2 = self._calculate_path(map)
+        return option1, option2
+
+    def _broadcast_question(self):
+        '''Considers two shortest paths to the destination and returns the one that is okay with other agents.'''
+        option1, option2 = self._get_options()
 
         if len(option2) == 0:
             # Only one option
             return option1
 
         # First ask if option1 is free
-        if self._ask_if_path_free(option1):
-            return option1
+        place, place_form, categoriser, disc_form = self._get_forms_for_path(option1)
+        if not (place_form is None or categoriser is None or disc_form is None):
+            self.memory.report_form_use(categoriser, disc_form)
+            self._last_broadcast = {'place': place,
+                                    'place_form': place_form,
+                                    'categoriser': categoriser,
+                                    'disc_form': disc_form}
+            if self.model.broadcast_question(place_form, disc_form, self):
+                return option1
+
         # If option1 wasn't free, check option2
-        if self._ask_if_path_free(option2):
-            return option2
+        place, place_form, categoriser, disc_form = self._get_forms_for_path(option2)
+        if not (place_form is None or categoriser is None or disc_form is None):
+            self.memory.report_form_use(categoriser, disc_form)
+            self._last_broadcast = {'place': place,
+                                    'place_form': place_form,
+                                    'categoriser': categoriser,
+                                    'disc_form': disc_form}
+            if self.model.broadcast_question(place_form, disc_form, self):
+                return option2
 
         # If no path was free, use option1
         return option1
@@ -300,9 +339,10 @@ class AgentBasic(Agent):
                 if self._has_item:
                     self.stat_dict['items_delivered'] += 1
                 self._has_item = False
-                # path = self._broadcast_ask()
-                # self._path = path
-                self._path = self._calculate_path(self.map)
+                if self._guessing_game:
+                    self._path = self._broadcast_question()
+                else:
+                    self._path = self._calculate_path(self.map)
             else:
                 self._destination = self.model.action_center.pos
                 self._has_item = True
@@ -391,6 +431,33 @@ class AgentBasic(Agent):
     #     for agent in self.model.agents:
     #         if agent != self:
     #             agent.guessing_transmit(meaning_form, disc_form)
+
+    # def guessing_transmit(self, meaning_form, disc_form):
+    #     '''Speaker uses this to transmit forms to the hearer in the guessing game.'''
+    #     if self.collided is False and self.last_discriminator is not None and self.avoidable_objs is not None:
+    #         self.memory.strengthen_meaning(self.last_discriminator, self.last_disc_form)
+    #
+    #     self.last_disc_form = disc_form
+    #     self.last_discriminator = None
+    #     self.avoidable_objs = None
+    #     self.collided = False
+    #     meaning = self.memory.get_meaning(meaning_form)
+    #     self.last_meaning = meaning
+    #     if meaning is None:
+    #         return
+    #     discriminator = self.memory.get_meaning(disc_form)
+    #     if discriminator is None:
+    #         return
+    #     self.last_discriminator = discriminator
+    #     objects = self._get_objects(meaning)
+    #     disc_objects = []
+    #     low, high = discriminator.range
+    #     for obj in objects:
+    #         if low <= obj[discriminator.channel] <= high:
+    #             disc_objects.append(obj)
+    #     if len(disc_objects) > 0:
+    #         self.avoidable_objs = disc_objects
+    #         # self._update_map()
 
 # The symbols used to create the 3x3 neighborhood grid.
 SYMBOLS = {
