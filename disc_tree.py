@@ -76,22 +76,22 @@ class Discriminator:
         # Discrimination failed :(
         return None
 
-    def get_relevant_discriminators(self, disc_obj, all_objs):
-        '''Returns all discriminators that somehow discriminate the disc_obj from other objects.'''
-        relevant_discriminators = []
-        for i in range(len(self.trees)):
-            discriminators = {}
-            relevant_discriminator = None
-            for obj in all_objs:
-                discriminator = self.trees[i].discriminate(obj[i])
-                if discriminator not in discriminators:
-                    discriminators[discriminator] = []
-                discriminators[discriminator].append(obj)
-                if obj == disc_obj:
-                    relevant_discriminator = discriminator
-            if len(discriminators.keys()) > 1:
-                relevant_discriminators.append(relevant_discriminator)
-        return relevant_discriminators
+    # def get_relevant_discriminators(self, disc_obj, all_objs):
+    #     '''Returns all discriminators that somehow discriminate the disc_obj from other objects.'''
+    #     relevant_discriminators = []
+    #     for i in range(len(self.trees)):
+    #         discriminators = {}
+    #         relevant_discriminator = None
+    #         for obj in all_objs:
+    #             discriminator = self.trees[i].discriminate(obj[i])
+    #             if discriminator not in discriminators:
+    #                 discriminators[discriminator] = []
+    #             discriminators[discriminator].append(obj)
+    #             if obj == disc_obj:
+    #                 relevant_discriminator = discriminator
+    #         if len(discriminators.keys()) > 1:
+    #             relevant_discriminators.append(relevant_discriminator)
+    #     return relevant_discriminators
 
     def grow(self):
         '''Randomly selects a channel to grow.'''

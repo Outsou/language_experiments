@@ -56,7 +56,7 @@ class CoopaModel(Model):
 
         while len(self.not_moved) > 0:
             for agent in self.not_moved:
-                if agent._move():
+                if agent.move():
                     self.not_moved.remove(agent)
 
         self.finish_step()
@@ -67,6 +67,9 @@ class CoopaModel(Model):
     def finish_step(self):
         for agent in self.agents:
             agent.finish_step()
+
+    def ask_broadcast(self, place_form, disc_form):
+        return True
 
     # def queue_move(self, start, end, agent):
     #     self.move_queue.append((start, end, agent))
