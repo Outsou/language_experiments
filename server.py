@@ -16,4 +16,4 @@ grid = CanvasGrid(agent_portrayal, w, h, 20 * w, 20 * h)
 server = ModularServer(CoopaModel,
                        [grid],
                        "Coopa Model",
-                       {"play_guessing": False})
+                       {"play_guessing": True})

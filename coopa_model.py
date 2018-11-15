@@ -50,7 +50,6 @@ class CoopaModel(Model):
 
     def step(self):
         self.schedule.step()
-
         self.not_moved = [a for a in self.agents]
         random.shuffle(self.not_moved)
 

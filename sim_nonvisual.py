@@ -28,18 +28,31 @@ def run_experiment(run_id, directory, play_guessing):
                 result_str += get_neighborhood_str(meaning) + '\n'
                 result_str += str(form) + '\n'
                 result_str += str(agent.memory.meaning_stats[meaning]) + '\n\n'
+        result_str += str(agent.collisions) + '\n\n'
 
     collisions = 0
     items_delivered = 0
+    guessing_played = 0
+    extra_distance = 0
+    option1_selected = 0
+    option2_selected = 0
     for agent in model.agents:
         collisions += agent.stat_dict['obs_game_init']
         items_delivered += agent.stat_dict['items_delivered']
+        guessing_played += agent.stat_dict['guessing_game_init']
+        option1_selected += agent.stat_dict['option1_selected']
+        option2_selected += agent.stat_dict['option2_selected']
+        extra_distance += agent.stat_dict['extra_distance']
         for j in range(len(agent.stat_dict['disc_trees'][-1])):
             chan = 'x' if j == 0 else 'y'
             agent.stat_dict['disc_trees'][-1][j].render(filename='run{}_{}_{}'.format(run_id, agent.color, chan),
                                                         directory=directory, cleanup=True)
     result_str += 'Collisions: {}\n'.format(collisions)
     result_str += 'Items delivered: {}\n'.format(items_delivered)
+    result_str += 'Guessing played: {}\n'.format(guessing_played)
+    result_str += 'Option 1 selected: {}\n'.format(option1_selected)
+    result_str += 'Option 2 selected: {}\n'.format(option2_selected)
+    result_str += 'Extra distance: {}\n'.format(extra_distance)
 
     with open(os.path.join(directory, 'run{}.txt'.format(run_id)), 'w') as text_file:
         print(result_str, file=text_file)

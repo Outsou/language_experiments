@@ -95,7 +95,7 @@ class MFAssociationMemory:
 
     def get_meaning(self, form):
         strongest = None
-        score = -1
+        score = 0
         for meaning, forms in self.mf_dict.items():
             if form in forms:
                 if forms[form] > score:

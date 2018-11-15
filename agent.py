@@ -23,8 +23,13 @@ class AgentBasic(Agent):
         self.discriminator = Discriminator([(0, model.grid.width - 1), (0, model.grid.height - 1)])
         self.stat_dict = {'obs_game_init': 0,
                           'items_delivered': 0,
-                          'disc_trees': []}
+                          'guessing_game_init': 0,
+                          'disc_trees': [],
+                          'option1_selected': 0,
+                          'option2_selected': 0,
+                          'extra_distance': 0}
         self.map = np.copy(self.model.map)
+        self.collisions = np.zeros(self.map.shape)
         self._has_item = False
         self._backing_off = False
         self._backing_info = None
@@ -36,6 +41,12 @@ class AgentBasic(Agent):
         # self.last_discriminator = None
         # self.last_meaning = None
         # self.collided = None
+
+        self.discriminator.grow(0)
+        self.memory.create_association(self.discriminator.trees[0].root.child1, 'ASD')
+        self.memory.strengthen_form(self.discriminator.trees[0].root.child1, 'ASD')
+        self.memory.create_association(self.discriminator.trees[0].root.child2, 'FASD')
+        self.memory.strengthen_form(self.discriminator.trees[0].root.child2, 'FASD')
 
     def _get_highest_meaning_on_path(self, path):
         '''Finds out the most important thing on the agent's path.
@@ -66,7 +77,7 @@ class AgentBasic(Agent):
         for neighbor in neighbors:
             x, y = neighbor.pos
             self.map[x][y] = 1
-        path = self._calculate_path(self.map)
+        path = self._reroute()
         if len(path) > 0:
             # Route is clear, stop backing
             self._path = path
@@ -98,16 +109,17 @@ class AgentBasic(Agent):
         # Path is not free
         neighbor = self.model.grid[x][y]
         if type(neighbor) is AgentBasic:
-            reroute = self._reroute()
-            if len(reroute) > 0:
-                self._path = reroute
-                old_pos = self.pos
-                self.model.grid.move_agent(self, self._path[0])
-                del self._path[0]
-                self._update_direction(old_pos, self.pos)
-                return True
+            # reroute = self._reroute()
+            # if len(reroute) > 0:
+            #     self._path = reroute
+            #     old_pos = self.pos
+            #     self.model.grid.move_agent(self, self._path[0])
+            #     del self._path[0]
+            #     self._update_direction(old_pos, self.pos)
+            #     return True
             # There is an agent in the way, check if game should be played
             if not self._has_item:
+                self.collisions[self.pos] += 1
                 self._backing_off = True
                 meaning = self._play_observational_game(neighbor)
                 self._backing_info = {'start_age': self._age,
@@ -179,16 +191,20 @@ class AgentBasic(Agent):
             return
         self.memory.strengthen_meaning(self._last_broadcast['categoriser'], disc_form)
 
-    def _play_guessing_game(self, place_form, hearer):
+    def _play_guessing_game(self, place, hearer):
+        return
         if self._last_broadcast is None:
             return
-        if self._last_broadcast['place_form'] is not place_form:
+        if self._last_broadcast['place'] != place:
             return
         categoriser = self._last_broadcast['categoriser']
         low, high = categoriser.range
         if not low <= self.pos[categoriser.channel] <= high:
             return
-        hearer.guessing_transmit(self._last_broadcast['disc_form'])
+        self.stat_dict['guessing_game_init'] += 1
+        form = self._last_broadcast['disc_form']
+        self.memory.strengthen_form(categoriser, form)
+        hearer.guessing_transmit(form)
 
     def _play_observational_game(self, hearer):
         '''Start the observational game as the speaker.'''
@@ -202,17 +218,21 @@ class AgentBasic(Agent):
         self.memory.strengthen_form(meaning, form)
         hearer.observational_transmit(form)
         if self._guessing_game:
-            self._play_guessing_game(form, hearer)
+            self._play_guessing_game(meaning, hearer)
         return meaning
 
     def _reroute(self):
         '''Finds a new route to destination assuming that the first step in the current route is blocked.'''
         neighborhood = self.model.grid.get_neighbors(self.pos, False)
-        env_map = np.copy(self.model.map)
+        env_map = np.copy(self.map)
         for neighbor in neighborhood:
             x, y = neighbor.pos
             env_map[x][y] = 1
-        new_path = astar(env_map, self.pos, self._path[-1], False)[1:]
+        new_path = astar(env_map, self.pos, self._path[-2], False)[1:]
+        if len(new_path) == 1 and not self.model.grid.is_cell_empty(new_path[0]):
+            return []
+        elif len(new_path) > 0:
+            new_path.append(self._destination)
         return new_path
 
     def _update_direction(self, old_pos, new_pos):
@@ -253,7 +273,7 @@ class AgentBasic(Agent):
         low, high = categoriser.range
         for obj in objects:
             if low <= obj[categoriser.channel] <= high:
-                if obj in self._path:
+                if obj == self.pos or obj in self._path:
                     return False
         return True
 
@@ -289,6 +309,7 @@ class AgentBasic(Agent):
 
     def _broadcast_question(self):
         '''Considers two shortest paths to the destination and returns the one that is okay with other agents.'''
+        # self.map = np.copy(self.model.map)
         option1, option2 = self._get_options()
 
         if len(option2) == 0:
@@ -297,27 +318,34 @@ class AgentBasic(Agent):
 
         # First ask if option1 is free
         place, place_form, categoriser, disc_form = self._get_forms_for_path(option1)
-        if not (place_form is None or categoriser is None or disc_form is None):
+        if not (place is None or place_form is None or categoriser is None or disc_form is None):
             self.memory.report_form_use(categoriser, disc_form)
             self._last_broadcast = {'place': place,
                                     'place_form': place_form,
                                     'categoriser': categoriser,
                                     'disc_form': disc_form}
             if self.model.broadcast_question(place_form, disc_form, self):
+                self.stat_dict['option1_selected'] += 1
+                # self.map[option2[-2]] = 1
                 return option1
 
         # If option1 wasn't free, check option2
         place, place_form, categoriser, disc_form = self._get_forms_for_path(option2)
-        if not (place_form is None or categoriser is None or disc_form is None):
+        if not (place is None or place_form is None or categoriser is None or disc_form is None):
             self.memory.report_form_use(categoriser, disc_form)
             self._last_broadcast = {'place': place,
                                     'place_form': place_form,
                                     'categoriser': categoriser,
                                     'disc_form': disc_form}
             if self.model.broadcast_question(place_form, disc_form, self):
+                self.stat_dict['extra_distance'] += len(option2) - len(option1)
+                self.stat_dict['option2_selected'] += 1
+                # self.map[option1[-2]] = 1
                 return option2
 
         # If no path was free, use option1
+        self.stat_dict['option1_selected'] += 1
+        # self.map[option2[-2]] = 1
         return option1
         # self.memory.strengthen_form(discriminator, disc_form)
 

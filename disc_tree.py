@@ -93,6 +93,9 @@ class Discriminator:
     #             relevant_discriminators.append(relevant_discriminator)
     #     return relevant_discriminators
 
-    def grow(self):
+    def grow(self, channel=None):
         '''Randomly selects a channel to grow.'''
-        random.choice(self.trees).grow()
+        if channel is None:
+            random.choice(self.trees).grow()
+        else:
+            self.trees[channel].grow()
