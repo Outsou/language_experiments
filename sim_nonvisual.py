@@ -67,7 +67,7 @@ if __name__ == "__main__":
     collisions = []
     times = []
     runs = 30
-    play_guessing = True
+    play_guessing = False
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     directory = 'results_{}'.format(date_time)
     for i in range(1, runs + 1):

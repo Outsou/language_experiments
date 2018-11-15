@@ -47,6 +47,9 @@ class AgentBasic(Agent):
         self.memory.strengthen_form(self.discriminator.trees[0].root.child1, 'ASD')
         self.memory.create_association(self.discriminator.trees[0].root.child2, 'FASD')
         self.memory.strengthen_form(self.discriminator.trees[0].root.child2, 'FASD')
+        self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CASD')
+        self.memory.strengthen_form((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CASD')
+        self.memory._update_utility((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), -100)
 
     def _get_highest_meaning_on_path(self, path):
         '''Finds out the most important thing on the agent's path.
@@ -277,14 +280,17 @@ class AgentBasic(Agent):
                     return False
         return True
 
-    def _get_forms_for_path(self, path):
+    def _get_forms_for_path(self, path, path2):
         place = self._get_highest_meaning_on_path(path)
+        # place = (('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S'))
         if place is None:
             return None, None, None, None
         place_form = self.memory.get_form(place)
         objects = self._get_objects(place)
         topic_objects = [obj for obj in objects if obj in path]
-        categoriser = self._discriminate(objects, topic_objects)
+        path2_objects = [obj for obj in objects if obj in path2]
+        # Find a categoriser that can discriminate between the options
+        categoriser = self._discriminate(topic_objects + path2_objects, topic_objects)
         if categoriser is not None:
             disc_form = self.memory.get_form(categoriser)
             if disc_form is None:
@@ -301,8 +307,8 @@ class AgentBasic(Agent):
     #     return self.model.broadcast_question(place_form, disc_form, self)
 
     def _get_options(self):
-        option1 = self._calculate_path(self.map)
-        map = np.copy(self.map)
+        option1 = self._calculate_path(self.model.map)
+        map = np.copy(self.model.map)
         map[option1[-2]] = 1
         option2 = self._calculate_path(map)
         return option1, option2
@@ -313,11 +319,16 @@ class AgentBasic(Agent):
         option1, option2 = self._get_options()
 
         if len(option2) == 0:
+            self._last_broadcast = None
             # Only one option
             return option1
 
         # First ask if option1 is free
-        place, place_form, categoriser, disc_form = self._get_forms_for_path(option1)
+        place, place_form, categoriser, disc_form = self._get_forms_for_path(option1, option2)
+
+        # if place != (('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')):
+        #     return option1
+
         if not (place is None or place_form is None or categoriser is None or disc_form is None):
             self.memory.report_form_use(categoriser, disc_form)
             self._last_broadcast = {'place': place,
@@ -330,7 +341,7 @@ class AgentBasic(Agent):
                 return option1
 
         # If option1 wasn't free, check option2
-        place, place_form, categoriser, disc_form = self._get_forms_for_path(option2)
+        place, place_form, categoriser, disc_form = self._get_forms_for_path(option2, option1)
         if not (place is None or place_form is None or categoriser is None or disc_form is None):
             self.memory.report_form_use(categoriser, disc_form)
             self._last_broadcast = {'place': place,
@@ -346,6 +357,7 @@ class AgentBasic(Agent):
         # If no path was free, use option1
         self.stat_dict['option1_selected'] += 1
         # self.map[option2[-2]] = 1
+        self._last_broadcast = None
         return option1
         # self.memory.strengthen_form(discriminator, disc_form)
 
