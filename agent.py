@@ -20,7 +20,7 @@ class AgentBasic(Agent):
         self.memory = MFAssociationMemory()
         self.heading_x = 1
         self.heading_y = 0
-        self.discriminator = Discriminator([(0, model.grid.width - 1), (0, model.grid.height - 1)])
+        self.discriminator = Discriminator([(0, 1), (0, 1)])
         self.map = np.copy(self.model.map)
         self.stat_dict = {'obs_game_init': 0,
                           'items_delivered': 0,
@@ -174,6 +174,19 @@ class AgentBasic(Agent):
                     objects.append((x, y))
         return objects
 
+    def _normalise(self, objects):
+        '''Normalises a list of cell coordinates.'''
+        x_list, y_list = zip(*objects)
+        min_x = min(x_list)
+        min_y = min(y_list)
+        range_x = max(x_list) - min_x
+        range_y = max(y_list) - min_y
+        if range_x == 0:
+            range_x = 1
+        if range_y == 0:
+            range_y = 1
+        return [((x - min_x)/range_x, (y - min_y)/range_y) for x, y in objects]
+
     def _discriminate(self, all_objects, topic_objects):
         '''Finds a categoriser that can discriminate the topic objects from all objects.'''
         categoriser = self.discriminator.discriminate(all_objects, topic_objects)
@@ -193,24 +206,21 @@ class AgentBasic(Agent):
         current_place = self._get_neighborhood(self.pos)
         if current_place != self._last_broadcast['place']:
             return False
-        categoriser = self._last_broadcast['categoriser']
-        low, high = categoriser.range
-        if not low <= self.pos[categoriser.channel] <= high:
+        if self.pos not in self._last_broadcast['topic_objects']:
             return False
+        categoriser = self._last_broadcast['categoriser']
         self.memory.strengthen_meaning(categoriser, disc_form)
         return True
 
     def _play_guessing_game(self, place, hearer):
         '''Start the guessing game as the speaker.'''
-        # return
         if self._last_broadcast is None:
             return
         if self._last_broadcast['place'] != place:
             return
-        categoriser = self._last_broadcast['categoriser']
-        low, high = categoriser.range
-        if not low <= self.pos[categoriser.channel] <= high:
+        if self.pos not in self._last_broadcast['topic_objects']:
             return
+        categoriser = self._last_broadcast['categoriser']
         self.stat_dict['guessing_game_init'] += 1
         form = self._last_broadcast['disc_form']
         if hearer.guessing_transmit(form):
@@ -280,24 +290,27 @@ class AgentBasic(Agent):
         if categoriser is None:
             return True
         objects = self._get_objects(place)
+        normalised = self._normalise(objects)
         low, high = categoriser.range
-        for obj in objects:
-            if low <= obj[categoriser.channel] <= high:
-                if obj == self.pos or obj in self._path:
+        for obj in zip(objects, normalised):
+            if low <= obj[1][categoriser.channel] <= high:
+                if obj[0] == self.pos or obj[0] in self._path:
                     return False
         return True
 
     def _get_forms_for_path(self, path, path2):
+        '''Returns forms for meanings used to discriminate path from path2 (and other things)..'''
         place = self._get_highest_meaning_on_path(path)
         # place = (('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S'))
         if place is None:
-            return None, None, None, None
+            return None, None, None, None, None
         place_form = self.memory.get_form(place)
         objects = self._get_objects(place)
-        topic_objects = [obj for obj in objects if obj in path]
-        path2_objects = [obj for obj in objects if obj in path2]
+        normalised = self._normalise(objects)
+        topic_objects_normal = [obj[1] for obj in zip(objects, normalised) if obj[0] in path]
+        path2_objects_normal = [obj[1] for obj in zip(objects, normalised) if obj[0] in path2]
         # Find a categoriser that can discriminate between the options
-        categoriser = self._discriminate(topic_objects + path2_objects, topic_objects)
+        categoriser = self._discriminate(topic_objects_normal + path2_objects_normal, topic_objects_normal)
         if categoriser is not None:
             disc_form = self.memory.get_form(categoriser)
             if disc_form is None:
@@ -305,13 +318,8 @@ class AgentBasic(Agent):
                 self.memory.create_association(categoriser, disc_form)
         else:
             disc_form = None
-        return place, place_form, categoriser, disc_form
-
-    # def _ask_if_path_free(self, path):
-    #     '''Checks if a path is okay with other agents.'''
-    #     place, place_form, categoriser, disc_form = self._get_forms_for_path(path)
-    #     self.memory.report_form_use(categoriser, disc_form)
-    #     return self.model.broadcast_question(place_form, disc_form, self)
+        topic_objects = [obj for obj in objects if obj in path]
+        return place, place_form, categoriser, disc_form, topic_objects
 
     def _get_options(self):
         option1 = self._calculate_path(self.model.map)
@@ -331,7 +339,7 @@ class AgentBasic(Agent):
             return option1
 
         # First ask if option1 is free
-        place, place_form, categoriser, disc_form = self._get_forms_for_path(option1, option2)
+        place, place_form, categoriser, disc_form, topic_objects = self._get_forms_for_path(option1, option2)
 
         # if place != (('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')):
         #     return option1
@@ -341,20 +349,22 @@ class AgentBasic(Agent):
             self._last_broadcast = {'place': place,
                                     'place_form': place_form,
                                     'categoriser': categoriser,
-                                    'disc_form': disc_form}
+                                    'disc_form': disc_form,
+                                    'topic_objects': topic_objects}
             if self.model.broadcast_question(place_form, disc_form, self):
                 self.stat_dict['option1_selected'] += 1
                 # self.map[option2[-2]] = 1
                 return option1
 
         # If option1 wasn't free, check option2
-        place, place_form, categoriser, disc_form = self._get_forms_for_path(option2, option1)
+        place, place_form, categoriser, disc_form, topic_objects = self._get_forms_for_path(option2, option1)
         if not (place is None or place_form is None or categoriser is None or disc_form is None):
             self.memory.report_form_use(categoriser, disc_form)
             self._last_broadcast = {'place': place,
                                     'place_form': place_form,
                                     'categoriser': categoriser,
-                                    'disc_form': disc_form}
+                                    'disc_form': disc_form,
+                                    'topic_objects': topic_objects}
             if self.model.broadcast_question(place_form, disc_form, self):
                 self.stat_dict['extra_distance'] += len(option2) - len(option1)
                 self.stat_dict['option2_selected'] += 1

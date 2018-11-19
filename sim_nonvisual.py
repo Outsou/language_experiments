@@ -99,3 +99,5 @@ if __name__ == "__main__":
         print(collision_map)
     # print(resources_delivered)
     # print(collisions)
+
+    print('{}, finished'.format(directory))

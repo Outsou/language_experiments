@@ -15,9 +15,9 @@ class Categoriser:
     def grow(self):
         if self.child1 is not None or self.child2 is not None:
             return
-        middle = int(self.range[1] / 2)
+        middle = (self.range[0] + self.range[1]) / 2
         range1 = (self.range[0], middle)
-        range2 = (middle + 1, self.range[1])
+        range2 = (middle, self.range[1])
         self.child1 = Categoriser(range1, self.channel, self)
         self.child2 = Categoriser(range2, self.channel, self)
 
