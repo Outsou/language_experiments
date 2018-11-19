@@ -187,14 +187,21 @@ class AgentBasic(Agent):
         self.memory.strengthen_meaning(meaning, form)
 
     def guessing_transmit(self, disc_form):
+        '''Speaker uses this to transmit form to hearer in the guessing game.'''
         if self._last_broadcast is None or self._last_broadcast['categoriser'] is None:
-            return
+            return False
         current_place = self._get_neighborhood(self.pos)
         if current_place != self._last_broadcast['place']:
-            return
-        self.memory.strengthen_meaning(self._last_broadcast['categoriser'], disc_form)
+            return False
+        categoriser = self._last_broadcast['categoriser']
+        low, high = categoriser.range
+        if not low <= self.pos[categoriser.channel] <= high:
+            return False
+        self.memory.strengthen_meaning(categoriser, disc_form)
+        return True
 
     def _play_guessing_game(self, place, hearer):
+        '''Start the guessing game as the speaker.'''
         # return
         if self._last_broadcast is None:
             return
@@ -206,8 +213,8 @@ class AgentBasic(Agent):
             return
         self.stat_dict['guessing_game_init'] += 1
         form = self._last_broadcast['disc_form']
-        self.memory.strengthen_form(categoriser, form)
-        hearer.guessing_transmit(form)
+        if hearer.guessing_transmit(form):
+            self.memory.strengthen_form(categoriser, form)
 
     def _play_observational_game(self, hearer):
         '''Start the observational game as the speaker.'''
