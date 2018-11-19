@@ -73,6 +73,6 @@ class Layout:
 
         # Action center
         action_center = ActionCenter(0, model, shelf_cells)
-        model.grid.place_agent(action_center, (3, 11))
+        model.grid.place_agent(action_center, (1, 11))
 
         return {'action_center': action_center}

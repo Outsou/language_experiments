@@ -3,6 +3,7 @@ from utils import get_neighborhood_str, create_heatmap
 import time
 import os
 import numpy as np
+from disc_tree import Categoriser
 
 
 def run_experiment(run_id, directory, play_guessing):
@@ -25,7 +26,11 @@ def run_experiment(run_id, directory, play_guessing):
         result_str += '***************** AGENT {} *****************\n\n'.format(agent.color)
         for meaning, form in agent.memory.mf_dict.items():
             if type(meaning) is tuple:
-                result_str += get_neighborhood_str(meaning) + '\n'
+                result_str += get_neighborhood_str(meaning)
+                result_str += str(form) + '\n'
+                result_str += str(agent.memory.meaning_stats[meaning]) + '\n\n'
+            elif type(meaning) is Categoriser:
+                result_str += 'Chan {}, range {}'.format(meaning.channel, meaning.range)
                 result_str += str(form) + '\n'
                 result_str += str(agent.memory.meaning_stats[meaning]) + '\n\n'
         result_str += str(np.rot90(agent.stat_dict['collision_map'])) + '\n\n'
@@ -86,6 +91,7 @@ if __name__ == "__main__":
 
     collision_map = np.rot90(sum(collision_maps)) / runs
     create_heatmap(collision_map, grid, os.path.join(directory, 'collision_map.pdf'))
+    create_heatmap(collision_map, grid, os.path.join(directory, 'collision_map.png'))
 
     with open(os.path.join(directory, 'final.txt'), 'w') as text_file:
         print('Delivered: {}, avg: {}'.format(items_delivered, np.mean(items_delivered)), file=text_file)

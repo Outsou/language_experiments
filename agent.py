@@ -42,14 +42,14 @@ class AgentBasic(Agent):
         # self.last_meaning = None
         # self.collided = None
 
-        self.discriminator.grow(0)
-        self.memory.create_association(self.discriminator.trees[0].root.child1, 'ASD')
-        self.memory.strengthen_form(self.discriminator.trees[0].root.child1, 'ASD')
-        self.memory.create_association(self.discriminator.trees[0].root.child2, 'FASD')
-        self.memory.strengthen_form(self.discriminator.trees[0].root.child2, 'FASD')
-        self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CASD')
-        self.memory.strengthen_form((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CASD')
-        self.memory._update_utility((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), -100)
+        # self.discriminator.grow(0)
+        # self.memory.create_association(self.discriminator.trees[0].root.child1, 'ASD')
+        # self.memory.strengthen_form(self.discriminator.trees[0].root.child1, 'ASD')
+        # self.memory.create_association(self.discriminator.trees[0].root.child2, 'FASD')
+        # self.memory.strengthen_form(self.discriminator.trees[0].root.child2, 'FASD')
+        # self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CASD')
+        # self.memory.strengthen_form((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CASD')
+        # self.memory._update_utility((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), -100)
 
     def _get_highest_meaning_on_path(self, path):
         '''Finds out the most important thing on the agent's path.
@@ -195,7 +195,7 @@ class AgentBasic(Agent):
         self.memory.strengthen_meaning(self._last_broadcast['categoriser'], disc_form)
 
     def _play_guessing_game(self, place, hearer):
-        return
+        # return
         if self._last_broadcast is None:
             return
         if self._last_broadcast['place'] != place:
