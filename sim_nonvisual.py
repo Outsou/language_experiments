@@ -1,5 +1,5 @@
 from coopa_model import CoopaModel
-from utils import get_neighborhood_str
+from utils import get_neighborhood_str, create_heatmap
 import time
 import os
 import numpy as np
@@ -28,7 +28,7 @@ def run_experiment(run_id, directory, play_guessing):
                 result_str += get_neighborhood_str(meaning) + '\n'
                 result_str += str(form) + '\n'
                 result_str += str(agent.memory.meaning_stats[meaning]) + '\n\n'
-        result_str += str(agent.collisions) + '\n\n'
+        result_str += str(np.rot90(agent.stat_dict['collision_map'])) + '\n\n'
 
     collisions = 0
     items_delivered = 0
@@ -36,6 +36,7 @@ def run_experiment(run_id, directory, play_guessing):
     extra_distance = 0
     option1_selected = 0
     option2_selected = 0
+    collision_map = np.zeros((model.grid.width, model.grid.height))
     for agent in model.agents:
         collisions += agent.stat_dict['obs_game_init']
         items_delivered += agent.stat_dict['items_delivered']
@@ -43,6 +44,7 @@ def run_experiment(run_id, directory, play_guessing):
         option1_selected += agent.stat_dict['option1_selected']
         option2_selected += agent.stat_dict['option2_selected']
         extra_distance += agent.stat_dict['extra_distance']
+        collision_map += agent.stat_dict['collision_map']
         for j in range(len(agent.stat_dict['disc_trees'][-1])):
             chan = 'x' if j == 0 else 'y'
             agent.stat_dict['disc_trees'][-1][j].render(filename='run{}_{}_{}'.format(run_id, agent.color, chan),
@@ -60,28 +62,34 @@ def run_experiment(run_id, directory, play_guessing):
     print(result_str)
     print('Simulation took: {}'.format(time.time() - start_time))
     print()
-    return items_delivered, collisions
+    return items_delivered, collisions, collision_map, model.grid
 
 if __name__ == "__main__":
     items_delivered = []
     collisions = []
+    collision_maps = []
     times = []
     runs = 30
-    play_guessing = False
+    play_guessing = True
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     directory = 'results_{}'.format(date_time)
     for i in range(1, runs + 1):
         start_time = time.time()
         print('Starting run {}'.format(i))
-        run_delivered, run_collisions = run_experiment(i, directory, play_guessing)
+        run_delivered, run_collisions, run_collision_map, grid = run_experiment(i, directory, play_guessing)
         items_delivered.append(run_delivered)
         collisions.append(run_collisions)
+        collision_maps.append(run_collision_map)
         times.append(time.time() - start_time)
         print('Finished run, time left {}'.format(sum(times) / len(times) * (runs - i)))
         print()
 
+    collision_map = np.rot90(sum(collision_maps)) / runs
+    create_heatmap(collision_map, grid, os.path.join(directory, 'collision_map.pdf'))
+
     with open(os.path.join(directory, 'final.txt'), 'w') as text_file:
         print('Delivered: {}, avg: {}'.format(items_delivered, np.mean(items_delivered)), file=text_file)
-        print('Collisions: {}, avg: {}'.format(collisions, np.mean(collisions)), file=text_file)
+        print('Collisions: {}, avg: {}\n'.format(collisions, np.mean(collisions)), file=text_file)
+        print(collision_map)
     # print(resources_delivered)
     # print(collisions)

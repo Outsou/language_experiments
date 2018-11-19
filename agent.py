@@ -21,15 +21,15 @@ class AgentBasic(Agent):
         self.heading_x = 1
         self.heading_y = 0
         self.discriminator = Discriminator([(0, model.grid.width - 1), (0, model.grid.height - 1)])
+        self.map = np.copy(self.model.map)
         self.stat_dict = {'obs_game_init': 0,
                           'items_delivered': 0,
                           'guessing_game_init': 0,
                           'disc_trees': [],
                           'option1_selected': 0,
                           'option2_selected': 0,
-                          'extra_distance': 0}
-        self.map = np.copy(self.model.map)
-        self.collisions = np.zeros(self.map.shape)
+                          'extra_distance': 0,
+                          'collision_map': np.zeros(self.map.shape)}
         self._has_item = False
         self._backing_off = False
         self._backing_info = None
@@ -122,7 +122,7 @@ class AgentBasic(Agent):
             #     return True
             # There is an agent in the way, check if game should be played
             if not self._has_item:
-                self.collisions[self.pos] += 1
+                self.stat_dict['collision_map'][self.pos] += 1
                 self._backing_off = True
                 meaning = self._play_observational_game(neighbor)
                 self._backing_info = {'start_age': self._age,

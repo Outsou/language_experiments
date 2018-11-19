@@ -65,14 +65,14 @@ class Layout:
         shelf_cells = []
 
         # Shelves
-        # shelf_cells += self.draw_block_from_point(model.grid, 1, 1, 1, 8, Shelf)[3:-3]
+        # shelf_cells += self.draw_block_from_point(model.grid, 1, 1, 1, 8, Shelf)
         self.draw_block_from_point(model.grid, 1, 1, 1, 8, Shelf)
         shelf_cells += self.draw_block_from_point(model.grid, 3, 1, 1, 8, Shelf)
-        # shelf_cells += self.draw_block_from_point(model.grid, 5, 1, 1, 8, Shelf)[3:-3]
+        # shelf_cells += self.draw_block_from_point(model.grid, 5, 1, 1, 8, Shelf)
         self.draw_block_from_point(model.grid, 5, 1, 1, 8, Shelf)
 
         # Action center
         action_center = ActionCenter(0, model, shelf_cells)
-        model.grid.place_agent(action_center, (1, 11))
+        model.grid.place_agent(action_center, (3, 11))
 
         return {'action_center': action_center}

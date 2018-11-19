@@ -1,6 +1,8 @@
 import numpy as np
 from graphviz import Graph, nohtml
 import operator
+import seaborn as sns
+from objects import Shelf
 
 
 def _line_special_cases(x1, y1, x2, y2, dx, dy):
@@ -152,3 +154,19 @@ def create_graphs(discriminator, memory, format='png'):
 
         graphs.append(g)
     return graphs
+
+def create_heatmap(matrix, grid, fname):
+    sns.set()
+
+    # Create mask for shelves
+    mask = np.zeros((grid.width, grid.height))
+    for x, y in [(x, y) for x in range(grid.width) for y in range(grid.height)]:
+        if type(grid.grid[x][y]) == Shelf:
+            mask[x][y] = 1
+    mask = np.rot90(mask)
+
+    hmap = sns.heatmap(matrix, yticklabels=False, xticklabels=False, square=True, cmap='Blues', mask=mask,
+                       linewidths=0.1)
+    hmap.set_facecolor('Brown')
+    fig = hmap.get_figure()
+    fig.savefig(fname, bbox_inches='tight')
