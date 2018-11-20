@@ -215,6 +215,7 @@ class AgentBasic(Agent):
 
     def _play_guessing_game(self, place, hearer):
         '''Start the guessing game as the speaker.'''
+        # return
         if self._last_broadcast is None:
             return
         if self._last_broadcast['place'] != place:

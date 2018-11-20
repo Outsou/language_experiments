@@ -3,6 +3,7 @@ from graphviz import Graph, nohtml
 import operator
 import seaborn as sns
 from objects import Shelf
+import matplotlib.pyplot as plt
 
 
 def _line_special_cases(x1, y1, x2, y2, dx, dy):
@@ -170,3 +171,4 @@ def create_heatmap(matrix, grid, fname):
     hmap.set_facecolor('Brown')
     fig = hmap.get_figure()
     fig.savefig(fname, bbox_inches='tight')
+    plt.close()
