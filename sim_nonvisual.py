@@ -70,6 +70,7 @@ def run_experiment(run_id, directory, play_guessing):
     return items_delivered, collisions, collision_map, model.grid
 
 if __name__ == "__main__":
+    np.set_printoptions(suppress=True)
     items_delivered = []
     collisions = []
     collision_maps = []
