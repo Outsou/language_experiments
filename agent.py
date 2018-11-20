@@ -10,10 +10,11 @@ from disc_tree import Discriminator
 from utils import create_graphs
 
 class AgentBasic(Agent):
-    def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True):
+    def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True, premade_lang=False):
         super().__init__(unique_id, model)
         self._guessing_game = guessing_game
         self.neighborhood_rotation = neighborhood_rotation
+        self._premade_lang = premade_lang
         self._destination = model.action_center.pos
         self._path = None
         self.color = color
@@ -43,14 +44,15 @@ class AgentBasic(Agent):
         # self.last_meaning = None
         # self.collided = None
 
-        # self.discriminator.grow(0)
-        # self.memory.create_association(self.discriminator.trees[0].root.child1, 'ASD')
-        # self.memory.strengthen_form(self.discriminator.trees[0].root.child1, 'ASD')
-        # self.memory.create_association(self.discriminator.trees[0].root.child2, 'FASD')
-        # self.memory.strengthen_form(self.discriminator.trees[0].root.child2, 'FASD')
-        # self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CASD')
-        # self.memory.strengthen_form((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CASD')
-        # self.memory._update_utility((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), -100)
+        if self._premade_lang:
+            self.discriminator.grow(0)
+            self.memory.create_association(self.discriminator.trees[0].root.child1, 'ASD')
+            self.memory.strengthen_form(self.discriminator.trees[0].root.child1, 'ASD')
+            self.memory.create_association(self.discriminator.trees[0].root.child2, 'FASD')
+            self.memory.strengthen_form(self.discriminator.trees[0].root.child2, 'FASD')
+            self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CASD')
+            self.memory.strengthen_form((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CASD')
+            self.memory._update_utility((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), -100)
 
     def _get_highest_meaning_on_path(self, path):
         '''Finds out the most important thing on the agent's path.
@@ -215,7 +217,8 @@ class AgentBasic(Agent):
 
     def _play_guessing_game(self, place, hearer):
         '''Start the guessing game as the speaker.'''
-        # return
+        if self._premade_lang:
+            return
         if self._last_broadcast is None:
             return
         if self._last_broadcast['place'] != place:
@@ -252,11 +255,7 @@ class AgentBasic(Agent):
             env_map[x][y] = 1
         if self._blocked is not None:
             env_map[self._blocked] = 1
-        new_path = astar(env_map, self.pos, self._path[-2], False)[1:]
-        if len(new_path) == 1 and not self.model.grid.is_cell_empty(new_path[0]):
-            return []
-        elif len(new_path) > 0:
-            new_path.append(self._destination)
+        new_path = astar(env_map, self.pos, self._destination, False)[1:]
         return new_path
 
     def _update_direction(self, old_pos, new_pos):
@@ -343,6 +342,10 @@ class AgentBasic(Agent):
             # Only one option
             return option1
 
+        if not self._guessing_game:
+            self._blocked = option2[-2]
+            return option1
+
         # First ask if option1 is free
         place, place_form, categoriser, disc_form, topic_objects = self._get_forms_for_path(option1, option2)
 
@@ -382,6 +385,7 @@ class AgentBasic(Agent):
         self.stat_dict['option1_selected'] += 1
         # self.map[option2[-2]] = 1
         self._last_broadcast = None
+        self._blocked = option2[-2]
         return option1
         # self.memory.strengthen_form(discriminator, disc_form)
 
@@ -403,10 +407,7 @@ class AgentBasic(Agent):
                 if self._has_item:
                     self.stat_dict['items_delivered'] += 1
                 self._has_item = False
-                if self._guessing_game:
-                    self._path = self._broadcast_question()
-                else:
-                    self._path = self._calculate_path(self.map)
+                self._path = self._broadcast_question()
             else:
                 self._destination = self.model.action_center.pos
                 self._has_item = True

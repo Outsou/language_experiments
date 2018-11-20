@@ -13,7 +13,7 @@ import random
 class CoopaModel(Model):
     """A model with some number of agents."""
 
-    def __init__(self, play_guessing):
+    def __init__(self, play_guessing, premade_lang=False):
         self.running = True
         self.grid = SingleGrid(Layout.width, Layout.height, False)  # True=toroidal
         self.schedule = RandomActivation(self)
@@ -28,22 +28,22 @@ class CoopaModel(Model):
 
         # Agents
         self.agents = []
-        a = AgentBasic(0, self, 'green', guessing_game=play_guessing)
+        a = AgentBasic(0, self, 'green', guessing_game=play_guessing, premade_lang=premade_lang)
         self.schedule.add(a)
         self.grid.position_agent(a, 4, 9)
         self.agents.append(a)
 
-        a = AgentBasic(0, self, 'blue', guessing_game=play_guessing)
+        a = AgentBasic(0, self, 'blue', guessing_game=play_guessing, premade_lang=premade_lang)
         self.schedule.add(a)
         self.grid.position_agent(a, 2, 9)
         self.agents.append(a)
 
-        # a = AgentBasic(0, self, 'black', guessing_game=play_guessing)
+        # a = AgentBasic(0, self, 'black', guessing_game=play_guessing, premade_lang=premade_lang)
         # self.schedule.add(a)
         # self.grid.position_agent(a, 3, 9)
         # self.agents.append(a)
         #
-        # a = AgentBasic(0, self, 'purple', guessing_game=play_guessing)
+        # a = AgentBasic(0, self, 'purple', guessing_game=play_guessing, premade_lang=premade_lang)
         # self.schedule.add(a)
         # self.grid.position_agent(a, 5, 9)
         # self.agents.append(a)

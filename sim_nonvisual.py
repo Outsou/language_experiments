@@ -6,9 +6,9 @@ import numpy as np
 from disc_tree import Categoriser
 
 
-def run_experiment(run_id, directory, play_guessing):
+def run_experiment(run_id, directory, play_guessing, premade_lang):
     print('Running experiment...')
-    model = CoopaModel(play_guessing)
+    model = CoopaModel(play_guessing, premade_lang)
     times = []
     start_time = time.time()
     period_start = time.time()
@@ -77,12 +77,14 @@ if __name__ == "__main__":
     times = []
     runs = 30
     play_guessing = True
+    premade_lang = False
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     directory = 'results_{}'.format(date_time)
     for i in range(1, runs + 1):
         start_time = time.time()
         print('Starting run {}'.format(i))
-        run_delivered, run_collisions, run_collision_map, grid = run_experiment(i, directory, play_guessing)
+        run_delivered, run_collisions, run_collision_map, grid = run_experiment(i, directory,
+                                                                                play_guessing, premade_lang)
         items_delivered.append(run_delivered)
         collisions.append(run_collisions)
         collision_maps.append(run_collision_map)
