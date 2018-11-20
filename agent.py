@@ -212,7 +212,7 @@ class AgentBasic(Agent):
         if self.pos not in self._last_broadcast['topic_objects']:
             return False
         categoriser = self._last_broadcast['categoriser']
-        self.memory.strengthen_meaning(categoriser, disc_form)
+        self.memory.strengthen_form(categoriser, disc_form)
         return True
 
     def _play_guessing_game(self, place, hearer):

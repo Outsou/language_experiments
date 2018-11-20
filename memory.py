@@ -36,6 +36,8 @@ class MFAssociationMemory:
         self.known_forms.add(form)
 
     def strengthen_form(self, meaning, form, utility=None):
+        if form not in self.mf_dict[meaning]:
+            self.mf_dict[meaning][form] = self.min
         for associated_form in self.mf_dict[meaning].keys():
             if associated_form and associated_form != form:
                 self.mf_dict[meaning][associated_form] = max(

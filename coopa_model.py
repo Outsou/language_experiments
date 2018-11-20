@@ -38,10 +38,10 @@ class CoopaModel(Model):
         self.grid.position_agent(a, 2, 9)
         self.agents.append(a)
 
-        # a = AgentBasic(0, self, 'black', guessing_game=play_guessing, premade_lang=premade_lang)
-        # self.schedule.add(a)
-        # self.grid.position_agent(a, 3, 9)
-        # self.agents.append(a)
+        a = AgentBasic(0, self, 'black', guessing_game=play_guessing, premade_lang=premade_lang)
+        self.schedule.add(a)
+        self.grid.position_agent(a, 3, 9)
+        self.agents.append(a)
         #
         # a = AgentBasic(0, self, 'purple', guessing_game=play_guessing, premade_lang=premade_lang)
         # self.schedule.add(a)
