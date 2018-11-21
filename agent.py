@@ -192,6 +192,10 @@ class AgentBasic(Agent):
 
     def _discriminate(self, all_objects, topic_objects):
         '''Finds a categoriser that can discriminate the topic objects from all objects.'''
+        all_objects = set(all_objects)
+        topic_objects = set(topic_objects)
+        if all_objects == topic_objects:
+            return None
         categoriser = self.discriminator.discriminate(all_objects, topic_objects)
         if categoriser is None:
             self.discriminator.grow()
@@ -312,6 +316,7 @@ class AgentBasic(Agent):
         normalised = self._normalise(objects)
         topic_objects_normal = [obj[1] for obj in zip(objects, normalised) if obj[0] in path]
         path2_objects_normal = [obj[1] for obj in zip(objects, normalised) if obj[0] in path2]
+
         # Find a categoriser that can discriminate between the options
         categoriser = self._discriminate(topic_objects_normal + path2_objects_normal, topic_objects_normal)
         if categoriser is not None:

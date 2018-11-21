@@ -27,11 +27,14 @@ from agent import AgentBasic
 #         shelf_cells = []
 #
 #         # Shelves
-#         shelf_cells += self.draw_block_from_point(model.grid, 1, 1, 1, 8, Shelf)
+#         # shelf_cells += self.draw_block_from_point(model.grid, 1, 1, 1, 8, Shelf)
+#         self.draw_block_from_point(model.grid, 1, 1, 1, 8, Shelf)
 #         shelf_cells += self.draw_block_from_point(model.grid, 3, 1, 1, 8, Shelf)
 #         shelf_cells += self.draw_block_from_point(model.grid, 5, 1, 1, 8, Shelf)
-#         shelf_cells += self.draw_block_from_point(model.grid, 7, 1, 1, 8, Shelf)
-#         shelf_cells += self.draw_block_from_point(model.grid, 9, 1, 1, 8, Shelf)
+#         # shelf_cells += self.draw_block_from_point(model.grid, 7, 1, 1, 8, Shelf)
+#         self.draw_block_from_point(model.grid, 7, 1, 1, 8, Shelf)
+#         # shelf_cells += self.draw_block_from_point(model.grid, 9, 1, 1, 8, Shelf)
+#         self.draw_block_from_point(model.grid, 9, 1, 1, 8, Shelf)
 #
 #         # Action center
 #         action_center = ActionCenter(0, model, shelf_cells)
