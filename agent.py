@@ -37,21 +37,65 @@ class AgentBasic(Agent):
         self._age = 0
         self._last_broadcast = None
         self._blocked = None
-        # self.importance_threshold = 1
-        # self.last_disc_form = None
-        # self.avoidable_objs = None
-        # self.last_discriminator = None
-        # self.last_meaning = None
-        # self.collided = None
+
+        # if self._premade_lang:
+        #     self.discriminator.grow(0)
+        #     self.memory.create_association(self.discriminator.trees[0].root.child1, 'LEFT')
+        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child1, 'LEFT')
+        #     self.memory.create_association(self.discriminator.trees[0].root.child2, 'RIGHT')
+        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child2, 'RIGHT')
+        #     self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
+        #     self.memory.strengthen_form((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
+        #     self.memory._update_utility((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), -100)
+
+        # if self._premade_lang:
+        #     self.discriminator.grow(0)
+        #     self.discriminator.trees[0].root.child1.grow()
+        #     self.memory.create_association(self.discriminator.trees[0].root.child1.child1, 'VERY_LEFT')
+        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child1.child1, 'VERY_LEFT')
+        #     self.memory.create_association(self.discriminator.trees[0].root.child1.child2, 'SEMI_LEFT')
+        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child1.child2, 'SEMI_LEFT')
+        #     self.memory.create_association(self.discriminator.trees[0].root.child2, 'RIGHT')
+        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child2, 'RIGHT')
+        #     self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
+        #     self.memory.strengthen_form((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
+        #     self.memory._update_utility((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), -100)
+
+        # if self._premade_lang:
+        #     self.discriminator.grow(0)
+        #     self.discriminator.trees[0].root.child1.grow()
+        #     self.discriminator.trees[0].root.child2.grow()
+        #     self.memory.create_association(self.discriminator.trees[0].root.child1.child1, 'VERY_LEFT')
+        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child1.child1, 'VERY_LEFT')
+        #     self.memory.create_association(self.discriminator.trees[0].root.child1.child2, 'SEMI_LEFT')
+        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child1.child2, 'SEMI_LEFT')
+        #     self.memory.create_association(self.discriminator.trees[0].root.child2.child1, 'SEMI_RIGHT')
+        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child2.child1, 'SEMI_RIGHT')
+        #     self.memory.create_association(self.discriminator.trees[0].root.child2.child2, 'VERY_RIGHT')
+        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child2.child2, 'VERY_RIGHT')
+        #     self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
+        #     self.memory.strengthen_form((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
+        #     self.memory._update_utility((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), -100)
 
         if self._premade_lang:
             self.discriminator.grow(0)
-            self.memory.create_association(self.discriminator.trees[0].root.child1, 'ASD')
-            self.memory.strengthen_form(self.discriminator.trees[0].root.child1, 'ASD')
-            self.memory.create_association(self.discriminator.trees[0].root.child2, 'FASD')
-            self.memory.strengthen_form(self.discriminator.trees[0].root.child2, 'FASD')
-            self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CASD')
-            self.memory.strengthen_form((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CASD')
+            self.discriminator.grow(1)
+            self.discriminator.trees[0].root.child1.grow()
+            self.discriminator.trees[0].root.child2.grow()
+            self.memory.create_association(self.discriminator.trees[1].root.child1, 'DOWN')
+            self.memory.strengthen_form(self.discriminator.trees[1].root.child1, 'DOWN')
+            self.memory.create_association(self.discriminator.trees[1].root.child2, 'UP')
+            self.memory.strengthen_form(self.discriminator.trees[1].root.child2, 'UP')
+            self.memory.create_association(self.discriminator.trees[0].root.child1.child1, 'VERY_LEFT')
+            self.memory.strengthen_form(self.discriminator.trees[0].root.child1.child1, 'VERY_LEFT')
+            self.memory.create_association(self.discriminator.trees[0].root.child1.child2, 'SEMI_LEFT')
+            self.memory.strengthen_form(self.discriminator.trees[0].root.child1.child2, 'SEMI_LEFT')
+            self.memory.create_association(self.discriminator.trees[0].root.child2.child1, 'SEMI_RIGHT')
+            self.memory.strengthen_form(self.discriminator.trees[0].root.child2.child1, 'SEMI_RIGHT')
+            self.memory.create_association(self.discriminator.trees[0].root.child2.child2, 'VERY_RIGHT')
+            self.memory.strengthen_form(self.discriminator.trees[0].root.child2.child2, 'VERY_RIGHT')
+            self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
+            self.memory.strengthen_form((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
             self.memory._update_utility((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), -100)
 
     def _get_highest_meaning_on_path(self, path):
@@ -198,7 +242,7 @@ class AgentBasic(Agent):
             return None
         categoriser = self.discriminator.discriminate(all_objects, topic_objects)
         if categoriser is None:
-            self.discriminator.grow()
+            self.discriminator.grow(all_objects=all_objects, topic_objects=topic_objects)
         return categoriser
 
     def observational_transmit(self, form):

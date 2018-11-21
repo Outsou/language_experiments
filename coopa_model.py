@@ -42,11 +42,11 @@ class CoopaModel(Model):
         self.schedule.add(a)
         self.grid.position_agent(a, 3, 9)
         self.agents.append(a)
-        #
-        # a = AgentBasic(0, self, 'purple', guessing_game=play_guessing, premade_lang=premade_lang)
-        # self.schedule.add(a)
-        # self.grid.position_agent(a, 5, 9)
-        # self.agents.append(a)
+
+        a = AgentBasic(0, self, 'purple', guessing_game=play_guessing, premade_lang=premade_lang)
+        self.schedule.add(a)
+        self.grid.position_agent(a, 5, 9)
+        self.agents.append(a)
 
     def step(self):
         self.schedule.step()
