@@ -31,23 +31,23 @@ class Layout:
         shelf_cells = []
 
         # Vertical shelves
-        shelf_cells += self.draw_block_from_point(model.grid, 1, 1, 1, 8, Shelf)[:-1]
+        shelf_cells += self.draw_block_from_point(model.grid, 1, 1, 1, 8, Shelf)
         # self.draw_block_from_point(model.grid, 1, 1, 1, 8, Shelf)
-        shelf_cells += self.draw_block_from_point(model.grid, 3, 1, 1, 8, Shelf)[:-1]
-        shelf_cells += self.draw_block_from_point(model.grid, 5, 1, 1, 8, Shelf)[:-1]
-        shelf_cells += self.draw_block_from_point(model.grid, 7, 1, 1, 8, Shelf)[:-1]
+        shelf_cells += self.draw_block_from_point(model.grid, 3, 1, 1, 8, Shelf)
+        shelf_cells += self.draw_block_from_point(model.grid, 5, 1, 1, 8, Shelf)
+        shelf_cells += self.draw_block_from_point(model.grid, 7, 1, 1, 8, Shelf)
         # self.draw_block_from_point(model.grid, 7, 1, 1, 8, Shelf)
-        shelf_cells += self.draw_block_from_point(model.grid, 9, 1, 1, 8, Shelf)[:-1]
+        shelf_cells += self.draw_block_from_point(model.grid, 9, 1, 1, 8, Shelf)
         # self.draw_block_from_point(model.grid, 9, 1, 1, 8, Shelf)
 
         # Horizontal shelves
-        shelf_cells += self.draw_block_from_point(model.grid, 11, 10, 8, 1, Shelf)[:-1]
-        shelf_cells += self.draw_block_from_point(model.grid, 11, 12, 8, 1, Shelf)[:-1]
-        shelf_cells += self.draw_block_from_point(model.grid, 11, 14, 8, 1, Shelf)[:-1]
+        shelf_cells += self.draw_block_from_point(model.grid, 11, 10, 8, 1, Shelf)
+        shelf_cells += self.draw_block_from_point(model.grid, 11, 12, 8, 1, Shelf)
+        shelf_cells += self.draw_block_from_point(model.grid, 11, 14, 8, 1, Shelf)
 
         # Action center
         action_center = ActionCenter(0, model, shelf_cells)
-        model.grid.place_agent(action_center, (5, 14))
+        model.grid.place_agent(action_center, (5, 12))
 
         return {'action_center': action_center}
 

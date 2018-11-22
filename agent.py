@@ -10,11 +10,13 @@ from disc_tree import Discriminator
 from utils import create_graphs
 
 class AgentBasic(Agent):
-    def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True, premade_lang=False):
+    def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True, premade_lang=False,
+                 utility_threshold=2):
         super().__init__(unique_id, model)
         self._guessing_game = guessing_game
         self.neighborhood_rotation = neighborhood_rotation
         self._premade_lang = premade_lang
+        self._utility_threshold = utility_threshold
         self._destination = model.action_center.pos
         self._path = None
         self.color = color
@@ -109,6 +111,8 @@ class AgentBasic(Agent):
             if utility is not None and abs(utility) > max_utility:
                 max_utility = abs(utility)
                 max_meaning = meaning
+        if max_utility < self._utility_threshold:
+            return None
         return max_meaning
 
     def _get_free_neighbors(self):
@@ -234,15 +238,15 @@ class AgentBasic(Agent):
             range_y = 1
         return [((x - min_x)/range_x, (y - min_y)/range_y) for x, y in objects]
 
-    def _discriminate(self, all_objects, topic_objects):
+    def _discriminate(self, all_objects, topic_objects, disc_objects):
         '''Finds a categoriser that can discriminate the topic objects from all objects.'''
         all_objects = set(all_objects)
         topic_objects = set(topic_objects)
         if all_objects == topic_objects:
             return None
-        categoriser = self.discriminator.discriminate(all_objects, topic_objects)
+        categoriser = self.discriminator.set_discriminate(all_objects, topic_objects, disc_objects)
         if categoriser is None:
-            self.discriminator.grow(all_objects=all_objects, topic_objects=topic_objects)
+            self.discriminator.grow(disc_objects=disc_objects, topic_objects=topic_objects)
         return categoriser
 
     def observational_transmit(self, form):
@@ -358,11 +362,14 @@ class AgentBasic(Agent):
         place_form = self.memory.get_form(place)
         objects = self._get_objects(place)
         normalised = self._normalise(objects)
-        topic_objects_normal = [obj[1] for obj in zip(objects, normalised) if obj[0] in path]
-        path2_objects_normal = [obj[1] for obj in zip(objects, normalised) if obj[0] in path2]
+        topic_objects_normal = set([obj[1] for obj in zip(objects, normalised) if obj[0] in path])
+        path2_objects_normal = set([obj[1] for obj in zip(objects, normalised) if obj[0] in path2])
+
+        if len(path2_objects_normal) == 0 or len(topic_objects_normal & path2_objects_normal) > 0:
+            return None, None, None, None, None
 
         # Find a categoriser that can discriminate between the options
-        categoriser = self._discriminate(topic_objects_normal + path2_objects_normal, topic_objects_normal)
+        categoriser = self._discriminate(normalised, topic_objects_normal, path2_objects_normal)
         if categoriser is not None:
             disc_form = self.memory.get_form(categoriser)
             if disc_form is None:

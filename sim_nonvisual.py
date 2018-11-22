@@ -76,7 +76,7 @@ if __name__ == "__main__":
     collision_maps = []
     times = []
     runs = 15
-    play_guessing = True
+    play_guessing = False
     premade_lang = False
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     directory = 'results_{}'.format(date_time)

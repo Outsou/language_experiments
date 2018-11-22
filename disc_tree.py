@@ -40,6 +40,39 @@ class Categoriser:
             return self.child2.discriminate(value)
         return self
 
+    def _get_new_values(self, node, values):
+        new_values = set()
+        for val in values:
+            if node.range[0] <= val <= node.range[1]:
+                new_values.add(val)
+        return new_values
+
+    # def set_discriminate(self, value, all_values):
+    #     if self.child1 is not None and self.child1.range[0] <= value <= self.child1.range[1]:
+    #         new_values = self._get_new_values(self.child1, all_values)
+    #         if len(new_values) < all_values:
+    #             return self.child1.set_discriminate(value, new_values)
+    #     if self.child2 is not None and self.child2.range[0] <= value <= self.child2.range[1]:
+    #         new_values = self._get_new_values(self.child1, all_values)
+    #         if len(new_values) < all_values:
+    #             return self.child1.set_discriminate(value, new_values)
+    #     return self
+
+    def set_discriminate(self, topic_vals, previous_set, best_discriminator):
+        if self.child1 is not None:
+            new_set = self._get_new_values(self.child1, previous_set)
+            if topic_vals <= new_set:
+                if len(new_set) < len(previous_set):
+                    best_discriminator = self.child1
+                return self.child1.set_discriminate(topic_vals, new_set, best_discriminator)
+        if self.child2 is not None:
+            new_set = self._get_new_values(self.child2, previous_set)
+            if topic_vals <= new_set:
+                if len(new_set) < len(previous_set):
+                    best_discriminator = self.child2
+                return self.child2.set_discriminate(topic_vals, new_set, best_discriminator)
+        return best_discriminator
+
 class DiscriminationTree:
     def __init__(self, range, channel):
         self.root = Categoriser(range, channel)
@@ -55,8 +88,10 @@ class DiscriminationTree:
 
     def discriminate(self, value):
         '''Returns the lowest node (discriminator) in the tree that contains the value.'''
-        # TODO: Return the lowest node that adds accuracy
         return self.root.discriminate(value)
+
+    def set_discriminate(self, all_vals, topic_vals):
+        return self.root.set_discriminate(topic_vals, all_vals, None)
 
     def grow(self):
         random.choice(self.get_leaves()).grow()
@@ -99,6 +134,19 @@ class Discriminator:
         # Discrimination failed :(
         return None
 
+    def set_discriminate(self, all_objects, topic_objects, disc_objects):
+        '''Finds the lowest categoriser in a tree that adds accuracy to the discrimination. Then checks if it
+        discriminates topic_objects from disc_objects.'''
+        for i in range(len(self.trees)):
+            topic_vals = set([obj[i] for obj in topic_objects])
+            all_vals = set([obj[i] for obj in all_objects])
+            categoriser = self.trees[i].set_discriminate(all_vals, topic_vals)
+            if categoriser is not None:
+                other_disc = [obj for obj in disc_objects if categoriser.range[0] <= obj[i] <= categoriser.range[1]]
+                if len(other_disc) == 0:
+                    return categoriser
+        return None
+
     def _gather_leaves(self):
         leaves = []
         for tree in self.trees:
@@ -120,14 +168,18 @@ class Discriminator:
                     if categoriser.range[0] <= obj[chan] <= categoriser.range[1]:
                         objects.add(obj)
                 if objects == topic_objects:
+                    if leaf.channel == 1 and (leaf.range == (0, 0.5) or leaf.range == (0.5, 1)):
+                        print('what')
                     leaf.child1 = child1
                     leaf.child2 = child2
                     return
         # TODO: Check if the objects can be discriminated
         # leaves[0].grow()
 
-    def grow(self, channel=None, all_objects=None, topic_objects=None):
+    def grow(self, channel=None, disc_objects=None, topic_objects=None):
         '''Randomly selects a channel to grow.'''
+        all_objects = set(disc_objects) | set(topic_objects)
+
         if channel is None and all_objects is None and topic_objects is None:
             leaves = self._gather_leaves()
             random.choice(leaves).grow()
