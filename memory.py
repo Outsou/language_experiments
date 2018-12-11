@@ -35,7 +35,10 @@ class MFAssociationMemory:
             self.mf_dict[meaning][form] = self.min
         self.known_forms.add(form)
 
-    def strengthen_form(self, meaning, form, utility=None):
+    def strengthen_form(self, meaning, form, speaker=None, utility=None):
+        if meaning not in self.mf_dict:
+            self.mf_dict[meaning] = {}
+            self.meaning_stats[meaning] = copy.deepcopy(self.stat_start_vals)
         if form not in self.mf_dict[meaning]:
             self.mf_dict[meaning][form] = self.min
         for associated_form in self.mf_dict[meaning].keys():
@@ -48,23 +51,16 @@ class MFAssociationMemory:
             round(self.mf_dict[meaning][form] + self.increment, 1))
         if utility is not None:
             self._update_utility(meaning, utility)
-        self.meaning_stats[meaning]['speaker'] += 1
-
-    def strengthen_meaning(self, meaning, form):
         for associated_meaning in self.mf_dict.keys():
             if associated_meaning != meaning and form in self.mf_dict[associated_meaning]:
                 self.mf_dict[associated_meaning][form] = max(
                     self.min,
                     round(self.mf_dict[associated_meaning][form] - self.increment, 1))
-        if meaning not in self.mf_dict:
-            self.mf_dict[meaning] = {}
-            self.meaning_stats[meaning] = copy.deepcopy(self.stat_start_vals)
-        if form not in self.mf_dict[meaning]:
-            self.mf_dict[meaning][form] = self.min
-        self.mf_dict[meaning][form] = min(
-            self.max,
-            round(self.mf_dict[meaning][form] + self.increment, 1))
-        self.meaning_stats[meaning]['listener'] += 1
+        if speaker is not None:
+            if speaker:
+                self.meaning_stats[meaning]['speaker'] += 1
+            else:
+                self.meaning_stats[meaning]['listener'] += 1
 
     def weaken_association(self, meaning, form):
         self.mf_dict[meaning][form] = max(

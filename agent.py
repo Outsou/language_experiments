@@ -252,7 +252,7 @@ class AgentBasic(Agent):
     def observational_transmit(self, form):
         '''Speaker uses this to transmit form to hearer in the observational game.'''
         meaning = self._get_neighborhood(self.pos)
-        self.memory.strengthen_meaning(meaning, form)
+        self.memory.strengthen_form(meaning, form, speaker=False)
 
     def guessing_transmit(self, disc_form):
         '''Speaker uses this to transmit form to hearer in the guessing game.'''
@@ -264,7 +264,7 @@ class AgentBasic(Agent):
         if self.pos not in self._last_broadcast['topic_objects']:
             return False
         categoriser = self._last_broadcast['categoriser']
-        self.memory.strengthen_form(categoriser, disc_form)
+        self.memory.strengthen_form(categoriser, disc_form, speaker=False)
         return True
 
     def _play_guessing_game(self, place, hearer):
@@ -281,7 +281,7 @@ class AgentBasic(Agent):
         self.stat_dict['guessing_game_init'] += 1
         form = self._last_broadcast['disc_form']
         if hearer.guessing_transmit(form):
-            self.memory.strengthen_form(categoriser, form)
+            self.memory.strengthen_form(categoriser, form, speaker=True)
 
     def _play_observational_game(self, hearer):
         '''Start the observational game as the speaker.'''
@@ -292,7 +292,7 @@ class AgentBasic(Agent):
             form = self.memory.invent_form()
             self.memory.create_association(meaning, form)
         self.memory.report_form_use(meaning, form)
-        self.memory.strengthen_form(meaning, form)
+        self.memory.strengthen_form(meaning, form, speaker=True)
         hearer.observational_transmit(form)
         if self._guessing_game:
             self._play_guessing_game(meaning, hearer)
