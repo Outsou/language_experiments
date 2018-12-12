@@ -1,9 +1,10 @@
 from coopa_model import CoopaModel
-from utils import get_neighborhood_str, create_heatmap
+from utils import get_neighborhood_str, create_heatmap, create_graphs
 import time
 import os
 import numpy as np
 from disc_tree import Categoriser
+import copy
 
 
 def run_experiment(run_id, directory, play_guessing, premade_lang):
@@ -50,9 +51,10 @@ def run_experiment(run_id, directory, play_guessing, premade_lang):
         option2_selected += agent.stat_dict['option2_selected']
         extra_distance += agent.stat_dict['extra_distance']
         collision_map += agent.stat_dict['collision_map']
-        for j in range(len(agent.stat_dict['disc_trees'][-1])):
+        disc_trees = create_graphs(agent.stat_dict['discriminators'][-1][0], agent.stat_dict['memories'][-1][0])
+        for j in range(len(disc_trees)):
             chan = 'x' if j == 0 else 'y'
-            agent.stat_dict['disc_trees'][-1][j].render(filename='run{}_{}_{}'.format(run_id, agent.color, chan),
+            disc_trees[j].render(filename='run{}_{}_{}'.format(run_id, agent.color, chan),
                                                         directory=directory, cleanup=True)
     result_str += 'Collisions: {}\n'.format(collisions)
     result_str += 'Items delivered: {}\n'.format(items_delivered)
@@ -67,7 +69,8 @@ def run_experiment(run_id, directory, play_guessing, premade_lang):
     print(result_str)
     print('Simulation took: {}'.format(time.time() - start_time))
     print()
-    return items_delivered, collisions, collision_map, model.grid
+    # del model
+    return items_delivered, collisions, collision_map
 
 if __name__ == "__main__":
     np.set_printoptions(suppress=True)
@@ -83,8 +86,8 @@ if __name__ == "__main__":
     for i in range(1, runs + 1):
         start_time = time.time()
         print('Starting run {}'.format(i))
-        run_delivered, run_collisions, run_collision_map, grid = run_experiment(i, directory,
-                                                                                play_guessing, premade_lang)
+        run_delivered, run_collisions, run_collision_map = run_experiment(i, directory,
+                                                                          play_guessing, premade_lang)
         items_delivered.append(run_delivered)
         collisions.append(run_collisions)
         collision_maps.append(run_collision_map)
@@ -92,9 +95,10 @@ if __name__ == "__main__":
         print('Finished run, time left {}'.format(sum(times) / len(times) * (runs - i)))
         print()
 
+    model = CoopaModel(False)
     collision_map = np.rot90(sum(collision_maps)) / runs
-    create_heatmap(collision_map, grid, os.path.join(directory, 'collision_map.pdf'))
-    create_heatmap(collision_map, grid, os.path.join(directory, 'collision_map.png'))
+    create_heatmap(collision_map, model.grid, os.path.join(directory, 'collision_map.pdf'))
+    create_heatmap(collision_map, model.grid, os.path.join(directory, 'collision_map.png'))
 
     with open(os.path.join(directory, 'final.txt'), 'w') as text_file:
         print('Delivered: {}, avg: {}'.format(items_delivered, np.mean(items_delivered)), file=text_file)

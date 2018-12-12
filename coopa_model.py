@@ -28,10 +28,6 @@ class CoopaModel(Model):
 
         # Agents
         self.agents = []
-        a = AgentBasic(0, self, 'green', guessing_game=play_guessing, premade_lang=premade_lang)
-        self.schedule.add(a)
-        self.grid.position_agent(a, 4, 9)
-        self.agents.append(a)
 
         a = AgentBasic(0, self, 'blue', guessing_game=play_guessing, premade_lang=premade_lang)
         self.schedule.add(a)
@@ -43,9 +39,24 @@ class CoopaModel(Model):
         self.grid.position_agent(a, 3, 9)
         self.agents.append(a)
 
+        a = AgentBasic(0, self, 'green', guessing_game=play_guessing, premade_lang=premade_lang)
+        self.schedule.add(a)
+        self.grid.position_agent(a, 4, 9)
+        self.agents.append(a)
+
         a = AgentBasic(0, self, 'purple', guessing_game=play_guessing, premade_lang=premade_lang)
         self.schedule.add(a)
         self.grid.position_agent(a, 5, 9)
+        self.agents.append(a)
+
+        a = AgentBasic(0, self, 'red', guessing_game=play_guessing, premade_lang=premade_lang)
+        self.schedule.add(a)
+        self.grid.position_agent(a, 6, 9)
+        self.agents.append(a)
+
+        a = AgentBasic(0, self, 'pink', guessing_game=play_guessing, premade_lang=premade_lang)
+        self.schedule.add(a)
+        self.grid.position_agent(a, 7, 9)
         self.agents.append(a)
 
     def step(self):

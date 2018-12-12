@@ -1,5 +1,4 @@
 from mesa import Agent
-from objects import Resource, DropPoint
 import numpy as np
 from search.astar import astar
 from memory import MFAssociationMemory
@@ -7,7 +6,7 @@ from objects import Wall, ActionCenter, Shelf
 import random
 import math
 from disc_tree import Discriminator
-from utils import create_graphs
+import copy
 
 class AgentBasic(Agent):
     def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True, premade_lang=False,
@@ -28,7 +27,8 @@ class AgentBasic(Agent):
         self.stat_dict = {'obs_game_init': 0,
                           'items_delivered': 0,
                           'guessing_game_init': 0,
-                          'disc_trees': [],
+                          'discriminators': [(copy.deepcopy(self.discriminator), 0)],
+                          'memories': [(copy.deepcopy(self.memory), 0)],
                           'option1_selected': 0,
                           'option2_selected': 0,
                           'extra_distance': 0,
@@ -247,12 +247,14 @@ class AgentBasic(Agent):
         categoriser = self.discriminator.set_discriminate(all_objects, topic_objects, disc_objects)
         if categoriser is None:
             self.discriminator.grow(disc_objects=disc_objects, topic_objects=topic_objects)
+            self.stat_dict['discriminators'].append((copy.deepcopy(self.discriminator), self._age))
         return categoriser
 
     def observational_transmit(self, form):
         '''Speaker uses this to transmit form to hearer in the observational game.'''
         meaning = self._get_neighborhood(self.pos)
         self.memory.strengthen_form(meaning, form, speaker=False)
+        self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
 
     def guessing_transmit(self, disc_form):
         '''Speaker uses this to transmit form to hearer in the guessing game.'''
@@ -265,6 +267,7 @@ class AgentBasic(Agent):
             return False
         categoriser = self._last_broadcast['categoriser']
         self.memory.strengthen_form(categoriser, disc_form, speaker=False)
+        self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
         return True
 
     def _play_guessing_game(self, place, hearer):
@@ -282,6 +285,7 @@ class AgentBasic(Agent):
         form = self._last_broadcast['disc_form']
         if hearer.guessing_transmit(form):
             self.memory.strengthen_form(categoriser, form, speaker=True)
+            self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
 
     def _play_observational_game(self, hearer):
         '''Start the observational game as the speaker.'''
@@ -293,6 +297,7 @@ class AgentBasic(Agent):
             self.memory.create_association(meaning, form)
         self.memory.report_form_use(meaning, form)
         self.memory.strengthen_form(meaning, form, speaker=True)
+        self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
         hearer.observational_transmit(form)
         if self._guessing_game:
             self._play_guessing_game(meaning, hearer)
@@ -452,8 +457,6 @@ class AgentBasic(Agent):
             self._path = self._calculate_path(self.map)
 
     def finish_step(self):
-        self.stat_dict['disc_trees'].append(create_graphs(self.discriminator, self.memory))
-
         # Reached destination
         if len(self._path) < 2 and len(self._path) > 0:
             x, y = self._destination

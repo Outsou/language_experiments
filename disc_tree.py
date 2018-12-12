@@ -47,6 +47,12 @@ class Categoriser:
                 new_values.add(val)
         return new_values
 
+    def __hash__(self):
+        return int(str(self.range.__hash__()) + str(self.channel.__hash__()))
+
+    def __eq__(self, other):
+        return type(other) == Categoriser and self.range == other.range and self.channel == other.channel
+
     # def set_discriminate(self, value, all_values):
     #     if self.child1 is not None and self.child1.range[0] <= value <= self.child1.range[1]:
     #         new_values = self._get_new_values(self.child1, all_values)
@@ -174,7 +180,7 @@ class Discriminator:
                     leaf.child2 = child2
                     return
         # TODO: Check if the objects can be discriminated
-        # leaves[0].grow()
+        leaves[0].grow()
 
     def grow(self, channel=None, disc_objects=None, topic_objects=None):
         '''Randomly selects a channel to grow.'''
