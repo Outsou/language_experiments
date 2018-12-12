@@ -69,7 +69,6 @@ def run_experiment(run_id, directory, play_guessing, premade_lang):
     print(result_str)
     print('Simulation took: {}'.format(time.time() - start_time))
     print()
-    # del model
     return items_delivered, collisions, collision_map
 
 if __name__ == "__main__":

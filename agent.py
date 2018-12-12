@@ -10,12 +10,13 @@ import copy
 
 class AgentBasic(Agent):
     def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True, premade_lang=False,
-                 utility_threshold=2):
+                 utility_threshold=2, gather_stats=False):
         super().__init__(unique_id, model)
         self._guessing_game = guessing_game
         self.neighborhood_rotation = neighborhood_rotation
         self._premade_lang = premade_lang
         self._utility_threshold = utility_threshold
+        self._gather_stats = gather_stats
         self._destination = model.action_center.pos
         self._path = None
         self.color = color
@@ -141,6 +142,11 @@ class AgentBasic(Agent):
         else:
             # Route not clear, choose random move
             movement_options = self._get_free_neighbors()
+            x_dist = abs(self.pos[0] - self.model.action_center.pos[0])
+            y_dist = abs(self.pos[1] - self.model.action_center.pos[1])
+            movement_options = [x for x in movement_options
+                                if abs(x[0] - self.model.action_center.pos[0]) < x_dist
+                                or abs(x[1] - self.model.action_center.pos[1]) < y_dist]
             if len(movement_options) > 0:
                 old_pos = self.pos
                 self.model.grid.move_agent(self, random.choice(movement_options))
@@ -247,7 +253,8 @@ class AgentBasic(Agent):
         categoriser = self.discriminator.set_discriminate(all_objects, topic_objects, disc_objects)
         if categoriser is None:
             self.discriminator.grow(disc_objects=disc_objects, topic_objects=topic_objects)
-            self.stat_dict['discriminators'].append((copy.deepcopy(self.discriminator), self._age))
+            if self._gather_stats:
+                self.stat_dict['discriminators'].append((copy.deepcopy(self.discriminator), self._age))
         return categoriser
 
     def observational_transmit(self, form):
@@ -267,7 +274,8 @@ class AgentBasic(Agent):
             return False
         categoriser = self._last_broadcast['categoriser']
         self.memory.strengthen_form(categoriser, disc_form, speaker=False)
-        self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
+        if self._gather_stats:
+            self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
         return True
 
     def _play_guessing_game(self, place, hearer):
@@ -281,15 +289,19 @@ class AgentBasic(Agent):
         if self.pos not in self._last_broadcast['topic_objects']:
             return
         categoriser = self._last_broadcast['categoriser']
-        self.stat_dict['guessing_game_init'] += 1
+        if self._gather_stats:
+            self.stat_dict['guessing_game_init'] += 1
         form = self._last_broadcast['disc_form']
         if hearer.guessing_transmit(form):
             self.memory.strengthen_form(categoriser, form, speaker=True)
-            self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
+            if self._gather_stats:
+                self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
 
     def _play_observational_game(self, hearer):
         '''Start the observational game as the speaker.'''
         self.stat_dict['obs_game_init'] += 1
+        # if self.stat_dict['obs_game_init'] > 5000:
+        #     print('wot')
         meaning = self._get_neighborhood(self.pos)
         form = self.memory.get_form(meaning)
         if form is None:
@@ -297,7 +309,8 @@ class AgentBasic(Agent):
             self.memory.create_association(meaning, form)
         self.memory.report_form_use(meaning, form)
         self.memory.strengthen_form(meaning, form, speaker=True)
-        self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
+        if self._gather_stats:
+            self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
         hearer.observational_transmit(form)
         if self._guessing_game:
             self._play_guessing_game(meaning, hearer)

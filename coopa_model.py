@@ -59,6 +59,9 @@ class CoopaModel(Model):
         self.grid.position_agent(a, 7, 9)
         self.agents.append(a)
 
+        import numpy as np
+        np.set_printoptions(linewidth=320)
+
     def step(self):
         self.schedule.step()
         self.not_moved = [a for a in self.agents]
