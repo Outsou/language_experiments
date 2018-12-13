@@ -33,13 +33,15 @@ class AgentBasic(Agent):
                           'option1_selected': 0,
                           'option2_selected': 0,
                           'extra_distance': 0,
-                          'collision_map': np.zeros(self.map.shape)}
+                          'collision_map': np.zeros(self.map.shape),
+                          'delivery_times': []}
         self._has_item = False
         self._backing_off = False
         self._backing_info = None
         self._age = 0
         self._last_broadcast = None
         self._blocked = None
+        self._last_delivery = 0
 
         # if self._premade_lang:
         #     self.discriminator.grow(0)
@@ -289,8 +291,7 @@ class AgentBasic(Agent):
         if self.pos not in self._last_broadcast['topic_objects']:
             return
         categoriser = self._last_broadcast['categoriser']
-        if self._gather_stats:
-            self.stat_dict['guessing_game_init'] += 1
+        self.stat_dict['guessing_game_init'] += 1
         form = self._last_broadcast['disc_form']
         if hearer.guessing_transmit(form):
             self.memory.strengthen_form(categoriser, form, speaker=True)
@@ -300,8 +301,6 @@ class AgentBasic(Agent):
     def _play_observational_game(self, hearer):
         '''Start the observational game as the speaker.'''
         self.stat_dict['obs_game_init'] += 1
-        # if self.stat_dict['obs_game_init'] > 5000:
-        #     print('wot')
         meaning = self._get_neighborhood(self.pos)
         form = self.memory.get_form(meaning)
         if form is None:
@@ -478,6 +477,8 @@ class AgentBasic(Agent):
                 self._destination = ac.get_mission()
                 if self._has_item:
                     self.stat_dict['items_delivered'] += 1
+                    self.stat_dict['delivery_times'].append(self._age - self._last_delivery)
+                    self._last_delivery = self._age
                 self._has_item = False
                 self._path = self._broadcast_question()
             else:

@@ -5,11 +5,12 @@ import os
 import numpy as np
 from disc_tree import Categoriser
 import copy
+import matplotlib.pyplot as plt
 
 
-def run_experiment(run_id, directory, play_guessing, premade_lang):
+def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats):
     print('Running experiment...')
-    model = CoopaModel(play_guessing, premade_lang)
+    model = CoopaModel(play_guessing, premade_lang, gather_stats)
     times = []
     start_time = time.time()
     period_start = time.time()
@@ -43,6 +44,7 @@ def run_experiment(run_id, directory, play_guessing, premade_lang):
     option1_selected = 0
     option2_selected = 0
     collision_map = np.zeros((model.grid.width, model.grid.height))
+    delivery_times = []
     for agent in model.agents:
         collisions += agent.stat_dict['obs_game_init']
         items_delivered += agent.stat_dict['items_delivered']
@@ -56,6 +58,11 @@ def run_experiment(run_id, directory, play_guessing, premade_lang):
             chan = 'x' if j == 0 else 'y'
             disc_trees[j].render(filename='run{}_{}_{}'.format(run_id, agent.color, chan),
                                                         directory=directory, cleanup=True)
+        for j in range(len(agent.stat_dict['delivery_times'])):
+            if j == len(delivery_times):
+                delivery_times.append([])
+            delivery_times[j].append(agent.stat_dict['delivery_times'][j])
+
     result_str += 'Collisions: {}\n'.format(collisions)
     result_str += 'Items delivered: {}\n'.format(items_delivered)
     result_str += 'Guessing played: {}\n'.format(guessing_played)
@@ -69,7 +76,18 @@ def run_experiment(run_id, directory, play_guessing, premade_lang):
     print(result_str)
     print('Simulation took: {}'.format(time.time() - start_time))
     print()
-    return items_delivered, collisions, collision_map
+    return items_delivered, collisions, collision_map, delivery_times
+
+def get_avg_times(delivery_times):
+    min_deliveries = min([len(x) for x in delivery_times])
+    avg_times = []
+    for j in range(min_deliveries):
+        times = []
+        for run_times in delivery_times:
+            times += run_times[j]
+        avg_times.append(sum(times) / len(times))
+    return avg_times
+
 
 if __name__ == "__main__":
     np.set_printoptions(suppress=True)
@@ -80,13 +98,19 @@ if __name__ == "__main__":
     runs = 30
     play_guessing = True
     premade_lang = False
+    gather_stats = True
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     directory = 'results_{}'.format(date_time)
+    delivery_times = []
     for i in range(1, runs + 1):
         start_time = time.time()
         print('Starting run {}'.format(i))
-        run_delivered, run_collisions, run_collision_map = run_experiment(i, directory,
-                                                                          play_guessing, premade_lang)
+        run_delivered, run_collisions, run_collision_map, run_delivery_times = run_experiment(i,
+                                                                                              directory,
+                                                                                              play_guessing,
+                                                                                              premade_lang,
+                                                                                              gather_stats)
+        delivery_times.append(run_delivery_times)
         items_delivered.append(run_delivered)
         collisions.append(run_collisions)
         collision_maps.append(run_collision_map)
@@ -94,6 +118,10 @@ if __name__ == "__main__":
         print('Finished run, time left {}'.format(sum(times) / len(times) * (runs - i)))
         print()
 
+    avg_times = get_avg_times(delivery_times)
+    plt.plot(avg_times)
+    plt.savefig(os.path.join(directory, 'times.pdf'))
+    plt.close()
     model = CoopaModel(False)
     collision_map = np.rot90(sum(collision_maps)) / runs
     create_heatmap(collision_map, model.grid, os.path.join(directory, 'collision_map.pdf'))

@@ -8,12 +8,13 @@ from mesa.datacollection import DataCollector
 from search.util import build_map
 from agent import AgentBasic
 import random
+import numpy as np
 
 
 class CoopaModel(Model):
     """A model with some number of agents."""
 
-    def __init__(self, play_guessing, premade_lang=False):
+    def __init__(self, play_guessing, premade_lang=False, gather_stats=False):
         self.running = True
         self.grid = SingleGrid(Layout.width, Layout.height, False)  # True=toroidal
         self.schedule = RandomActivation(self)
@@ -29,37 +30,42 @@ class CoopaModel(Model):
         # Agents
         self.agents = []
 
-        a = AgentBasic(0, self, 'blue', guessing_game=play_guessing, premade_lang=premade_lang)
+        a = AgentBasic(0, self, 'blue', guessing_game=play_guessing, premade_lang=premade_lang,
+                       gather_stats=gather_stats)
         self.schedule.add(a)
         self.grid.position_agent(a, 2, 9)
         self.agents.append(a)
 
-        a = AgentBasic(0, self, 'black', guessing_game=play_guessing, premade_lang=premade_lang)
+        a = AgentBasic(0, self, 'black', guessing_game=play_guessing, premade_lang=premade_lang,
+                       gather_stats=gather_stats)
         self.schedule.add(a)
         self.grid.position_agent(a, 3, 9)
         self.agents.append(a)
 
-        a = AgentBasic(0, self, 'green', guessing_game=play_guessing, premade_lang=premade_lang)
+        a = AgentBasic(0, self, 'green', guessing_game=play_guessing, premade_lang=premade_lang,
+                       gather_stats=gather_stats)
         self.schedule.add(a)
         self.grid.position_agent(a, 4, 9)
         self.agents.append(a)
 
-        a = AgentBasic(0, self, 'purple', guessing_game=play_guessing, premade_lang=premade_lang)
+        a = AgentBasic(0, self, 'purple', guessing_game=play_guessing, premade_lang=premade_lang,
+                       gather_stats=gather_stats)
         self.schedule.add(a)
         self.grid.position_agent(a, 5, 9)
         self.agents.append(a)
 
-        a = AgentBasic(0, self, 'red', guessing_game=play_guessing, premade_lang=premade_lang)
+        a = AgentBasic(0, self, 'red', guessing_game=play_guessing, premade_lang=premade_lang,
+                       gather_stats=gather_stats)
         self.schedule.add(a)
         self.grid.position_agent(a, 6, 9)
         self.agents.append(a)
 
-        a = AgentBasic(0, self, 'pink', guessing_game=play_guessing, premade_lang=premade_lang)
+        a = AgentBasic(0, self, 'pink', guessing_game=play_guessing, premade_lang=premade_lang,
+                       gather_stats=gather_stats)
         self.schedule.add(a)
         self.grid.position_agent(a, 7, 9)
         self.agents.append(a)
 
-        import numpy as np
         np.set_printoptions(linewidth=320)
 
     def step(self):

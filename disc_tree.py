@@ -174,8 +174,6 @@ class Discriminator:
                     if categoriser.range[0] <= obj[chan] <= categoriser.range[1]:
                         objects.add(obj)
                 if objects == topic_objects:
-                    if leaf.channel == 1 and (leaf.range == (0, 0.5) or leaf.range == (0.5, 1)):
-                        print('what')
                     leaf.child1 = child1
                     leaf.child2 = child2
                     return
