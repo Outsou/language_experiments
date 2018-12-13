@@ -15,6 +15,10 @@ class Layout:
                 grid.place_agent(cls(w+h, self), cell)
         return cells
 
+    def draw_room_from_point (self, grid, x, y, width, height):
+        for i in range(width):
+            self.draw_block_from_point(grid, x+i, y, 1, height, Wall)
+
     def create_world(self, model, play_guessing):
         # Side walls
         self.draw_block_from_point(model.grid, 0, 1, 1, 14, Wall)
@@ -24,9 +28,13 @@ class Layout:
         self.draw_block_from_point(model.grid, 0, 0, 11, 1, Wall)
         self.draw_block_from_point(model.grid, 0, 15, 20, 1, Wall)
 
+        #Corner
+        self.draw_room_from_point(model.grid, 11, 0, 9, 9)
+
         # Horizontal shelf area walls
         self.draw_block_from_point(model.grid, 11, 9, 9, 1, Wall)
         self.draw_block_from_point(model.grid, 19, 10, 1, 5, Wall)
+
 
         shelf_cells = []
 

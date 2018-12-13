@@ -33,38 +33,41 @@ class CoopaModel(Model):
         a = AgentBasic(0, self, 'blue', guessing_game=play_guessing, premade_lang=premade_lang,
                        gather_stats=gather_stats)
         self.schedule.add(a)
-        self.grid.position_agent(a, 2, 9)
+        # self.grid.position_agent(a, 2, 9)
         self.agents.append(a)
 
         a = AgentBasic(0, self, 'black', guessing_game=play_guessing, premade_lang=premade_lang,
                        gather_stats=gather_stats)
         self.schedule.add(a)
-        self.grid.position_agent(a, 3, 9)
+        # self.grid.position_agent(a, 3, 9)
         self.agents.append(a)
 
         a = AgentBasic(0, self, 'green', guessing_game=play_guessing, premade_lang=premade_lang,
                        gather_stats=gather_stats)
         self.schedule.add(a)
-        self.grid.position_agent(a, 4, 9)
+        # self.grid.position_agent(a, 4, 9)
         self.agents.append(a)
 
         a = AgentBasic(0, self, 'purple', guessing_game=play_guessing, premade_lang=premade_lang,
                        gather_stats=gather_stats)
         self.schedule.add(a)
-        self.grid.position_agent(a, 5, 9)
+        # self.grid.position_agent(a, 5, 9)
         self.agents.append(a)
 
         a = AgentBasic(0, self, 'red', guessing_game=play_guessing, premade_lang=premade_lang,
                        gather_stats=gather_stats)
         self.schedule.add(a)
-        self.grid.position_agent(a, 6, 9)
+        # self.grid.position_agent(a, 6, 9)
         self.agents.append(a)
 
         a = AgentBasic(0, self, 'pink', guessing_game=play_guessing, premade_lang=premade_lang,
                        gather_stats=gather_stats)
         self.schedule.add(a)
-        self.grid.position_agent(a, 7, 9)
+        # self.grid.position_agent(a, 7, 9)
         self.agents.append(a)
+
+        for agent in self.agents:
+            self.grid.position_agent(agent)
 
         np.set_printoptions(linewidth=320)
 

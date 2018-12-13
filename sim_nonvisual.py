@@ -4,18 +4,20 @@ import time
 import os
 import numpy as np
 from disc_tree import Categoriser
-import copy
 import matplotlib.pyplot as plt
+import pickle
 
 
 def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats):
+    run_dir = os.path.join(directory, str(run_id))
+    os.makedirs(run_dir)
     print('Running experiment...')
     model = CoopaModel(play_guessing, premade_lang, gather_stats)
     times = []
     start_time = time.time()
     period_start = time.time()
     timing_steps = 10000
-    steps = 50000
+    steps = 2000
     for i in range(1, steps + 1):
         if i % timing_steps == 0:
             times.append(time.time() - period_start)
@@ -57,11 +59,13 @@ def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats)
         for j in range(len(disc_trees)):
             chan = 'x' if j == 0 else 'y'
             disc_trees[j].render(filename='run{}_{}_{}'.format(run_id, agent.color, chan),
-                                                        directory=directory, cleanup=True)
+                                 directory=run_dir, cleanup=True)
         for j in range(len(agent.stat_dict['delivery_times'])):
             if j == len(delivery_times):
                 delivery_times.append([])
             delivery_times[j].append(agent.stat_dict['delivery_times'][j])
+        pickle.dump(agent.stat_dict, open(os.path.join(run_dir, '{}.p'.format(agent.color)), 'wb'))
+        # asd = pickle.load(open(os.path.join(run_dir, '{}.p'.format(agent.color)), 'rb'))
 
     result_str += 'Collisions: {}\n'.format(collisions)
     result_str += 'Items delivered: {}\n'.format(items_delivered)
@@ -70,7 +74,7 @@ def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats)
     result_str += 'Option 2 selected: {}\n'.format(option2_selected)
     result_str += 'Extra distance: {}\n'.format(extra_distance)
 
-    with open(os.path.join(directory, 'run{}.txt'.format(run_id)), 'w') as text_file:
+    with open(os.path.join(run_dir, 'run{}.txt'.format(run_id)), 'w') as text_file:
         print(result_str, file=text_file)
 
     print(result_str)
@@ -95,8 +99,8 @@ if __name__ == "__main__":
     collisions = []
     collision_maps = []
     times = []
-    runs = 30
-    play_guessing = True
+    runs = 5
+    play_guessing = False
     premade_lang = False
     gather_stats = True
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
