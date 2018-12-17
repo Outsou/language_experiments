@@ -17,7 +17,7 @@ def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats)
     start_time = time.time()
     period_start = time.time()
     timing_steps = 10000
-    steps = 2000
+    steps = 20000
     for i in range(1, steps + 1):
         if i % timing_steps == 0:
             times.append(time.time() - period_start)
@@ -99,8 +99,8 @@ if __name__ == "__main__":
     collisions = []
     collision_maps = []
     times = []
-    runs = 5
-    play_guessing = False
+    runs = 100
+    play_guessing = True
     premade_lang = False
     gather_stats = True
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
