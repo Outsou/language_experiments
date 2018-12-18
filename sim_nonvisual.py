@@ -8,11 +8,11 @@ import matplotlib.pyplot as plt
 import pickle
 
 
-def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats):
+def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats, random_behaviour):
     run_dir = os.path.join(directory, str(run_id))
     os.makedirs(run_dir)
     print('Running experiment...')
-    model = CoopaModel(play_guessing, premade_lang, gather_stats)
+    model = CoopaModel(play_guessing, premade_lang, gather_stats, random_behaviour)
     times = []
     start_time = time.time()
     period_start = time.time()
@@ -100,9 +100,13 @@ if __name__ == "__main__":
     collision_maps = []
     times = []
     runs = 100
+
+    # AGENT PARAMS
     play_guessing = True
     premade_lang = False
     gather_stats = True
+    random_behaviour = False
+
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     directory = 'results_{}'.format(date_time)
     delivery_times = []
@@ -113,7 +117,8 @@ if __name__ == "__main__":
                                                                                               directory,
                                                                                               play_guessing,
                                                                                               premade_lang,
-                                                                                              gather_stats)
+                                                                                              gather_stats,
+                                                                                              random_behaviour)
         delivery_times.append(run_delivery_times)
         items_delivered.append(run_delivered)
         collisions.append(run_collisions)

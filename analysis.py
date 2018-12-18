@@ -54,6 +54,7 @@ def create_delivery_time_plots(lang_stats, no_lang_stats):
     plt.xlabel('Delivery')
     plt.legend()
     plt.savefig(os.path.join('anal_results', 'times.pdf'))
+    plt.savefig(os.path.join('anal_results', 'times.png'))
     plt.close()
 
 def get_dirs_in_path(path):
@@ -100,4 +101,3 @@ if __name__ == '__main__':
     create_delivery_time_plots(lang_stats, no_lang_stats)
 
     print('Done...')
-    

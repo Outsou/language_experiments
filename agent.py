@@ -10,13 +10,14 @@ import copy
 
 class AgentBasic(Agent):
     def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True, premade_lang=False,
-                 utility_threshold=2, gather_stats=False):
+                 utility_threshold=2, gather_stats=False, random_behaviour=False):
         super().__init__(unique_id, model)
         self._guessing_game = guessing_game
         self.neighborhood_rotation = neighborhood_rotation
         self._premade_lang = premade_lang
         self._utility_threshold = utility_threshold
         self._gather_stats = gather_stats
+        self._rand_behaviour = random_behaviour
         self._destination = model.action_center.pos
         self._path = None
         self.color = color
@@ -415,6 +416,14 @@ class AgentBasic(Agent):
             # Only one option
             return option1
 
+        if self._rand_behaviour:
+            if np.random.random() < 0.5:
+                self._blocked = option2[-2]
+                return option1
+            else:
+                self._blocked = option1[-2]
+                return option2
+
         if not self._guessing_game:
             self._blocked = option2[-2]
             return option1
@@ -434,7 +443,6 @@ class AgentBasic(Agent):
                                     'topic_objects': topic_objects}
             if self.model.broadcast_question(place_form, disc_form, self):
                 self.stat_dict['option1_selected'] += 1
-                # self.map[option2[-2]] = 1
                 self._blocked = option2[-2]
                 return option1
 
@@ -450,16 +458,19 @@ class AgentBasic(Agent):
             if self.model.broadcast_question(place_form, disc_form, self):
                 self.stat_dict['extra_distance'] += len(option2) - len(option1)
                 self.stat_dict['option2_selected'] += 1
-                # self.map[option1[-2]] = 1
                 self._blocked = option1[-2]
                 return option2
 
         # If no path was free, use option1
-        self.stat_dict['option1_selected'] += 1
-        # self.map[option2[-2]] = 1
         self._last_broadcast = None
-        self._blocked = option2[-2]
-        return option1
+        if np.random.random() < 0.5:
+            self.stat_dict['option1_selected'] += 1
+            self._blocked = option2[-2]
+            return option1
+
+        self.stat_dict['option2_selected'] += 1
+        self._blocked = option1[-2]
+        return option2
         # self.memory.strengthen_form(discriminator, disc_form)
 
     def step(self):

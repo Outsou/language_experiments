@@ -14,7 +14,7 @@ import numpy as np
 class CoopaModel(Model):
     """A model with some number of agents."""
 
-    def __init__(self, play_guessing, premade_lang=False, gather_stats=False):
+    def __init__(self, play_guessing, premade_lang=False, gather_stats=False, random_behaviour=False, agents=6):
         self.running = True
         self.grid = SingleGrid(Layout.width, Layout.height, False)  # True=toroidal
         self.schedule = RandomActivation(self)
@@ -29,42 +29,13 @@ class CoopaModel(Model):
 
         # Agents
         self.agents = []
+        colors = ['blue', 'black', 'green', 'purple', 'red', 'pink']
 
-        a = AgentBasic(0, self, 'blue', guessing_game=play_guessing, premade_lang=premade_lang,
-                       gather_stats=gather_stats)
-        self.schedule.add(a)
-        # self.grid.position_agent(a, 2, 9)
-        self.agents.append(a)
-
-        a = AgentBasic(0, self, 'black', guessing_game=play_guessing, premade_lang=premade_lang,
-                       gather_stats=gather_stats)
-        self.schedule.add(a)
-        # self.grid.position_agent(a, 3, 9)
-        self.agents.append(a)
-
-        a = AgentBasic(0, self, 'green', guessing_game=play_guessing, premade_lang=premade_lang,
-                       gather_stats=gather_stats)
-        self.schedule.add(a)
-        # self.grid.position_agent(a, 4, 9)
-        self.agents.append(a)
-
-        a = AgentBasic(0, self, 'purple', guessing_game=play_guessing, premade_lang=premade_lang,
-                       gather_stats=gather_stats)
-        self.schedule.add(a)
-        # self.grid.position_agent(a, 5, 9)
-        self.agents.append(a)
-
-        a = AgentBasic(0, self, 'red', guessing_game=play_guessing, premade_lang=premade_lang,
-                       gather_stats=gather_stats)
-        self.schedule.add(a)
-        # self.grid.position_agent(a, 6, 9)
-        self.agents.append(a)
-
-        a = AgentBasic(0, self, 'pink', guessing_game=play_guessing, premade_lang=premade_lang,
-                       gather_stats=gather_stats)
-        self.schedule.add(a)
-        # self.grid.position_agent(a, 7, 9)
-        self.agents.append(a)
+        for i in range(agents):
+            a = AgentBasic(0, self, colors[i], guessing_game=play_guessing, premade_lang=premade_lang,
+                           gather_stats=gather_stats, random_behaviour=random_behaviour)
+            self.schedule.add(a)
+            self.agents.append(a)
 
         for agent in self.agents:
             self.grid.position_agent(agent)

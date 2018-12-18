@@ -13,9 +13,10 @@ agent_type = UserSettableParameter('choice', 'Agent type', value=sorted(AGENT_TY
 w, h = Layout.width, Layout.height
 grid = CanvasGrid(agent_portrayal, w, h, 20 * w, 20 * h)
 
-def get_server(play_guessing):
+def get_server(play_guessing, random_behaviour):
     server = ModularServer(CoopaModel,
                            [grid],
                            "Coopa Model",
-                           {"play_guessing": play_guessing})
+                           {"play_guessing": play_guessing,
+                            "random_behaviour": random_behaviour})
     return server
