@@ -99,13 +99,13 @@ if __name__ == "__main__":
     collisions = []
     collision_maps = []
     times = []
-    runs = 100
+    runs = 30
 
     # AGENT PARAMS
-    play_guessing = True
+    play_guessing = False
     premade_lang = False
     gather_stats = True
-    random_behaviour = False
+    random_behaviour = True
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     directory = 'results_{}'.format(date_time)

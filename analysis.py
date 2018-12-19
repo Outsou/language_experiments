@@ -32,7 +32,7 @@ def get_avg_times(stats):
         avg_times.append(sum(times) / len(times))
     return avg_times
 
-def create_delivery_time_plots(lang_stats, no_lang_stats):
+def create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir):
     '''Creates a delivery time plot.'''
     avg_times_lang =  get_avg_times(lang_stats)[1:] # first element dropped
     avg_times_no_lang = get_avg_times(no_lang_stats)[1:]
@@ -53,8 +53,8 @@ def create_delivery_time_plots(lang_stats, no_lang_stats):
     plt.ylabel('Time steps used for last {} deliveries'.format(w_size))
     plt.xlabel('Delivery')
     plt.legend()
-    plt.savefig(os.path.join('anal_results', 'times.pdf'))
-    plt.savefig(os.path.join('anal_results', 'times.png'))
+    plt.savefig(os.path.join(analysis_dir, 'times.pdf'))
+    plt.savefig(os.path.join(analysis_dir, 'times.png'))
     plt.close()
 
 def get_dirs_in_path(path):
@@ -87,17 +87,18 @@ def get_stats(result_path):
 if __name__ == '__main__':
     result_dir_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-42'
     result_dir_no_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-34'
+    analysis_dir = 'analysis_results'
 
     print('Loading language stats...')
     lang_stats = get_stats(result_dir_lang)
     print('Loading no language stats...')
     no_lang_stats = get_stats(result_dir_no_lang)
 
-    shutil.rmtree('anal_results', ignore_errors=True)
+    shutil.rmtree(analysis_dir, ignore_errors=True)
     print('')
-    os.mkdir('anal_results')
+    os.mkdir(analysis_dir)
 
     print('Creating delivery time plots...')
-    create_delivery_time_plots(lang_stats, no_lang_stats)
+    create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir)
 
     print('Done...')

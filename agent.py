@@ -462,16 +462,20 @@ class AgentBasic(Agent):
                 return option2
 
         # If no path was free, use option1
-        self._last_broadcast = None
-        if np.random.random() < 0.5:
-            self.stat_dict['option1_selected'] += 1
-            self._blocked = option2[-2]
-            return option1
+        # self._last_broadcast = None
+        # if np.random.random() < 0.5:
+        #     self.stat_dict['option1_selected'] += 1
+        #     self._blocked = option2[-2]
+        #     return option1
+        #
+        # self.stat_dict['option2_selected'] += 1
+        # self._blocked = option1[-2]
+        # return option2
 
-        self.stat_dict['option2_selected'] += 1
-        self._blocked = option1[-2]
-        return option2
-        # self.memory.strengthen_form(discriminator, disc_form)
+        self._last_broadcast = None
+        self.stat_dict['option1_selected'] += 1
+        self._blocked = option2[-2]
+        return option1
 
     def step(self):
         self._age += 1
