@@ -32,7 +32,7 @@ class CoopaModel(Model):
         colors = ['blue', 'black', 'green', 'purple', 'red', 'pink']
 
         for i in range(agents):
-            a = AgentBasic(0, self, colors[i], guessing_game=play_guessing, premade_lang=premade_lang,
+            a = AgentBasic(100 + i, self, colors[i], guessing_game=play_guessing, premade_lang=premade_lang,
                            gather_stats=gather_stats, random_behaviour=random_behaviour)
             self.schedule.add(a)
             self.agents.append(a)

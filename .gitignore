@@ -4,3 +4,4 @@ __pycache__/
 *.gv
 results*/
 venv/
+analysis_results/

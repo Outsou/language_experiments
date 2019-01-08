@@ -115,8 +115,8 @@ class AgentBasic(Agent):
             if utility is not None and abs(utility) > max_utility:
                 max_utility = abs(utility)
                 max_meaning = meaning
-        if max_utility < self._utility_threshold:
-            return None
+        # if max_utility < self._utility_threshold:
+        #     return None
         return max_meaning
 
     def _get_free_neighbors(self):
@@ -416,17 +416,17 @@ class AgentBasic(Agent):
             # Only one option
             return option1
 
-        if self._rand_behaviour:
-            if np.random.random() < 0.5:
+        if not self._guessing_game:
+            if self._rand_behaviour:
+                if np.random.random() < 0.5:
+                    self._blocked = option2[-2]
+                    return option1
+                else:
+                    self._blocked = option1[-2]
+                    return option2
+            else:
                 self._blocked = option2[-2]
                 return option1
-            else:
-                self._blocked = option1[-2]
-                return option2
-
-        if not self._guessing_game:
-            self._blocked = option2[-2]
-            return option1
 
         # First ask if option1 is free
         place, place_form, categoriser, disc_form, topic_objects = self._get_forms_for_path(option1, option2)
@@ -461,21 +461,22 @@ class AgentBasic(Agent):
                 self._blocked = option1[-2]
                 return option2
 
+        # Random selection
+        self._last_broadcast = None
+        if np.random.random() < 0.5:
+            self.stat_dict['option1_selected'] += 1
+            self._blocked = option2[-2]
+            return option1
+
+        self.stat_dict['option2_selected'] += 1
+        self._blocked = option1[-2]
+        return option2
+
         # If no path was free, use option1
         # self._last_broadcast = None
-        # if np.random.random() < 0.5:
-        #     self.stat_dict['option1_selected'] += 1
-        #     self._blocked = option2[-2]
-        #     return option1
-        #
-        # self.stat_dict['option2_selected'] += 1
-        # self._blocked = option1[-2]
-        # return option2
-
-        self._last_broadcast = None
-        self.stat_dict['option1_selected'] += 1
-        self._blocked = option2[-2]
-        return option1
+        # self.stat_dict['option1_selected'] += 1
+        # self._blocked = option2[-2]
+        # return option1
 
     def step(self):
         self._age += 1

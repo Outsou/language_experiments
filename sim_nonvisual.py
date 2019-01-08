@@ -1,11 +1,13 @@
 from coopa_model import CoopaModel
 from utils import get_neighborhood_str, create_heatmap, create_graphs
 import time
+import datetime
 import os
 import numpy as np
 from disc_tree import Categoriser
 import matplotlib.pyplot as plt
 import pickle
+import pprint
 
 
 def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats, random_behaviour):
@@ -64,7 +66,7 @@ def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats,
             if j == len(delivery_times):
                 delivery_times.append([])
             delivery_times[j].append(agent.stat_dict['delivery_times'][j])
-        pickle.dump(agent.stat_dict, open(os.path.join(run_dir, '{}.p'.format(agent.color)), 'wb'))
+        pickle.dump(agent.stat_dict, open(os.path.join(run_dir, '{}.p'.format(agent.unique_id)), 'wb'))
         # asd = pickle.load(open(os.path.join(run_dir, '{}.p'.format(agent.color)), 'rb'))
 
     result_str += 'Collisions: {}\n'.format(collisions)
@@ -99,32 +101,34 @@ if __name__ == "__main__":
     collisions = []
     collision_maps = []
     times = []
-    runs = 30
-
-    # AGENT PARAMS
-    play_guessing = False
-    premade_lang = False
-    gather_stats = True
-    random_behaviour = True
+    runs = 3
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     directory = 'results_{}'.format(date_time)
+    os.makedirs(directory)
+
+    # AGENT PARAMS
+    params = {'play_guessing': True,
+              'premade_lang': False,
+              'gather_stats': True,
+              'random_behaviour': True}
+
+    # Save params to file
+    with open(os.path.join(directory, 'params.txt'), 'w') as text_file:
+        pprint.pprint(params, stream=text_file)
+
     delivery_times = []
     for i in range(1, runs + 1):
         start_time = time.time()
         print('Starting run {}'.format(i))
-        run_delivered, run_collisions, run_collision_map, run_delivery_times = run_experiment(i,
-                                                                                              directory,
-                                                                                              play_guessing,
-                                                                                              premade_lang,
-                                                                                              gather_stats,
-                                                                                              random_behaviour)
+        run_delivered, run_collisions, run_collision_map, run_delivery_times = run_experiment(i, directory=directory, **params)
         delivery_times.append(run_delivery_times)
         items_delivered.append(run_delivered)
         collisions.append(run_collisions)
         collision_maps.append(run_collision_map)
         times.append(time.time() - start_time)
-        print('Finished run, time left {}'.format(sum(times) / len(times) * (runs - i)))
+        time_left = sum(times) / len(times) * (runs - i)
+        print('Finished run, time left {}'.format(str(datetime.timedelta(seconds=time_left))))
         print()
 
     avg_times = get_avg_times(delivery_times)
@@ -144,3 +148,4 @@ if __name__ == "__main__":
     # print(collisions)
 
     print('{}, finished'.format(directory))
+    pprint.pprint(params)
