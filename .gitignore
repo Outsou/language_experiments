@@ -4,4 +4,5 @@ __pycache__/
 *.gv
 results*/
 venv/
-analysis_results/
+agent_analysis/
+place_game_analysis/

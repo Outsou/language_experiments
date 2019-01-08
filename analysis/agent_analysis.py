@@ -89,7 +89,7 @@ if __name__ == '__main__':
     # result_dir_no_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-34'
     result_dir_lang = r'/home/ottohant/language_experiments/results_07-01-19_12-40-30_random_lang'
     result_dir_no_lang = r'/home/ottohant/language_experiments/results_07-01-19_10-20-15_random'
-    analysis_dir = 'analysis_results'
+    analysis_dir = 'agent_analysis'
 
     print('Loading language stats...')
     lang_stats = get_stats(result_dir_lang)

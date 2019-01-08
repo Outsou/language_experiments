@@ -26,6 +26,8 @@ class CoopaModel(Model):
         self.action_center = self.layout.create_world(self, play_guessing)['action_center']
         self.map = build_map(self.grid, (Wall, Shelf, ActionCenter))
         self.not_moved = []
+        self.place_games = []
+        self.start_time = None
 
         # Agents
         self.agents = []
@@ -43,6 +45,7 @@ class CoopaModel(Model):
         np.set_printoptions(linewidth=320)
 
     def step(self):
+        self.start_time = self.schedule.time
         self.schedule.step()
         self.not_moved = [a for a in self.agents]
         random.shuffle(self.not_moved)
@@ -68,6 +71,10 @@ class CoopaModel(Model):
                 if not agent.ask_if_free(place_form, disc_form):
                     return False
         return True
+
+    def report_place_game(self, game_dict):
+        game_dict['time'] = self.start_time
+        self.place_games.append(game_dict)
 
     # def queue_move(self, start, end, agent):
     #     self.move_queue.append((start, end, agent))

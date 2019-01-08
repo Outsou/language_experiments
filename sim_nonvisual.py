@@ -69,6 +69,8 @@ def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats,
         pickle.dump(agent.stat_dict, open(os.path.join(run_dir, '{}.p'.format(agent.unique_id)), 'wb'))
         # asd = pickle.load(open(os.path.join(run_dir, '{}.p'.format(agent.color)), 'rb'))
 
+    pickle.dump(model.place_games, open(os.path.join(run_dir, 'place_games.p'), 'wb'))
+
     result_str += 'Collisions: {}\n'.format(collisions)
     result_str += 'Items delivered: {}\n'.format(items_delivered)
     result_str += 'Guessing played: {}\n'.format(guessing_played)
@@ -101,14 +103,14 @@ if __name__ == "__main__":
     collisions = []
     collision_maps = []
     times = []
-    runs = 3
+    runs = 100
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     directory = 'results_{}'.format(date_time)
     os.makedirs(directory)
 
     # AGENT PARAMS
-    params = {'play_guessing': True,
+    params = {'play_guessing': False,
               'premade_lang': False,
               'gather_stats': True,
               'random_behaviour': True}

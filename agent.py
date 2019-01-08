@@ -260,11 +260,15 @@ class AgentBasic(Agent):
                 self.stat_dict['discriminators'].append((copy.deepcopy(self.discriminator), self._age))
         return categoriser
 
-    def observational_transmit(self, form):
+    def observational_transmit(self, game_dict):
         '''Speaker uses this to transmit form to hearer in the observational game.'''
         meaning = self._get_neighborhood(self.pos)
-        self.memory.strengthen_form(meaning, form, speaker=False)
+        interpretation = self.memory.get_meaning(game_dict['form'])
+        game_dict['hearer_meaning'] = meaning
+        game_dict['hearer_interpretation'] = interpretation
+        self.memory.strengthen_form(meaning, game_dict['form'], speaker=False)
         self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
+        self.model.report_place_game(game_dict)
 
     def guessing_transmit(self, disc_form):
         '''Speaker uses this to transmit form to hearer in the guessing game.'''
@@ -311,7 +315,7 @@ class AgentBasic(Agent):
         self.memory.strengthen_form(meaning, form, speaker=True)
         if self._gather_stats:
             self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
-        hearer.observational_transmit(form)
+        hearer.observational_transmit({'form': form, 'speaker_meaning': meaning})
         if self._guessing_game:
             self._play_guessing_game(meaning, hearer)
         return meaning
