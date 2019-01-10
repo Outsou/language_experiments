@@ -2,6 +2,8 @@ import os
 import pickle
 import matplotlib.pyplot as plt
 import shutil
+from utils import get_dirs_in_path
+
 
 def sliding_window(val_list, window_size=10):
     '''Returns a list containing sliding window sums on val_list.'''
@@ -56,11 +58,6 @@ def create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir):
     plt.savefig(os.path.join(analysis_dir, 'times.pdf'))
     plt.savefig(os.path.join(analysis_dir, 'times.png'))
     plt.close()
-
-def get_dirs_in_path(path):
-    '''Returns directories in path.'''
-    dirs = [os.path.join(path, file) for file in os.listdir(path) if os.path.isdir(os.path.join(path, file))]
-    return dirs
 
 def get_pickles_in_path(path):
     '''Returns the pickle filepaths in path.'''

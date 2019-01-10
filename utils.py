@@ -4,7 +4,13 @@ import operator
 import seaborn as sns
 from objects import Shelf
 import matplotlib.pyplot as plt
+import os
 
+
+def get_dirs_in_path(path):
+    '''Returns directories in path.'''
+    dirs = [os.path.join(path, file) for file in os.listdir(path) if os.path.isdir(os.path.join(path, file))]
+    return dirs
 
 def _line_special_cases(x1, y1, x2, y2, dx, dy):
     # Check zero length

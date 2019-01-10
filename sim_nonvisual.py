@@ -110,6 +110,7 @@ if __name__ == "__main__":
     os.makedirs(directory)
 
     # AGENT PARAMS
+    # TODO: REMEMBER TO SAVE STEPS
     params = {'play_guessing': False,
               'premade_lang': False,
               'gather_stats': True,

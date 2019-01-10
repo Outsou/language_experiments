@@ -2,13 +2,8 @@ import shutil
 import os
 import pickle
 import matplotlib.pyplot as plt
-from utils import get_neighborhood_str
+from utils import get_neighborhood_str, get_dirs_in_path
 
-
-def get_dirs_in_path(path):
-    '''Returns directories in path.'''
-    dirs = [os.path.join(path, file) for file in os.listdir(path) if os.path.isdir(os.path.join(path, file))]
-    return dirs
 
 def get_stats(result_path):
     '''Loads pickles in result path to a dictionary.'''
@@ -148,9 +143,9 @@ def print_utilities(lexicons):
         print(util)
         print()
 
-
 if __name__ == '__main__':
-    result_dir = '/home/ottohant/language_experiments/results_08-01-19_15-41-53'
+    # result_dir = '/home/ottohant/language_experiments/results_08-01-19_15-41-53'
+    result_dir = r'C:\Users\otto\Desktop\results_08-01-19_15-41-53'
     analysis_dir = 'place_game_analysis'
 
     shutil.rmtree(analysis_dir, ignore_errors=True)
@@ -172,3 +167,4 @@ if __name__ == '__main__':
     # calculate_lexicon_cohesion(lexicons)
     print()
     print_utilities(lexicons)
+
