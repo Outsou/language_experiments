@@ -359,21 +359,21 @@ class AgentBasic(Agent):
         return astar(map, self.pos, self._destination, False)[1:]
 
     def ask_if_free(self, place_form, disc_form):
-        '''Used to ask an agent if a place is free.'''
+        '''Used to ask an agent if a place is free. Returns the answer and interpreted place and categoriser.'''
         place = self.memory.get_meaning(place_form)
         if place is None:
-            return True
+            return True, None, None
         categoriser = self.memory.get_meaning(disc_form)
         if categoriser is None:
-            return True
+            return True, place, None
         objects = self._get_objects(place)
         normalised = self._normalise(objects)
         low, high = categoriser.range
         for obj in zip(objects, normalised):
             if low <= obj[1][categoriser.channel] <= high:
                 if obj[0] == self.pos or obj[0] in self._path:
-                    return False
-        return True
+                    return False, place, categoriser
+        return True, place, categoriser
 
     def _get_forms_for_path(self, path, path2):
         '''Returns forms for meanings used to discriminate path from path2 (and other things)..'''
@@ -432,6 +432,8 @@ class AgentBasic(Agent):
                 self._blocked = option2[-2]
                 return option1
 
+        broadcast1, broadcast2 = None, None
+
         # First ask if option1 is free
         place, place_form, categoriser, disc_form, topic_objects = self._get_forms_for_path(option1, option2)
 
@@ -440,40 +442,43 @@ class AgentBasic(Agent):
 
         if not (place is None or place_form is None or categoriser is None or disc_form is None):
             self.memory.report_form_use(categoriser, disc_form)
-            self._last_broadcast = {'place': place,
-                                    'place_form': place_form,
-                                    'categoriser': categoriser,
-                                    'disc_form': disc_form,
-                                    'topic_objects': topic_objects}
-            if self.model.broadcast_question(place_form, disc_form, self):
+            broadcast1 = {'place': place,
+                          'place_form': place_form,
+                          'categoriser': categoriser,
+                          'disc_form': disc_form,
+                          'topic_objects': topic_objects}
+            if self.model.broadcast_question(place, place_form, categoriser, disc_form, self):
                 self.stat_dict['option1_selected'] += 1
                 self._blocked = option2[-2]
+                self._last_broadcast = broadcast1
                 return option1
 
         # If option1 wasn't free, check option2
         place, place_form, categoriser, disc_form, topic_objects = self._get_forms_for_path(option2, option1)
         if not (place is None or place_form is None or categoriser is None or disc_form is None):
             self.memory.report_form_use(categoriser, disc_form)
-            self._last_broadcast = {'place': place,
-                                    'place_form': place_form,
-                                    'categoriser': categoriser,
-                                    'disc_form': disc_form,
-                                    'topic_objects': topic_objects}
-            if self.model.broadcast_question(place_form, disc_form, self):
+            broadcast2 = {'place': place,
+                          'place_form': place_form,
+                          'categoriser': categoriser,
+                          'disc_form': disc_form,
+                          'topic_objects': topic_objects}
+            if self.model.broadcast_question(place, place_form, categoriser, disc_form, self):
                 self.stat_dict['extra_distance'] += len(option2) - len(option1)
                 self.stat_dict['option2_selected'] += 1
                 self._blocked = option1[-2]
+                self._last_broadcast = broadcast2
                 return option2
 
         # Random selection
-        self._last_broadcast = None
         if np.random.random() < 0.5:
             self.stat_dict['option1_selected'] += 1
             self._blocked = option2[-2]
+            self._last_broadcast = broadcast1
             return option1
 
         self.stat_dict['option2_selected'] += 1
         self._blocked = option1[-2]
+        self._last_broadcast = broadcast2
         return option2
 
         # If no path was free, use option1

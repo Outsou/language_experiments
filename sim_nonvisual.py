@@ -10,7 +10,7 @@ import pickle
 import pprint
 
 
-def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats, random_behaviour):
+def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats, random_behaviour, steps):
     run_dir = os.path.join(directory, str(run_id))
     os.makedirs(run_dir)
     print('Running experiment...')
@@ -19,7 +19,6 @@ def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats,
     start_time = time.time()
     period_start = time.time()
     timing_steps = 10000
-    steps = 20000
     for i in range(1, steps + 1):
         if i % timing_steps == 0:
             times.append(time.time() - period_start)
@@ -70,6 +69,7 @@ def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats,
         # asd = pickle.load(open(os.path.join(run_dir, '{}.p'.format(agent.color)), 'rb'))
 
     pickle.dump(model.place_games, open(os.path.join(run_dir, 'place_games.p'), 'wb'))
+    pickle.dump(model.query_games, open(os.path.join(run_dir, 'query_games.p'), 'wb'))
 
     result_str += 'Collisions: {}\n'.format(collisions)
     result_str += 'Items delivered: {}\n'.format(items_delivered)
@@ -110,11 +110,11 @@ if __name__ == "__main__":
     os.makedirs(directory)
 
     # AGENT PARAMS
-    # TODO: REMEMBER TO SAVE STEPS
-    params = {'play_guessing': False,
+    params = {'play_guessing': True,
               'premade_lang': False,
               'gather_stats': True,
-              'random_behaviour': True}
+              'random_behaviour': True,
+              'steps': 20000}
 
     # Save params to file
     with open(os.path.join(directory, 'params.txt'), 'w') as text_file:

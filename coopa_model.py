@@ -27,6 +27,7 @@ class CoopaModel(Model):
         self.map = build_map(self.grid, (Wall, Shelf, ActionCenter))
         self.not_moved = []
         self.place_games = []
+        self.query_games = []
         self.start_time = None
 
         # Agents
@@ -64,13 +65,27 @@ class CoopaModel(Model):
         for agent in self.agents:
             agent.finish_step()
 
-    def broadcast_question(self, place_form, disc_form, asker):
+    def broadcast_question(self, place, place_form, categoriser, disc_form, asker):
         '''Returns False if even one agent opposes the plan. Otherwise True.'''
+        game = {'id': asker.unique_id,
+                'place': place,
+                'place_form': place_form,
+                'categoriser': categoriser,
+                'disc_form': disc_form,
+                'answers': {},
+                'time': self.start_time}
+        is_free = True
+
+        # Gather answers
         for agent in self.agents:
             if agent is not asker:
-                if not agent.ask_if_free(place_form, disc_form):
-                    return False
-        return True
+                free, place, categoriser = agent.ask_if_free(place_form, disc_form)
+                game['answers'][agent.unique_id] = {'free': free, 'place': place, 'categoriser': categoriser}
+                if not free:
+                    is_free = False
+
+        self.query_games.append(game)
+        return is_free
 
     def report_place_game(self, game_dict):
         game_dict['time'] = self.start_time

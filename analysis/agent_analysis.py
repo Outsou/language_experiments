@@ -3,6 +3,7 @@ import pickle
 import matplotlib.pyplot as plt
 import shutil
 from utils import get_dirs_in_path
+from disc_tree import Categoriser
 
 
 def sliding_window(val_list, window_size=10):
@@ -59,6 +60,82 @@ def create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir):
     plt.savefig(os.path.join(analysis_dir, 'times.png'))
     plt.close()
 
+def travel_tree(tree):
+    nodes = [tree.root]
+    size = 0
+    while len(nodes) > 0:
+        size += len(nodes)
+        new_nodes = []
+        for node in nodes:
+            # if node.range not in words_used[channel]:
+            #     words_used[channel][node.range] = {}
+            # word = memory.get_form(node)
+            # if word is not None:
+            #     if word not in words_used[channel][node.range]:
+            #         words_used[channel][node.range][word] = 0
+            #     words_used[channel][node.range][word] += 1
+
+            if node.child1 is not None:
+                new_nodes.append(node.child1)
+            if node.child2 is not None:
+                new_nodes.append(node.child2)
+        nodes = new_nodes
+    return size
+
+def analyse_disc_trees(lang_stats, analysis_dir):
+    ranges = [(0, 0.5), (0.5, 1),
+              (0, 0.25), (0.25, 0.5), (0.5, 0.75), (0.75, 1)]
+              # (0, 0.125), (0.125, 0.25), (0.25, 0.375), (0.375, 0.5)]
+
+    most_commons = {0: {}, 1: {}}
+    for range in ranges:
+        for channel in most_commons.keys():
+            most_commons[channel][range] = []
+
+    channel_sizes = {}
+    # most_commons = {}
+    for run_stats in lang_stats.values():
+        words_used = {}
+        for agent_stats in run_stats.values():
+            for tree in agent_stats['discriminators'][0].trees:
+                # Calculate tree size
+                channel = tree.root.channel
+                if channel not in channel_sizes:
+                    channel_sizes[channel] = []
+                channel_sizes[channel].append(travel_tree(tree))
+
+                # Calculate words used for every range
+                if channel not in words_used:
+                    words_used[channel] = {}
+                    for range in ranges:
+                        words_used[channel][range] = {}
+                for range in ranges:
+                    categoriser = Categoriser(range, channel)
+                    word = agent_stats['memories'][0].get_form(categoriser)
+                    if word is not None:
+                        if word not in words_used[channel][range]:
+                            words_used[channel][range][word] = 0
+                        words_used[channel][range][word] += 1
+
+        for channel, ranges in most_commons.items():
+            for range in ranges:
+                if len(words_used[channel][range].keys()) > 0:
+                    most_common = max(words_used[channel][range].values())
+                else:
+                    most_common = 0
+                most_commons[channel][range].append(most_common)
+
+    for channel, ranges in most_commons.items():
+        print('Channel {}'.format(channel))
+        for range, counts in ranges.items():
+            print('{}: {}'.format(range, sum(counts) / len(counts)))
+        print()
+
+    for channel, sizes in channel_sizes.items():
+        avg_size = sum(sizes) / len(sizes)
+        print('Channel {} avg size: {}'.format(channel, avg_size))
+        print('Channel {} min size: {}'.format(channel, min(sizes)))
+
 def get_pickles_in_path(path):
     '''Returns the pickle filepaths in path.'''
     pickles = [os.path.join(path, file) for file in os.listdir(path) if file[-2:] == '.p']
@@ -90,13 +167,17 @@ if __name__ == '__main__':
 
     print('Loading language stats...')
     lang_stats = get_stats(result_dir_lang)
-    print('Loading no language stats...')
-    no_lang_stats = get_stats(result_dir_no_lang)
+    print('Done loading...')
 
     shutil.rmtree(analysis_dir, ignore_errors=True)
     print('')
     os.mkdir(analysis_dir)
 
+    analyse_disc_trees(lang_stats, analysis_dir)
+
+    print('Loading no language stats...')
+    no_lang_stats = get_stats(result_dir_no_lang)
+    print('Done loading...')
     print('Creating delivery time plots...')
     create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir)
 

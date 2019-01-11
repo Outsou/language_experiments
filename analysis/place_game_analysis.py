@@ -144,8 +144,8 @@ def print_utilities(lexicons):
         print()
 
 if __name__ == '__main__':
-    # result_dir = '/home/ottohant/language_experiments/results_08-01-19_15-41-53'
-    result_dir = r'C:\Users\otto\Desktop\results_08-01-19_15-41-53'
+    result_dir = '/home/ottohant/language_experiments/results_08-01-19_15-41-53'
+    # result_dir = r'C:\Users\otto\Desktop\results_08-01-19_15-41-53'
     analysis_dir = 'place_game_analysis'
 
     shutil.rmtree(analysis_dir, ignore_errors=True)
@@ -156,9 +156,9 @@ if __name__ == '__main__':
     stats_dict = get_stats(result_dir)
 
     # Trim stats
-    # games, asym_games = trim_games(stats_dict)
+    games, asym_games = trim_games(stats_dict)
 
-    # create_success_plot(games, asym_games, analysis_dir)
+    create_success_plot(games, asym_games, analysis_dir)
     # create_success_plot(asym_games, analysis_dir, 'success_rate_asym')
     # create_success_plot2(games, analysis_dir)
 
