@@ -5,6 +5,7 @@ import seaborn as sns
 from objects import Shelf
 import matplotlib.pyplot as plt
 import os
+import scipy.stats
 
 
 def get_dirs_in_path(path):
@@ -178,3 +179,10 @@ def create_heatmap(matrix, grid, fname):
     fig = hmap.get_figure()
     fig.savefig(fname, bbox_inches='tight')
     plt.close()
+
+def mean_confidence_interval(data, confidence=0.99):
+    a = 1.0 * np.array(data)
+    n = len(a)
+    m, se = np.mean(a), scipy.stats.sem(a)
+    h = se * scipy.stats.t.ppf((1 + confidence) / 2., n - 1)
+    return m, h

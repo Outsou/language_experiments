@@ -35,6 +35,7 @@ class AgentBasic(Agent):
                           'option2_selected': 0,
                           'extra_distance': 0,
                           'collision_map': np.zeros(self.map.shape),
+                          'q-game_map': np.zeros(self.map.shape),
                           'delivery_times': []}
         self._has_item = False
         self._backing_off = False
@@ -301,6 +302,7 @@ class AgentBasic(Agent):
         if hearer.guessing_transmit(form):
             self.memory.strengthen_form(categoriser, form, speaker=True)
             if self._gather_stats:
+                self.stat_dict['q-game_map'][self.pos] += 1
                 self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
 
     def _play_observational_game(self, hearer):
@@ -502,7 +504,7 @@ class AgentBasic(Agent):
                 self._destination = ac.get_mission()
                 if self._has_item:
                     self.stat_dict['items_delivered'] += 1
-                    self.stat_dict['delivery_times'].append(self._age - self._last_delivery)
+                    self.stat_dict['delivery_times'].append((self._age - self._last_delivery, self.model.start_time))
                     self._last_delivery = self._age
                 self._has_item = False
                 self._path = self._broadcast_question()

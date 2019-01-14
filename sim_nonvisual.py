@@ -47,6 +47,7 @@ def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats,
     option1_selected = 0
     option2_selected = 0
     collision_map = np.zeros((model.grid.width, model.grid.height))
+    qgame_map = np.zeros((model.grid.width, model.grid.height))
     delivery_times = []
     for agent in model.agents:
         collisions += agent.stat_dict['obs_game_init']
@@ -56,6 +57,7 @@ def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats,
         option2_selected += agent.stat_dict['option2_selected']
         extra_distance += agent.stat_dict['extra_distance']
         collision_map += agent.stat_dict['collision_map']
+        qgame_map += agent.stat_dict['q-game_map']
         disc_trees = create_graphs(agent.stat_dict['discriminators'][-1][0], agent.stat_dict['memories'][-1][0])
         for j in range(len(disc_trees)):
             chan = 'x' if j == 0 else 'y'
@@ -84,7 +86,7 @@ def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats,
     print(result_str)
     print('Simulation took: {}'.format(time.time() - start_time))
     print()
-    return items_delivered, collisions, collision_map, delivery_times
+    return items_delivered, collisions, collision_map, delivery_times, qgame_map
 
 def get_avg_times(delivery_times):
     min_deliveries = min([len(x) for x in delivery_times])
@@ -102,8 +104,9 @@ if __name__ == "__main__":
     items_delivered = []
     collisions = []
     collision_maps = []
+    qgame_maps = []
     times = []
-    runs = 100
+    runs = 10
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     directory = 'results_{}'.format(date_time)
@@ -114,7 +117,7 @@ if __name__ == "__main__":
               'premade_lang': False,
               'gather_stats': True,
               'random_behaviour': True,
-              'steps': 20000}
+              'steps': 50000}
 
     # Save params to file
     with open(os.path.join(directory, 'params.txt'), 'w') as text_file:
@@ -124,11 +127,13 @@ if __name__ == "__main__":
     for i in range(1, runs + 1):
         start_time = time.time()
         print('Starting run {}'.format(i))
-        run_delivered, run_collisions, run_collision_map, run_delivery_times = run_experiment(i, directory=directory, **params)
+        run_delivered, run_collisions, run_collision_map, run_delivery_times, run_qgame_map \
+            = run_experiment(i, directory=directory, **params)
         delivery_times.append(run_delivery_times)
         items_delivered.append(run_delivered)
         collisions.append(run_collisions)
         collision_maps.append(run_collision_map)
+        qgame_maps.append(run_qgame_map)
         times.append(time.time() - start_time)
         time_left = sum(times) / len(times) * (runs - i)
         print('Finished run, time left {}'.format(str(datetime.timedelta(seconds=time_left))))
@@ -140,8 +145,9 @@ if __name__ == "__main__":
     plt.close()
     model = CoopaModel(False)
     collision_map = np.rot90(sum(collision_maps)) / runs
+    qgame_map = np.rot90(sum(qgame_maps)) / runs
     create_heatmap(collision_map, model.grid, os.path.join(directory, 'collision_map.pdf'))
-    create_heatmap(collision_map, model.grid, os.path.join(directory, 'collision_map.png'))
+    create_heatmap(qgame_map, model.grid, os.path.join(directory, 'qgame_map.pdf'))
 
     with open(os.path.join(directory, 'final.txt'), 'w') as text_file:
         print('Delivered: {}, avg: {}'.format(items_delivered, np.mean(items_delivered)), file=text_file)

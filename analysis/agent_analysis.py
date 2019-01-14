@@ -2,7 +2,7 @@ import os
 import pickle
 import matplotlib.pyplot as plt
 import shutil
-from utils import get_dirs_in_path
+from utils import get_dirs_in_path, mean_confidence_interval
 from disc_tree import Categoriser
 
 
@@ -120,7 +120,8 @@ def analyse_disc_trees(lang_stats, analysis_dir):
     for channel, ranges in most_commons.items():
         print('Channel {}'.format(channel))
         for range, counts in ranges.items():
-            print('{}: {}'.format(range, sum(counts) / len(counts)))
+            mean, interval = mean_confidence_interval(counts)
+            print('{}: {}, +-{}'.format(range, mean, interval))
         print()
 
     for channel, sizes in channel_sizes.items():
