@@ -60,21 +60,13 @@ def create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir):
     plt.savefig(os.path.join(analysis_dir, 'times.png'))
     plt.close()
 
-def travel_tree(tree):
+def get_tree_size(tree):
     nodes = [tree.root]
     size = 0
     while len(nodes) > 0:
         size += len(nodes)
         new_nodes = []
         for node in nodes:
-            # if node.range not in words_used[channel]:
-            #     words_used[channel][node.range] = {}
-            # word = memory.get_form(node)
-            # if word is not None:
-            #     if word not in words_used[channel][node.range]:
-            #         words_used[channel][node.range][word] = 0
-            #     words_used[channel][node.range][word] += 1
-
             if node.child1 is not None:
                 new_nodes.append(node.child1)
             if node.child2 is not None:
@@ -102,7 +94,7 @@ def analyse_disc_trees(lang_stats, analysis_dir):
                 channel = tree.root.channel
                 if channel not in channel_sizes:
                     channel_sizes[channel] = []
-                channel_sizes[channel].append(travel_tree(tree))
+                channel_sizes[channel].append(get_tree_size(tree))
 
                 # Calculate words used for every range
                 if channel not in words_used:
@@ -151,17 +143,18 @@ def get_stats(result_path):
         stats[run_id] = {}
         pickles = get_pickles_in_path(run_dir)
         for pkl_file in pickles:
-            color = os.path.splitext(os.path.basename(pkl_file))[0]
-            pkl = pickle.load(open(pkl_file, 'rb'))
-            pkl['memories'] = pkl['memories'][-1]
-            pkl['discriminators'] = pkl['discriminators'][-1]
-            stats[run_id][color] = pkl
+            fname = os.path.splitext(os.path.basename(pkl_file))[0]
+            if fname.isdigit() or fname in ['blue', 'black', 'green', 'pink', 'purple', 'red']:
+                pkl = pickle.load(open(pkl_file, 'rb'))
+                pkl['memories'] = pkl['memories'][-1]
+                pkl['discriminators'] = pkl['discriminators'][-1]
+                stats[run_id][fname] = pkl
     return stats
 
 if __name__ == '__main__':
     # result_dir_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-42'
     # result_dir_no_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-34'
-    result_dir_lang = r'/home/ottohant/language_experiments/results_07-01-19_12-40-30_random_lang'
+    result_dir_lang = r'/home/ottohant/language_experiments/results_11-01-19_14-45-23'
     result_dir_no_lang = r'/home/ottohant/language_experiments/results_07-01-19_10-20-15_random'
     analysis_dir = 'agent_analysis'
 
