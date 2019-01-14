@@ -2,8 +2,8 @@ import shutil
 import os
 import pickle
 import matplotlib.pyplot as plt
-from utils import get_neighborhood_str, get_dirs_in_path
-from disc_tree import Categoriser
+from utils import get_dirs_in_path
+import ast
 
 
 def get_stats(result_path):
@@ -36,6 +36,31 @@ def trim_games(stats_dict):
 
     min_games = min([len(x) for x in trimmed_games])
     return [x[:min_games] for x in trimmed_games], [x[:min_games] for x in stats_dict.values()]
+
+def get_success_buckets(result_dir, steps, bucket_size):
+    stat_dict = get_stats(result_dir)
+    buckets = [[] for _ in range(int(steps / bucket_size))]
+    hearers = len(list(stat_dict.values())[0][0]['answers'])
+    for run in stat_dict.values():
+        for game in run:
+            bucket_idx = int(game['time'] / bucket_size)
+            speaker_categoriser = game['categoriser']
+            speaker_place = game['place']
+            categ_correct_count = 0
+            place_correct_count = 0
+            for answer in game['answers'].values():
+                if answer['categoriser'] == speaker_categoriser:
+                    categ_correct_count += 1
+                if answer['place'] == speaker_place:
+                    place_correct_count += 1
+            if categ_correct_count == hearers and place_correct_count == hearers:
+                buckets[bucket_idx].append(1)
+            else:
+                buckets[bucket_idx].append(0)
+
+    bucket_ratios = [sum(bucket_vals) / len(bucket_vals) for bucket_vals in buckets]
+    x = [bucket_size * i for i in range(1, len(bucket_ratios) + 1)]
+    return bucket_ratios, x
 
 def create_success_plot(stat_dict, analysis_dir):
     min_games = min([len(games) for games in stat_dict.values()])
@@ -86,7 +111,7 @@ def get_pickles_in_path(path):
     return pickles
 
 if __name__ == '__main__':
-    result_dir = '/home/ottohant/language_experiments/results_11-01-19_14-45-23'
+    result_dir = '/home/ottohant/language_experiments/results_14-01-19_14-28-48'
     analysis_dir = 'query_game_analysis'
 
     shutil.rmtree(analysis_dir, ignore_errors=True)
@@ -95,15 +120,6 @@ if __name__ == '__main__':
 
     print('Loading query game stats...')
     stats_dict = get_stats(result_dir)
-
-    # ranges = [(0, 0.5), (0.5, 1),
-    #           (0, 0.25), (0.25, 0.5), (0.5, 0.75), (0.75, 1)]
-    # channels = [0, 1]
-    #
-    # categorisers = []
-    # for channel in channels:
-    #     for rng in ranges:
-    #         categorisers.append(Categoriser(rng, channel))
 
     create_success_plot(stats_dict, analysis_dir)
 

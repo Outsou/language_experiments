@@ -10,7 +10,7 @@ import pickle
 import pprint
 
 
-def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats, random_behaviour, steps):
+def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats, random_behaviour, steps, create_trees):
     run_dir = os.path.join(directory, str(run_id))
     os.makedirs(run_dir)
     print('Running experiment...')
@@ -48,7 +48,6 @@ def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats,
     option2_selected = 0
     collision_map = np.zeros((model.grid.width, model.grid.height))
     qgame_map = np.zeros((model.grid.width, model.grid.height))
-    delivery_times = []
     for agent in model.agents:
         collisions += agent.stat_dict['obs_game_init']
         items_delivered += agent.stat_dict['items_delivered']
@@ -58,15 +57,12 @@ def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats,
         extra_distance += agent.stat_dict['extra_distance']
         collision_map += agent.stat_dict['collision_map']
         qgame_map += agent.stat_dict['q-game_map']
-        disc_trees = create_graphs(agent.stat_dict['discriminators'][-1][0], agent.stat_dict['memories'][-1][0])
-        for j in range(len(disc_trees)):
-            chan = 'x' if j == 0 else 'y'
-            disc_trees[j].render(filename='run{}_{}_{}'.format(run_id, agent.color, chan),
-                                 directory=run_dir, cleanup=True)
-        for j in range(len(agent.stat_dict['delivery_times'])):
-            if j == len(delivery_times):
-                delivery_times.append([])
-            delivery_times[j].append(agent.stat_dict['delivery_times'][j])
+        if create_trees:
+            disc_trees = create_graphs(agent.stat_dict['discriminators'][-1][0], agent.stat_dict['memories'][-1][0])
+            for j in range(len(disc_trees)):
+                chan = 'x' if j == 0 else 'y'
+                disc_trees[j].render(filename='run{}_{}_{}'.format(run_id, agent.color, chan),
+                                     directory=run_dir, cleanup=True)
         pickle.dump(agent.stat_dict, open(os.path.join(run_dir, '{}.p'.format(agent.unique_id)), 'wb'))
         # asd = pickle.load(open(os.path.join(run_dir, '{}.p'.format(agent.color)), 'rb'))
 
@@ -86,17 +82,7 @@ def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats,
     print(result_str)
     print('Simulation took: {}'.format(time.time() - start_time))
     print()
-    return items_delivered, collisions, collision_map, delivery_times, qgame_map
-
-def get_avg_times(delivery_times):
-    min_deliveries = min([len(x) for x in delivery_times])
-    avg_times = []
-    for j in range(min_deliveries):
-        times = []
-        for run_times in delivery_times:
-            times += run_times[j]
-        avg_times.append(sum(times) / len(times))
-    return avg_times
+    return items_delivered, collisions, collision_map, qgame_map
 
 
 if __name__ == "__main__":
@@ -117,19 +103,17 @@ if __name__ == "__main__":
               'premade_lang': False,
               'gather_stats': True,
               'random_behaviour': True,
-              'steps': 50000}
+              'steps': 500,
+              'create_trees': False}
 
     # Save params to file
     with open(os.path.join(directory, 'params.txt'), 'w') as text_file:
         pprint.pprint(params, stream=text_file)
 
-    delivery_times = []
     for i in range(1, runs + 1):
         start_time = time.time()
         print('Starting run {}'.format(i))
-        run_delivered, run_collisions, run_collision_map, run_delivery_times, run_qgame_map \
-            = run_experiment(i, directory=directory, **params)
-        delivery_times.append(run_delivery_times)
+        run_delivered, run_collisions, run_collision_map, run_qgame_map = run_experiment(i, directory=directory, **params)
         items_delivered.append(run_delivered)
         collisions.append(run_collisions)
         collision_maps.append(run_collision_map)
@@ -139,10 +123,6 @@ if __name__ == "__main__":
         print('Finished run, time left {}'.format(str(datetime.timedelta(seconds=time_left))))
         print()
 
-    avg_times = get_avg_times(delivery_times)
-    plt.plot(avg_times)
-    plt.savefig(os.path.join(directory, 'times.pdf'))
-    plt.close()
     model = CoopaModel(False)
     collision_map = np.rot90(sum(collision_maps)) / runs
     qgame_map = np.rot90(sum(qgame_maps)) / runs

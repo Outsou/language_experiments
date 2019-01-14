@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import shutil
 from utils import get_dirs_in_path, mean_confidence_interval
 from disc_tree import Categoriser
+import ast
+from analysis.query_game_analysis import get_success_buckets
 
 
 def sliding_window(val_list, window_size=10):
@@ -35,8 +37,8 @@ def get_avg_times(stats):
         avg_times.append(sum(times) / len(times))
     return avg_times
 
-def create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir):
-    '''Creates a delivery time plot.'''
+def create_delivery_time_plots2(lang_stats, no_lang_stats, analysis_dir):
+    '''Creates a delivery time plot. X-axis is delivery.'''
     avg_times_lang =  get_avg_times(lang_stats)[1:] # first element dropped
     avg_times_no_lang = get_avg_times(no_lang_stats)[1:]
 
@@ -58,6 +60,57 @@ def create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir):
     plt.legend()
     plt.savefig(os.path.join(analysis_dir, 'times.pdf'))
     plt.savefig(os.path.join(analysis_dir, 'times.png'))
+    plt.close()
+
+def get_tree_size(tree):
+    nodes = [tree.root]
+    size = 0
+    while len(nodes) > 0:
+        size += len(nodes)
+        new_nodes = []
+        for node in nodes:
+            if node.child1 is not None:
+                new_nodes.append(node.child1)
+            if node.child2 is not None:
+                new_nodes.append(node.child2)
+        nodes = new_nodes
+    return size
+
+def get_buckets(stats, steps, bucket_size):
+    buckets = [[] for _ in range(int(steps / bucket_size))]
+    for run in stats.values():
+        for agent in run.values():
+            for delivery_time in agent['delivery_times']:
+                bucket = int(delivery_time[1] / bucket_size)
+                buckets[bucket].append(delivery_time[0])
+    return [sum(bucket) / len(bucket) for bucket in buckets]
+
+def create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, steps, bucket_size, language_dir):
+    '''Creates a delivery time plot. X-axis is time step.'''
+    lang_buckets = [[] for _ in range(int(steps/bucket_size))]
+
+    print('Loading query stats...')
+    query_buckets, x = get_success_buckets(language_dir, steps, bucket_size)
+    print('Done...\n')
+
+
+    lang_buckets = get_buckets(lang_stats, steps, bucket_size)
+    no_lang_buckets = get_buckets(no_lang_stats, steps, bucket_size)
+
+    fig, ax1 = plt.subplots()
+    ax1.plot(x, lang_buckets, 'b-', label='Language deliveries')
+    ax1.plot(x, no_lang_buckets, '--', color='0.75', label='No language deliveries')
+    ax1.set_xlabel('time (s)')
+    # plt.legend()
+    # Make the y-axis label, ticks and tick labels match the line color.
+    ax1.set_ylabel('Delivery time', color='b')
+    ax1.tick_params('y', colors='b')
+    ax2 = ax1.twinx()
+    ax2.plot(x, query_buckets, 'r-', label='Query Game success')
+    ax2.set_ylabel('Perfect query game ratio', color='r')
+    ax2.tick_params('y', colors='r')
+    # plt.legend()
+    plt.savefig(os.path.join(analysis_dir, 'times.pdf'))
     plt.close()
 
 def get_tree_size(tree):
@@ -155,9 +208,13 @@ def get_stats(result_path):
 if __name__ == '__main__':
     # result_dir_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-42'
     # result_dir_no_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-34'
-    result_dir_lang = r'/home/ottohant/language_experiments/results_11-01-19_14-45-23'
-    result_dir_no_lang = r'/home/ottohant/language_experiments/results_07-01-19_10-20-15_random'
+    result_dir_lang = r'/home/ottohant/language_experiments/results_14-01-19_14-28-48'
+    result_dir_no_lang = r'/home/ottohant/language_experiments/results_14-01-19_15-31-55'
     analysis_dir = 'agent_analysis'
+
+    with open(os.path.join(result_dir_lang, 'params.txt'), 'r') as file:
+        params_s = file.read().replace('\n', '')
+    param_dict_lang = ast.literal_eval(params_s)
 
     print('Loading language stats...')
     lang_stats = get_stats(result_dir_lang)
@@ -172,7 +229,9 @@ if __name__ == '__main__':
     print('Loading no language stats...')
     no_lang_stats = get_stats(result_dir_no_lang)
     print('Done loading...')
+
     print('Creating delivery time plots...')
-    create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir)
+    # create_delivery_time_plots2(lang_stats, no_lang_stats, analysis_dir)
+    create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, param_dict_lang['steps'], 500, result_dir_lang)
 
     print('Done...')
