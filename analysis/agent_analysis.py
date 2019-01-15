@@ -90,7 +90,7 @@ def create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, steps, b
     lang_buckets = [[] for _ in range(int(steps/bucket_size))]
 
     print('Loading query stats...')
-    query_buckets, x = get_success_buckets(language_dir, steps, bucket_size)
+    perfect_queries, one_right_queries, x = get_success_buckets(language_dir, steps, bucket_size)
     print('Done...\n')
 
 
@@ -98,19 +98,24 @@ def create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, steps, b
     no_lang_buckets = get_buckets(no_lang_stats, steps, bucket_size)
 
     fig, ax1 = plt.subplots()
-    ax1.plot(x, lang_buckets, 'b-', label='Language deliveries')
-    ax1.plot(x, no_lang_buckets, '--', color='0.75', label='No language deliveries')
-    ax1.set_xlabel('time (s)')
+    lns1 = ax1.plot(x, lang_buckets, 'r-.', label='With language')
+    lns2 = ax1.plot(x, no_lang_buckets, 'r:', label='Without language')
+    ax1.set_xlabel('Time step')
     # plt.legend()
     # Make the y-axis label, ticks and tick labels match the line color.
-    ax1.set_ylabel('Delivery time', color='b')
-    ax1.tick_params('y', colors='b')
+    ax1.set_ylabel('Delivery time', color='r')
+    ax1.tick_params('y', colors='r')
     ax2 = ax1.twinx()
-    ax2.plot(x, query_buckets, 'r-', label='Query Game success')
-    ax2.set_ylabel('Perfect query game ratio', color='r')
-    ax2.tick_params('y', colors='r')
-    # plt.legend()
-    plt.savefig(os.path.join(analysis_dir, 'times.pdf'))
+    lns3 = ax2.plot(x, perfect_queries, 'b-', label='Perfect success')
+    lns4 = ax2.plot(x, one_right_queries, 'b--', label='Partial success')
+    ax2.set_ylabel('Success ratio', color='b')
+    ax2.tick_params('y', colors='b')
+
+    lns = lns1 + lns2 + lns3 + lns4
+    labs = [l.get_label() for l in lns]
+    ax1.legend(lns, labs)
+
+    plt.savefig(os.path.join(analysis_dir, 'times_and_game_success.pdf'))
     plt.close()
 
 def get_tree_size(tree):
@@ -208,8 +213,8 @@ def get_stats(result_path):
 if __name__ == '__main__':
     # result_dir_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-42'
     # result_dir_no_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-34'
-    result_dir_lang = r'/home/ottohant/language_experiments/results_14-01-19_14-28-48'
-    result_dir_no_lang = r'/home/ottohant/language_experiments/results_14-01-19_15-31-55'
+    result_dir_lang = r'/home/ottohant/Desktop/language_experiments/results_14-01-19_20-07-50_lang'
+    result_dir_no_lang = r'/home/ottohant/Desktop/language_experiments/results_14-01-19_20-07-53_no_lang'
     analysis_dir = 'agent_analysis'
 
     with open(os.path.join(result_dir_lang, 'params.txt'), 'r') as file:

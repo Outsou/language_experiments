@@ -3,6 +3,8 @@ import os
 import pickle
 import matplotlib.pyplot as plt
 from utils import get_neighborhood_str, get_dirs_in_path
+import itertools
+import ast
 
 
 def get_stats(result_path):
@@ -18,8 +20,7 @@ def get_stats(result_path):
     return stats
 
 def trim_games(stats_dict):
-    '''Removes games where speaker and hearer don't have the same observation.
-    Returns a list where all runs have the same amount of game rounds.'''
+    '''Returns a list of only symmetric games and a list of all games,'''
     games = stats_dict.values()
     trimmed_games = []
     total_count = 0
@@ -33,25 +34,53 @@ def trim_games(stats_dict):
     print('Trimmed proportion: {}'.format(trimmed_count / total_count))
     # trimmed_games = stats_dict.values()
 
-    min_games = min([len(x) for x in trimmed_games])
-    return [x[:min_games] for x in trimmed_games], [x[:min_games] for x in stats_dict.values()]
+    # min_games = min([len(x) for x in trimmed_games])
+    # return [x[:min_games] for x in trimmed_games], [x[:min_games] for x in stats_dict.values()]
+    return trimmed_games, list(stats_dict.values())
 
-def create_success_plot(sym_games, asym_games, analysis_dir, name='place_game_success'):
+def create_success_plot(sym_games, asym_games, analysis_dir, pkl_name, pkl_label, steps, bucket_size=500):
+    '''Creates a plot where the success rate of the nth game is shown.'''
     def get_success_portion(games):
-        success_count = [0] * len(games[0])
+        success_buckets = [[] for _ in range(int(steps / bucket_size))]
         for run_games in games:
             for i in range(len(run_games)):
+                bucket_idx = int(run_games[i]['time'] / bucket_size)
                 if run_games[i]['speaker_meaning'] == run_games[i]['hearer_interpretation']:
-                    success_count[i] += 1
-        return [x / len(games) for x in success_count]
+                    success_buckets[bucket_idx].append(1)
+                else:
+                    success_buckets[bucket_idx].append(0)
+        return [sum(x) / len(x) for x in success_buckets]
 
-    plt.plot(get_success_portion(sym_games), label='Symmetric')
-    plt.plot(get_success_portion(asym_games), label='All', linestyle='dashed')
+    sym_buckets = get_success_portion(sym_games)
+    asym_buckets = get_success_portion(asym_games)
+    x = [bucket_size * i for i in range(1, len(sym_buckets) + 1)]
+    plt.plot(x, sym_buckets, label='Symmetric')
+    plt.plot(x, asym_buckets, label='All', linestyle='dashed')
     plt.legend()
     plt.ylabel('Success rate')
     plt.xlabel('Game')
-    plt.savefig(os.path.join(analysis_dir, '{}.pdf'.format(name)))
-    plt.savefig(os.path.join(analysis_dir, '{}.png'.format(name)))
+    plt.savefig(os.path.join(analysis_dir, 'place_game_success.pdf'))
+    # plt.savefig(os.path.join(analysis_dir, 'place_game_success.png'))
+    plt.close()
+
+    pickle.dump({'buckets': sym_buckets, 'bucket_size': bucket_size, 'label': pkl_label}, open(pkl_name, 'wb'))
+
+def create_success_plot_from_pkls(pkl_dir, analysis_dir):
+    pkls = []
+    pickles = get_pickles_in_path(pkl_dir)
+    for pkl_file in pickles:
+        pkl = pickle.load(open(pkl_file, 'rb'))
+        pkls.append(pkl)
+    lengths = [len(x['buckets']) for x in pkls]
+    assert len(set(lengths)) == 1, 'Pkl files have different sized lists'
+    bucket_sizes = [x['bucket_size'] for x in pkls]
+    assert len(set(bucket_sizes)) == 1, 'Different bucket sizes'
+
+    x = [bucket_sizes[0] * i for i in range(1, lengths[0] + 1)]
+    for pkl in pkls:
+        plt.plot(x, pkl['buckets'], label=pkl['label'])
+    plt.legend()
+    plt.savefig(os.path.join(analysis_dir, 'multi_setup_success.pdf'))
     plt.close()
 
 # def create_success_plot2(games, analysis_dir):
@@ -80,7 +109,11 @@ def create_success_plot(sym_games, asym_games, analysis_dir, name='place_game_su
 
 def get_pickles_in_path(path):
     '''Returns the pickle filepaths in path.'''
-    pickles = [os.path.join(path, file) for file in os.listdir(path) if file[-2:] == '.p' and file[:10] != 'place_game']
+    if not os.path.isdir(path):
+        print('No pickels in path!')
+        return None
+    pickles = [os.path.join(path, file) for file in os.listdir(path)
+               if file[-2:] == '.p' and file[:5] != 'place' and file[:5] != 'query']
     return pickles
 
 def get_lexicons(result_path):
@@ -97,10 +130,13 @@ def get_lexicons(result_path):
             lexicons[-1].append(pkl['memories'][-1][0])
     return lexicons
 
-def calculate_lexicon_cohesion(lexicons):
+def calculate_lexicon_cohesion(lexicons, meanings=[]):
+    '''Prints some stats about the cohesion of the agents' lexicons.'''
     union_size = 0
     intersect_size = 0
     same_count = 0
+    meanings_same = [0 for _ in meanings]
+    all_same = 0
     for run_lexicons in lexicons:
         meaning_sets = []
         for lexicon in run_lexicons:
@@ -115,13 +151,27 @@ def calculate_lexicon_cohesion(lexicons):
             if len(forms) == 1:
                 same_count += 1
 
+        meaning_word_counts = []
+        for i in range(len(meanings)):
+            run_meanings = set()
+            for lexicon in run_lexicons:
+                run_meanings.add(lexicon.get_form(meanings[i]))
+            if len(run_meanings) == 1:
+                meanings_same[i] += 1
+            meaning_word_counts.append(len(run_meanings))
+        if all(map(lambda x: x == 1, meaning_word_counts)):
+            all_same += 1
+
     print('Proportion of meanings shared by all agents: {}'.format(intersect_size / union_size))
     print('Proportion of shared meanings with same word: {}'.format(same_count / intersect_size))
-
-    # Calculate shared meanings
-    # Calculate word associated with them
+    print()
+    for i in range(len(meanings_same)):
+        print('{}. same: {}'.format(i + 1, meanings_same[i] / len(lexicons)))
+    print('All same: {}'.format(all_same / len(lexicons)))
 
 def print_utilities(lexicons):
+    '''Prints the place meanings and their utilities in sorted order.
+    Returns two most important meanings.'''
     importances = {}
     for run_lexicons in lexicons:
         for lexicon in run_lexicons:
@@ -143,10 +193,35 @@ def print_utilities(lexicons):
         print(util)
         print()
 
+    return [sorted_utilities[0][0], sorted_utilities[1][0]]
+
+def collisions_plot(stats_dict, analysis_dir, steps, bucket_size=500):
+    '''Creates a plot of collisions happening in the last bucket_size time steps.'''
+    buckets = [0 for _ in range(int(steps / bucket_size))]
+    for game in itertools.chain.from_iterable(stats_dict.values()):
+        bucket_idx = int(game['time'] / bucket_size)
+        buckets[bucket_idx] += 1
+
+    x = [bucket_size * i for i in range(1, len(buckets) + 1)]
+    plt.plot(x, buckets)
+    plt.xlabel('Time step')
+    plt.ylabel('Collisions')
+    plt.savefig(os.path.join(analysis_dir, 'collisions.pdf'))
+    plt.close()
+
 if __name__ == '__main__':
     result_dir = '/home/ottohant/language_experiments/results_08-01-19_15-41-53'
+    # result_dir = '/home/ottohant/Desktop/language_experiments/results_14-01-19_20-07-50_lang'
     # result_dir = r'C:\Users\otto\Desktop\results_08-01-19_15-41-53'
     analysis_dir = 'place_game_analysis'
+
+    pkl_dir = 'pkls'
+    if not os.path.isdir(pkl_dir):
+        os.makedirs(pkl_dir)
+
+    with open(os.path.join(result_dir, 'params.txt'), 'r') as file:
+        params_s = file.read().replace('\n', '')
+    param_dict = ast.literal_eval(params_s)
 
     shutil.rmtree(analysis_dir, ignore_errors=True)
     print('')
@@ -158,13 +233,23 @@ if __name__ == '__main__':
     # Trim stats
     games, asym_games = trim_games(stats_dict)
 
-    create_success_plot(games, asym_games, analysis_dir)
+    # collisions_plot(stats_dict, analysis_dir, param_dict['steps'])
+    collisions_plot(stats_dict, analysis_dir, 20000)
+
+    pkl_label = 'Query Game setup' if param_dict['play_guessing'] else 'Place Game setup'
+    create_success_plot(games, asym_games, analysis_dir,
+                        os.path.join(pkl_dir, os.path.basename(result_dir) + '.p'), pkl_label,
+                        20000)
+
+    create_success_plot_from_pkls(pkl_dir, analysis_dir)
+
     # create_success_plot(asym_games, analysis_dir, 'success_rate_asym')
     # create_success_plot2(games, analysis_dir)
+    #
+    # print('Loading lexicons...')
+    # lexicons = get_lexicons(result_dir)
+    # top2 = print_utilities(lexicons)
+    # calculate_lexicon_cohesion(lexicons, top2)
+    # print()
 
-    print('Loading lexicons...')
-    lexicons = get_lexicons(result_dir)
-    # calculate_lexicon_cohesion(lexicons)
-    print()
-    print_utilities(lexicons)
 

@@ -3,7 +3,6 @@ import os
 import pickle
 import matplotlib.pyplot as plt
 from utils import get_dirs_in_path
-import ast
 
 
 def get_stats(result_path):
@@ -38,8 +37,10 @@ def trim_games(stats_dict):
     return [x[:min_games] for x in trimmed_games], [x[:min_games] for x in stats_dict.values()]
 
 def get_success_buckets(result_dir, steps, bucket_size):
+    '''Returns ratios of partial and perfect success buckezied'''
     stat_dict = get_stats(result_dir)
-    buckets = [[] for _ in range(int(steps / bucket_size))]
+    perfect_buckets = [[] for _ in range(int(steps / bucket_size))]
+    one_right_buckets = [[] for _ in range(int(steps / bucket_size))]
     hearers = len(list(stat_dict.values())[0][0]['answers'])
     for run in stat_dict.values():
         for game in run:
@@ -48,24 +49,35 @@ def get_success_buckets(result_dir, steps, bucket_size):
             speaker_place = game['place']
             categ_correct_count = 0
             place_correct_count = 0
+            one_right = False
             for answer in game['answers'].values():
                 if answer['categoriser'] == speaker_categoriser:
                     categ_correct_count += 1
                 if answer['place'] == speaker_place:
                     place_correct_count += 1
+                if answer['place'] == speaker_place and answer['categoriser'] == speaker_categoriser:
+                    one_right = True
             if categ_correct_count == hearers and place_correct_count == hearers:
-                buckets[bucket_idx].append(1)
+                perfect_buckets[bucket_idx].append(1)
             else:
-                buckets[bucket_idx].append(0)
+                perfect_buckets[bucket_idx].append(0)
+            if one_right:
+                one_right_buckets[bucket_idx].append(1)
+            else:
+                one_right_buckets[bucket_idx].append(0)
 
-    bucket_ratios = [sum(bucket_vals) / len(bucket_vals) for bucket_vals in buckets]
-    x = [bucket_size * i for i in range(1, len(bucket_ratios) + 1)]
-    return bucket_ratios, x
+    perfect_ratios = [sum(bucket_vals) / len(bucket_vals) for bucket_vals in perfect_buckets]
+    x = [bucket_size * i for i in range(1, len(perfect_ratios) + 1)]
+    one_right_ratios = [sum(bucket_vals) / len(bucket_vals) for bucket_vals in one_right_buckets]
+    return perfect_ratios, one_right_ratios, x
 
 def create_success_plot(stat_dict, analysis_dir):
+    '''Creates of success rate for partial and perfect success. Also creates a plot that shows
+    the portion of agents that made correct interpretations.'''
     min_games = min([len(games) for games in stat_dict.values()])
     correct_interpretations = [[] for _ in range(min_games)]
     all_correct = [[] for _ in range(min_games)]
+    partial_correct = [[] for _ in range(min_games)]
     hearers = len(list(stats_dict.values())[0][0]['answers'])
     for run in stats_dict.values():
         for i in range(min_games):
@@ -73,16 +85,23 @@ def create_success_plot(stat_dict, analysis_dir):
             speaker_place = run[i]['place']
             categ_correct_count = 0
             place_correct_count = 0
+            at_least_one = False
             for answer in run[i]['answers'].values():
                 if answer['categoriser'] == speaker_categoriser:
                     categ_correct_count += 1
                 if answer['place'] == speaker_place:
                     place_correct_count += 1
+                if answer['place'] == speaker_place and answer['categoriser'] == speaker_categoriser:
+                    at_least_one = True
             correct_interpretations[i].append(categ_correct_count)
             if categ_correct_count == hearers and place_correct_count == hearers:
                 all_correct[i].append(1)
             else:
                 all_correct[i].append(0)
+            if at_least_one:
+                partial_correct[i].append(1)
+            else:
+                partial_correct[i].append(0)
 
     correct_rate = [sum(interps) / len(interps) / hearers for interps in correct_interpretations]
     plt.plot(correct_rate)
@@ -93,15 +112,23 @@ def create_success_plot(stat_dict, analysis_dir):
     plt.close()
 
     n = 100
-    correct_ratio = [sum(all_corr) / len(all_corr) for all_corr in all_correct]
-    correct_ratio = correct_ratio[:-(len(correct_ratio) % n)]
-    windowed_ratio = [correct_ratio[i:i + n] for i in range(0, len(correct_ratio), n)]
-    windowed_ratio = [sum(ratios) / len(ratios) for ratios in windowed_ratio]
-    x = [n * i for i in range(1, len(windowed_ratio) + 1)]
-    plt.plot(x, windowed_ratio)
-    plt.ylabel('All interpretations correct ratio')
+    perfect_ratio = [sum(all_corr) / len(all_corr) for all_corr in all_correct]
+    perfect_ratio = perfect_ratio[:-(len(perfect_ratio) % n)]
+    perfect_ratio_windowed = [perfect_ratio[i:i + n] for i in range(0, len(perfect_ratio), n)]
+    perfect_ratio_windowed = [sum(ratios) / len(ratios) for ratios in perfect_ratio_windowed]
+
+    partial_ratio = [sum(partial_corr) / len(partial_corr) for partial_corr in partial_correct]
+    partial_ratio = partial_ratio[:-(len(partial_ratio) % n)]
+    partial_ratio_windowed = [partial_ratio[i:i + n] for i in range(0, len(partial_ratio), n)]
+    partial_ratio_windowed = [sum(ratios) / len(ratios) for ratios in partial_ratio_windowed]
+
+    x = [n * i for i in range(1, len(perfect_ratio_windowed) + 1)]
+    plt.plot(x, perfect_ratio_windowed, 'b-', label='Perfect')
+    plt.plot(x, partial_ratio_windowed, 'b--', label='Partial')
+    plt.legend()
+    plt.ylabel('Success ratio')
     plt.xlabel('Game')
-    plt.savefig(os.path.join(analysis_dir, '{}.pdf'.format('all_correct_ratio')))
+    plt.savefig(os.path.join(analysis_dir, '{}.pdf'.format('query_success_ratio')))
     plt.close()
 
 
@@ -111,7 +138,7 @@ def get_pickles_in_path(path):
     return pickles
 
 if __name__ == '__main__':
-    result_dir = '/home/ottohant/language_experiments/results_14-01-19_14-28-48'
+    result_dir = '/home/ottohant/Desktop/language_experiments/results_14-01-19_20-07-50_lang'
     analysis_dir = 'query_game_analysis'
 
     shutil.rmtree(analysis_dir, ignore_errors=True)
