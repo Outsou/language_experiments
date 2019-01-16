@@ -92,7 +92,7 @@ if __name__ == "__main__":
     collision_maps = []
     qgame_maps = []
     times = []
-    runs = 10
+    runs = 100
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     directory = 'results_{}'.format(date_time)
@@ -103,7 +103,7 @@ if __name__ == "__main__":
               'premade_lang': False,
               'gather_stats': True,
               'random_behaviour': True,
-              'steps': 500,
+              'steps': 20000,
               'create_trees': False}
 
     # Save params to file

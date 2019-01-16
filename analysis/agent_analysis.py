@@ -132,6 +132,25 @@ def get_tree_size(tree):
         nodes = new_nodes
     return size
 
+
+def create_first_option_selected_plot(stats, analysis_dir, steps, bucket_size=500):
+    buckets = [[] for _ in range(int(steps/bucket_size))]
+    for run_stats in stats.values():
+        for agent_stats in run_stats.values():
+            for selected_option in agent_stats['selected_options']:
+                bucket_idx = int(selected_option[1] / bucket_size)
+                if selected_option[0] == 1:
+                    buckets[bucket_idx].append(1)
+                else:
+                    buckets[bucket_idx].append(0)
+    bucket_avgs = [sum(bucket) / len(bucket) for bucket in buckets]
+    x = [bucket_size * i for i in range(1, len(buckets) + 1)]
+    plt.plot(x, bucket_avgs)
+    plt.xlabel('Time step')
+    plt.ylabel('Option 1 selected ratio')
+    plt.savefig(os.path.join(analysis_dir, 'option1_selected.pdf'))
+    plt.close()
+
 def analyse_disc_trees(lang_stats, analysis_dir):
     ranges = [(0, 0.5), (0.5, 1),
               (0, 0.25), (0.25, 0.5), (0.5, 0.75), (0.75, 1)]
@@ -213,8 +232,9 @@ def get_stats(result_path):
 if __name__ == '__main__':
     # result_dir_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-42'
     # result_dir_no_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-34'
-    result_dir_lang = r'/home/ottohant/Desktop/language_experiments/results_14-01-19_20-07-50_lang'
-    result_dir_no_lang = r'/home/ottohant/Desktop/language_experiments/results_14-01-19_20-07-53_no_lang'
+    # result_dir_lang = r'/home/ottohant/Desktop/language_experiments/results_14-01-19_20-07-50_lang'
+    result_dir_lang = r'/home/ottohant/language_experiments/results_16-01-19_12-33-26'
+    result_dir_no_lang = r'/home/ottohant/language_experiments/results_16-01-19_10-14-02_shortest_no_lang'
     analysis_dir = 'agent_analysis'
 
     with open(os.path.join(result_dir_lang, 'params.txt'), 'r') as file:
@@ -229,14 +249,16 @@ if __name__ == '__main__':
     print('')
     os.mkdir(analysis_dir)
 
-    analyse_disc_trees(lang_stats, analysis_dir)
+    create_first_option_selected_plot(lang_stats, analysis_dir, param_dict_lang['steps'])
 
-    print('Loading no language stats...')
-    no_lang_stats = get_stats(result_dir_no_lang)
-    print('Done loading...')
-
-    print('Creating delivery time plots...')
-    # create_delivery_time_plots2(lang_stats, no_lang_stats, analysis_dir)
-    create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, param_dict_lang['steps'], 500, result_dir_lang)
-
-    print('Done...')
+    # analyse_disc_trees(lang_stats, analysis_dir)
+    #
+    # print('Loading no language stats...')
+    # no_lang_stats = get_stats(result_dir_no_lang)
+    # print('Done loading...')
+    #
+    # print('Creating delivery time plots...')
+    # # create_delivery_time_plots2(lang_stats, no_lang_stats, analysis_dir)
+    # create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, param_dict_lang['steps'], 500, result_dir_lang)
+    #
+    # print('Done...')

@@ -84,6 +84,7 @@ class CoopaModel(Model):
                 if not free:
                     is_free = False
 
+        game['free'] = is_free
         self.query_games.append(game)
         return is_free
 

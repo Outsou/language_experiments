@@ -11,11 +11,18 @@ def get_stats(result_path):
     '''Loads pickles in result path to a dictionary.'''
     run_dirs = sorted(get_dirs_in_path(result_path))
     stats = {}
+    i = 0
     for run_dir in run_dirs:
+        i += 1
+        print('Loading run {}/{}'.format(i, len(run_dirs)))
         run_id = int(os.path.basename(run_dir))
         # print(run_id)
         pkl_file = os.path.join(run_dir, 'place_games.p')
         pkl = pickle.load(open(pkl_file, 'rb'))
+        # Save memory by removing memories
+        for game in pkl:
+            game.pop('hearer_memory')
+            game.pop('speaker_memory')
         stats[run_id] = pkl
     return stats
 
@@ -209,8 +216,24 @@ def collisions_plot(stats_dict, analysis_dir, steps, bucket_size=500):
     plt.savefig(os.path.join(analysis_dir, 'collisions.pdf'))
     plt.close()
 
+def analyse_synonymy(result_path):
+    run_dirs = sorted(get_dirs_in_path(result_path))
+    total_count = 0
+    synonymy_count = 0
+    for run_dir in run_dirs:
+        pkl_file = os.path.join(run_dir, 'place_games.p')
+        pkl = pickle.load(open(pkl_file, 'rb'))
+        for game in pkl:
+            total_count += 1
+            if game['speaker_meaning'] == game['hearer_interpretation']:
+                if game['hearer_memory'][0].get_form(game['speaker_meaning']) != game['form']:
+                    synonymy_count += 1
+    print('Synonymy {}%'.format(synonymy_count / total_count * 100))
+
+
 if __name__ == '__main__':
-    result_dir = '/home/ottohant/language_experiments/results_08-01-19_15-41-53'
+    result_dir = '/home/ottohant/language_experiments/results_16-01-19_09-54-18'
+    # result_dir = '/home/ottohant/language_experiments/results_08-01-19_15-41-53'
     # result_dir = '/home/ottohant/Desktop/language_experiments/results_14-01-19_20-07-50_lang'
     # result_dir = r'C:\Users\otto\Desktop\results_08-01-19_15-41-53'
     analysis_dir = 'place_game_analysis'
@@ -226,6 +249,10 @@ if __name__ == '__main__':
     shutil.rmtree(analysis_dir, ignore_errors=True)
     print('')
     os.mkdir(analysis_dir)
+
+    print('Analysing synonymy...')
+    analyse_synonymy(result_dir)
+    print('Done...')
 
     print('Loading place game stats...')
     stats_dict = get_stats(result_dir)

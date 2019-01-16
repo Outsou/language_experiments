@@ -36,7 +36,8 @@ class AgentBasic(Agent):
                           'extra_distance': 0,
                           'collision_map': np.zeros(self.map.shape),
                           'q-game_map': np.zeros(self.map.shape),
-                          'delivery_times': []}
+                          'delivery_times': [],
+                          'selected_options': []}
         self._has_item = False
         self._backing_off = False
         self._backing_info = None
@@ -267,6 +268,7 @@ class AgentBasic(Agent):
         interpretation = self.memory.get_meaning(game_dict['form'])
         game_dict['hearer_meaning'] = meaning
         game_dict['hearer_interpretation'] = interpretation
+        game_dict['hearer_memory'] = self.stat_dict['memories'][-1]
         self.memory.strengthen_form(meaning, game_dict['form'], speaker=False)
         self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
         self.model.report_place_game(game_dict)
@@ -317,7 +319,10 @@ class AgentBasic(Agent):
         self.memory.strengthen_form(meaning, form, speaker=True)
         if self._gather_stats:
             self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
-        hearer.observational_transmit({'form': form, 'speaker_meaning': meaning})
+        game_dict = {'form': form,
+                     'speaker_meaning': meaning,
+                     'speaker_memory': self.stat_dict['memories'][-1]}
+        hearer.observational_transmit(game_dict)
         if self._guessing_game:
             self._play_guessing_game(meaning, hearer)
         return meaning
@@ -426,9 +431,11 @@ class AgentBasic(Agent):
             if self._rand_behaviour:
                 if np.random.random() < 0.5:
                     self._blocked = option2[-2]
+                    self.stat_dict['selected_options'].append((1, self.model.start_time))
                     return option1
                 else:
                     self._blocked = option1[-2]
+                    self.stat_dict['selected_options'].append((2, self.model.start_time))
                     return option2
             else:
                 self._blocked = option2[-2]
@@ -453,6 +460,7 @@ class AgentBasic(Agent):
                 self.stat_dict['option1_selected'] += 1
                 self._blocked = option2[-2]
                 self._last_broadcast = broadcast1
+                self.stat_dict['selected_options'].append((1, self.model.start_time))
                 return option1
 
         # If option1 wasn't free, check option2
@@ -469,6 +477,7 @@ class AgentBasic(Agent):
                 self.stat_dict['option2_selected'] += 1
                 self._blocked = option1[-2]
                 self._last_broadcast = broadcast2
+                self.stat_dict['selected_options'].append((2, self.model.start_time))
                 return option2
 
         # Random selection
@@ -476,11 +485,13 @@ class AgentBasic(Agent):
             self.stat_dict['option1_selected'] += 1
             self._blocked = option2[-2]
             self._last_broadcast = broadcast1
+            self.stat_dict['selected_options'].append((1, self.model.start_time))
             return option1
 
         self.stat_dict['option2_selected'] += 1
         self._blocked = option1[-2]
         self._last_broadcast = broadcast2
+        self.stat_dict['selected_options'].append((2, self.model.start_time))
         return option2
 
         # If no path was free, use option1
