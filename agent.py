@@ -481,24 +481,26 @@ class AgentBasic(Agent):
                 return option2
 
         # Random selection
-        if np.random.random() < 0.5:
-            self.stat_dict['option1_selected'] += 1
-            self._blocked = option2[-2]
-            self._last_broadcast = broadcast1
-            self.stat_dict['selected_options'].append((1, self.model.start_time))
-            return option1
+        if self._rand_behaviour:
+            if np.random.random() < 0.5:
+                self.stat_dict['option1_selected'] += 1
+                self._blocked = option2[-2]
+                self._last_broadcast = broadcast1
+                self.stat_dict['selected_options'].append((1, self.model.start_time))
+                return option1
 
-        self.stat_dict['option2_selected'] += 1
-        self._blocked = option1[-2]
-        self._last_broadcast = broadcast2
-        self.stat_dict['selected_options'].append((2, self.model.start_time))
-        return option2
+            self.stat_dict['option2_selected'] += 1
+            self._blocked = option1[-2]
+            self._last_broadcast = broadcast2
+            self.stat_dict['selected_options'].append((2, self.model.start_time))
+            return option2
 
-        # If no path was free, use option1
-        # self._last_broadcast = None
-        # self.stat_dict['option1_selected'] += 1
-        # self._blocked = option2[-2]
-        # return option1
+        # Shortest path selection
+        self._last_broadcast = None
+        self.stat_dict['option1_selected'] += 1
+        self._blocked = option2[-2]
+        self.stat_dict['selected_options'].append((1, self.model.start_time))
+        return option1
 
     def step(self):
         self._age += 1

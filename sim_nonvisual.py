@@ -102,7 +102,7 @@ if __name__ == "__main__":
     params = {'play_guessing': True,
               'premade_lang': False,
               'gather_stats': True,
-              'random_behaviour': True,
+              'random_behaviour': False,
               'steps': 20000,
               'create_trees': False}
 

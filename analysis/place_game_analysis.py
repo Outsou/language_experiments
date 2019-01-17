@@ -232,10 +232,7 @@ def analyse_synonymy(result_path):
 
 
 if __name__ == '__main__':
-    result_dir = '/home/ottohant/language_experiments/results_16-01-19_09-54-18'
-    # result_dir = '/home/ottohant/language_experiments/results_08-01-19_15-41-53'
-    # result_dir = '/home/ottohant/Desktop/language_experiments/results_14-01-19_20-07-50_lang'
-    # result_dir = r'C:\Users\otto\Desktop\results_08-01-19_15-41-53'
+    result_dir = r'C:\Users\otto\Documents\GitHub\language_experiments\results_17-01-19_11-57-00_shortest_prelang'
     analysis_dir = 'place_game_analysis'
 
     pkl_dir = 'pkls'
@@ -270,13 +267,7 @@ if __name__ == '__main__':
 
     create_success_plot_from_pkls(pkl_dir, analysis_dir)
 
-    # create_success_plot(asym_games, analysis_dir, 'success_rate_asym')
-    # create_success_plot2(games, analysis_dir)
-    #
-    # print('Loading lexicons...')
-    # lexicons = get_lexicons(result_dir)
-    # top2 = print_utilities(lexicons)
-    # calculate_lexicon_cohesion(lexicons, top2)
-    # print()
-
-
+    print('Loading lexicons...')
+    lexicons = get_lexicons(result_dir)
+    top2 = print_utilities(lexicons)
+    calculate_lexicon_cohesion(lexicons, top2)

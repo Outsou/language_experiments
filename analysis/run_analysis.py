@@ -3,6 +3,7 @@ import os
 from utils import get_dirs_in_path
 import pickle
 import matplotlib.pyplot as plt
+from utils import mean_confidence_interval
 
 
 def make_most_common_plot(step_words, agents, run_id):
@@ -58,15 +59,19 @@ def analyse_run(run_dir):
     top_meaning = (('S', '.', 'S'), ('S', 'X', 'S'), ('S', '.', 'S'))
     # top_meaning = (('.', '.', '.'), ('S', 'X', 'S'), ('S', '.', 'S'))
     steps = 20000
+    deliveries = 0
+    collisions = 0
 
     pickles = [os.path.join(run_dir, file) for file in os.listdir(run_dir)
-               if file[-2:] == '.p' and file[:10] != 'place_game']
+               if file[-2:] == '.p' and file[:5] != 'place' and file[:5] != 'query']
     agent_stats = []
     for pkl_file in pickles:
         agent_stats.append(pickle.load(open(pkl_file, 'rb')))
 
     step_words = [{} for _ in range(steps)]
     for stats in agent_stats:
+        deliveries += stats['items_delivered']
+        collisions += stats['obs_game_init']
         for i in range(len(stats['memories'])):
             start = stats['memories'][i][1]
             if i < len(stats['memories']) - 1:
@@ -84,8 +89,10 @@ def analyse_run(run_dir):
     last_idx = make_most_common_plot(step_words, len(agent_stats), run_id)
     make_word_battle_plot(step_words, last_idx, run_id)
 
+    return deliveries, collisions, len(agent_stats)
+
 if __name__ == '__main__':
-    result_dir = r'C:\Users\otto\Desktop\results_08-01-19_15-41-53'
+    result_dir = r'C:\Users\otto\Documents\GitHub\language_experiments\results_17-01-19_11-57-07_shortest_lang'
     analysis_dir = 'run_analysis'
 
     shutil.rmtree(analysis_dir, ignore_errors=True)
@@ -94,7 +101,16 @@ if __name__ == '__main__':
 
     run_dirs = sorted(get_dirs_in_path(result_dir))
     i = 0
+    deliveries = []
+    collisions = []
     for run_dir in run_dirs:
         i += 1
         print('Analysing run {}/{}'.format(i, len(run_dirs)))
-        analyse_run(run_dir)
+        run_deliveries, run_collisions, agents = analyse_run(run_dir)
+        deliveries.append(run_deliveries / agents)
+        collisions.append(run_collisions / agents)
+
+    mean, h = mean_confidence_interval(deliveries)
+    print('Deliveries mean: {} {}'.format(mean, h))
+    mean, h = mean_confidence_interval(collisions)
+    print('Collisions mean: {} {}'.format(mean, h))

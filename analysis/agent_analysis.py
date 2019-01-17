@@ -233,7 +233,7 @@ if __name__ == '__main__':
     # result_dir_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-42'
     # result_dir_no_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-34'
     # result_dir_lang = r'/home/ottohant/Desktop/language_experiments/results_14-01-19_20-07-50_lang'
-    result_dir_lang = r'/home/ottohant/language_experiments/results_16-01-19_12-33-26'
+    result_dir_lang = r'C:\Users\otto\Documents\GitHub\language_experiments\results_16-01-19_17-42-51'
     result_dir_no_lang = r'/home/ottohant/language_experiments/results_16-01-19_10-14-02_shortest_no_lang'
     analysis_dir = 'agent_analysis'
 
