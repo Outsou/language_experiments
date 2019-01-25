@@ -94,17 +94,19 @@ if __name__ == "__main__":
     times = []
     runs = 100
 
-    date_time = time.strftime("%d-%m-%y_%H-%M-%S")
-    directory = 'results_{}'.format(date_time)
-    os.makedirs(directory)
-
     # AGENT PARAMS
     params = {'play_guessing': True,
               'premade_lang': False,
               'gather_stats': True,
               'random_behaviour': False,
-              'steps': 20000,
+              'steps': 100000,
               'create_trees': False}
+
+    date_time = time.strftime("%d-%m-%y_%H-%M-%S")
+    rand = 'random' if params['random_behaviour'] else 'shortest'
+    lang = 'lang' if params['play_guessing'] else 'prelang'
+    directory = r'D:\resultit\results_{}_{}_{}'.format(date_time, rand, lang)
+    os.makedirs(directory)
 
     # Save params to file
     with open(os.path.join(directory, 'params.txt'), 'w') as text_file:

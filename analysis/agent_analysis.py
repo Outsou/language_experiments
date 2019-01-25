@@ -98,8 +98,8 @@ def create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, steps, b
     no_lang_buckets = get_buckets(no_lang_stats, steps, bucket_size)
 
     fig, ax1 = plt.subplots()
-    lns1 = ax1.plot(x, lang_buckets, 'r-.', label='With language')
-    lns2 = ax1.plot(x, no_lang_buckets, 'r:', label='Without language')
+    lns1 = ax1.plot(x, lang_buckets, 'r-.', label='Post-language')
+    lns2 = ax1.plot(x, no_lang_buckets, 'r:', label='Pre-language')
     ax1.set_xlabel('Time step')
     # plt.legend()
     # Make the y-axis label, ticks and tick labels match the line color.
@@ -230,35 +230,30 @@ def get_stats(result_path):
     return stats
 
 if __name__ == '__main__':
-    # result_dir_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-42'
-    # result_dir_no_lang = r'/home/ottohant/Desktop/results_17-12-18_09-15-34'
-    # result_dir_lang = r'/home/ottohant/Desktop/language_experiments/results_14-01-19_20-07-50_lang'
-    result_dir_lang = r'C:\Users\otto\Documents\GitHub\language_experiments\results_16-01-19_17-42-51'
-    result_dir_no_lang = r'/home/ottohant/language_experiments/results_16-01-19_10-14-02_shortest_no_lang'
+    result_dir_lang = r'D:\resultit\100000\results_18-01-19_14-52-44_shortest_language'
+    result_dir_no_lang = r'D:\resultit\100000\results_17-01-19_14-44-48_shortest_prelang'
     analysis_dir = 'agent_analysis'
 
     with open(os.path.join(result_dir_lang, 'params.txt'), 'r') as file:
         params_s = file.read().replace('\n', '')
     param_dict_lang = ast.literal_eval(params_s)
 
-    print('Loading language stats...')
-    lang_stats = get_stats(result_dir_lang)
-    print('Done loading...')
-
     shutil.rmtree(analysis_dir, ignore_errors=True)
     print('')
     os.mkdir(analysis_dir)
 
+    print('Loading language stats...')
+    lang_stats = get_stats(result_dir_lang)
+    print('Done loading...')
+
     create_first_option_selected_plot(lang_stats, analysis_dir, param_dict_lang['steps'])
 
-    # analyse_disc_trees(lang_stats, analysis_dir)
-    #
-    # print('Loading no language stats...')
-    # no_lang_stats = get_stats(result_dir_no_lang)
-    # print('Done loading...')
-    #
-    # print('Creating delivery time plots...')
-    # # create_delivery_time_plots2(lang_stats, no_lang_stats, analysis_dir)
-    # create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, param_dict_lang['steps'], 500, result_dir_lang)
-    #
-    # print('Done...')
+    analyse_disc_trees(lang_stats, analysis_dir)
+
+    print('Loading no language stats...')
+    no_lang_stats = get_stats(result_dir_no_lang)
+    print('Done loading...')
+
+    print('Creating delivery time plots...')
+    # create_delivery_time_plots2(lang_stats, no_lang_stats, analysis_dir)
+    create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, param_dict_lang['steps'], 500, result_dir_lang)

@@ -4,6 +4,7 @@ from utils import get_dirs_in_path
 import pickle
 import matplotlib.pyplot as plt
 from utils import mean_confidence_interval
+import ast
 
 
 def make_most_common_plot(step_words, agents, run_id):
@@ -54,11 +55,10 @@ def make_word_battle_plot(step_words, last_idx, run_id):
     plt.savefig(os.path.join(analysis_dir, 'top_coherence_{}_battle.png'.format(run_id)))
     plt.close()
 
-def analyse_run(run_dir):
+def analyse_run(run_dir, steps):
     # top_meaning = (('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S'))
     top_meaning = (('S', '.', 'S'), ('S', 'X', 'S'), ('S', '.', 'S'))
     # top_meaning = (('.', '.', '.'), ('S', 'X', 'S'), ('S', '.', 'S'))
-    steps = 20000
     deliveries = 0
     collisions = 0
 
@@ -81,9 +81,12 @@ def analyse_run(run_dir):
             form = stats['memories'][i][0].get_form(top_meaning)
             if form is not None:
                 for j in range(start, end):
-                    if form not in step_words[j]:
-                        step_words[j][form] = 0
-                    step_words[j][form] += 1
+                    try:
+                        if form not in step_words[j]:
+                            step_words[j][form] = 0
+                        step_words[j][form] += 1
+                    except:
+                        print('asd')
 
     run_id = os.path.basename(run_dir)
     last_idx = make_most_common_plot(step_words, len(agent_stats), run_id)
@@ -92,8 +95,12 @@ def analyse_run(run_dir):
     return deliveries, collisions, len(agent_stats)
 
 if __name__ == '__main__':
-    result_dir = r'C:\Users\otto\Documents\GitHub\language_experiments\results_17-01-19_11-57-07_shortest_lang'
+    result_dir = r'D:\resultit\100000\results_18-01-19_09-41-39_shortest_language_extended'
     analysis_dir = 'run_analysis'
+
+    with open(os.path.join(result_dir, 'params.txt'), 'r') as file:
+        params_s = file.read().replace('\n', '')
+    param_dict = ast.literal_eval(params_s)
 
     shutil.rmtree(analysis_dir, ignore_errors=True)
     print('')
@@ -106,7 +113,7 @@ if __name__ == '__main__':
     for run_dir in run_dirs:
         i += 1
         print('Analysing run {}/{}'.format(i, len(run_dirs)))
-        run_deliveries, run_collisions, agents = analyse_run(run_dir)
+        run_deliveries, run_collisions, agents = analyse_run(run_dir, param_dict['steps'])
         deliveries.append(run_deliveries / agents)
         collisions.append(run_collisions / agents)
 

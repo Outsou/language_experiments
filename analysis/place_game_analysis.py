@@ -52,10 +52,11 @@ def create_success_plot(sym_games, asym_games, analysis_dir, pkl_name, pkl_label
         for run_games in games:
             for i in range(len(run_games)):
                 bucket_idx = int(run_games[i]['time'] / bucket_size)
-                if run_games[i]['speaker_meaning'] == run_games[i]['hearer_interpretation']:
-                    success_buckets[bucket_idx].append(1)
-                else:
-                    success_buckets[bucket_idx].append(0)
+                if bucket_idx < len(success_buckets):
+                    if run_games[i]['speaker_meaning'] == run_games[i]['hearer_interpretation']:
+                        success_buckets[bucket_idx].append(1)
+                    else:
+                        success_buckets[bucket_idx].append(0)
         return [sum(x) / len(x) for x in success_buckets]
 
     sym_buckets = get_success_portion(sym_games)
@@ -72,7 +73,7 @@ def create_success_plot(sym_games, asym_games, analysis_dir, pkl_name, pkl_label
 
     pickle.dump({'buckets': sym_buckets, 'bucket_size': bucket_size, 'label': pkl_label}, open(pkl_name, 'wb'))
 
-def create_success_plot_from_pkls(pkl_dir, analysis_dir):
+def create_success_plot_from_pkls(pkl_dir, analysis_dir, steps=None):
     pkls = []
     pickles = get_pickles_in_path(pkl_dir)
     for pkl_file in pickles:
@@ -84,8 +85,13 @@ def create_success_plot_from_pkls(pkl_dir, analysis_dir):
     assert len(set(bucket_sizes)) == 1, 'Different bucket sizes'
 
     x = [bucket_sizes[0] * i for i in range(1, lengths[0] + 1)]
+    if steps is not None:
+        bucket_size = bucket_sizes[0]
+        buckets = int(steps / bucket_size)
+    else:
+        buckets = len(x)
     for pkl in pkls:
-        plt.plot(x, pkl['buckets'], label=pkl['label'])
+        plt.plot(x[:buckets], pkl['buckets'][:buckets], label=pkl['label'])
     plt.legend()
     plt.savefig(os.path.join(analysis_dir, 'multi_setup_success.pdf'))
     plt.close()
@@ -232,7 +238,8 @@ def analyse_synonymy(result_path):
 
 
 if __name__ == '__main__':
-    result_dir = r'C:\Users\otto\Documents\GitHub\language_experiments\results_17-01-19_11-57-00_shortest_prelang'
+    result_dir = r'D:\resultit\results_18-01-19_09-41-15_shortest_prelang'
+    # result_dir = r'D:\resultit\100000\results_17-01-19_14-44-48_shortest_prelang'
     analysis_dir = 'place_game_analysis'
 
     pkl_dir = 'pkls'
@@ -247,27 +254,26 @@ if __name__ == '__main__':
     print('')
     os.mkdir(analysis_dir)
 
-    print('Analysing synonymy...')
-    analyse_synonymy(result_dir)
-    print('Done...')
+    # print('Analysing synonymy...')
+    # analyse_synonymy(result_dir)
+    # print('Done...')
 
-    print('Loading place game stats...')
-    stats_dict = get_stats(result_dir)
+    # print('Loading place game stats...')
+    # stats_dict = get_stats(result_dir)
 
     # Trim stats
-    games, asym_games = trim_games(stats_dict)
-
+    # games, asym_games = trim_games(stats_dict)
+    #
     # collisions_plot(stats_dict, analysis_dir, param_dict['steps'])
-    collisions_plot(stats_dict, analysis_dir, 20000)
+    #
+    # pkl_label = 'Query Game setup' if param_dict['play_guessing'] else 'Place Game setup'
+    # create_success_plot(games, asym_games, analysis_dir,
+    #                     os.path.join(pkl_dir, os.path.basename(result_dir) + '.p'), pkl_label,
+    #                     param_dict['steps'], bucket_size=500)
 
-    pkl_label = 'Query Game setup' if param_dict['play_guessing'] else 'Place Game setup'
-    create_success_plot(games, asym_games, analysis_dir,
-                        os.path.join(pkl_dir, os.path.basename(result_dir) + '.p'), pkl_label,
-                        20000)
+    # create_success_plot_from_pkls(pkl_dir, analysis_dir, 20000)
 
-    create_success_plot_from_pkls(pkl_dir, analysis_dir)
-
-    print('Loading lexicons...')
-    lexicons = get_lexicons(result_dir)
-    top2 = print_utilities(lexicons)
-    calculate_lexicon_cohesion(lexicons, top2)
+    # print('Loading lexicons...')
+    # lexicons = get_lexicons(result_dir)
+    # top2 = print_utilities(lexicons)
+    # calculate_lexicon_cohesion(lexicons, top2)

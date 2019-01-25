@@ -79,8 +79,13 @@ class CoopaModel(Model):
         # Gather answers
         for agent in self.agents:
             if agent is not asker:
-                free, place, categoriser = agent.ask_if_free(place_form, disc_form)
-                game['answers'][agent.unique_id] = {'free': free, 'place': place, 'categoriser': categoriser}
+                free, hearer_place, hearer_p_form, hearer_categoriser, hearer_c_form \
+                    = agent.ask_if_free(place_form, disc_form)
+                game['answers'][agent.unique_id] = {'free': free,
+                                                    'place': hearer_place,
+                                                    'place_form': hearer_p_form,
+                                                    'categoriser': hearer_categoriser,
+                                                    'categoriser_form': hearer_c_form}
                 if not free:
                     is_free = False
 

@@ -71,7 +71,7 @@ def get_success_buckets(result_dir, steps, bucket_size):
     one_right_ratios = [sum(bucket_vals) / len(bucket_vals) for bucket_vals in one_right_buckets]
     return perfect_ratios, one_right_ratios, x
 
-def create_success_plot(stat_dict, analysis_dir):
+def create_success_plot(stat_dict, analysis_dir, bucket_size=100):
     '''Creates of success rate for partial and perfect success. Also creates a plot that shows
     the portion of agents that made correct interpretations.'''
     min_games = min([len(games) for games in stat_dict.values()])
@@ -111,18 +111,17 @@ def create_success_plot(stat_dict, analysis_dir):
     # plt.savefig(os.path.join(analysis_dir, '{}.png'.format(name)))
     plt.close()
 
-    n = 100
     perfect_ratio = [sum(all_corr) / len(all_corr) for all_corr in all_correct]
-    perfect_ratio = perfect_ratio[:-(len(perfect_ratio) % n)]
-    perfect_ratio_windowed = [perfect_ratio[i:i + n] for i in range(0, len(perfect_ratio), n)]
+    perfect_ratio = perfect_ratio[:-(len(perfect_ratio) % bucket_size)]
+    perfect_ratio_windowed = [perfect_ratio[i:i + bucket_size] for i in range(0, len(perfect_ratio), bucket_size)]
     perfect_ratio_windowed = [sum(ratios) / len(ratios) for ratios in perfect_ratio_windowed]
 
     partial_ratio = [sum(partial_corr) / len(partial_corr) for partial_corr in partial_correct]
-    partial_ratio = partial_ratio[:-(len(partial_ratio) % n)]
-    partial_ratio_windowed = [partial_ratio[i:i + n] for i in range(0, len(partial_ratio), n)]
+    partial_ratio = partial_ratio[:-(len(partial_ratio) % bucket_size)]
+    partial_ratio_windowed = [partial_ratio[i:i + bucket_size] for i in range(0, len(partial_ratio), bucket_size)]
     partial_ratio_windowed = [sum(ratios) / len(ratios) for ratios in partial_ratio_windowed]
 
-    x = [n * i for i in range(1, len(perfect_ratio_windowed) + 1)]
+    x = [bucket_size * i for i in range(1, len(perfect_ratio_windowed) + 1)]
     plt.plot(x, perfect_ratio_windowed, 'b-', label='Perfect')
     plt.plot(x, partial_ratio_windowed, 'b--', label='Partial')
     plt.legend()
@@ -131,6 +130,17 @@ def create_success_plot(stat_dict, analysis_dir):
     plt.savefig(os.path.join(analysis_dir, '{}.pdf'.format('query_success_ratio')))
     plt.close()
 
+def analyse_synonymy(stats_dict):
+    correct_count = 0
+    synonymy_count = 0
+    for run in stats_dict.values():
+        for game in run:
+            for answer in game['answers'].values():
+                if answer['categoriser'] == game['categoriser']:
+                    correct_count += 1
+                    if answer['categoriser_form'] != game['disc_form']:
+                        synonymy_count += 1
+    print('Synonymy: {}'.format(synonymy_count / correct_count))
 
 def get_pickles_in_path(path):
     '''Returns the pickle filepaths in path.'''
@@ -138,7 +148,7 @@ def get_pickles_in_path(path):
     return pickles
 
 if __name__ == '__main__':
-    result_dir = '/home/ottohant/Desktop/language_experiments/results_14-01-19_20-07-50_lang'
+    result_dir = r'D:\resultit\100000\results_18-01-19_14-52-44_shortest_language'
     analysis_dir = 'query_game_analysis'
 
     shutil.rmtree(analysis_dir, ignore_errors=True)
@@ -148,5 +158,7 @@ if __name__ == '__main__':
     print('Loading query game stats...')
     stats_dict = get_stats(result_dir)
 
-    create_success_plot(stats_dict, analysis_dir)
+    analyse_synonymy(stats_dict)
+
+    # create_success_plot(stats_dict, analysis_dir)
 

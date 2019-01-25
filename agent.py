@@ -369,18 +369,20 @@ class AgentBasic(Agent):
         '''Used to ask an agent if a place is free. Returns the answer and interpreted place and categoriser.'''
         place = self.memory.get_meaning(place_form)
         if place is None:
-            return True, None, None
+            return True, None, None, None, None
+        place_form = self.memory.get_form(place)
         categoriser = self.memory.get_meaning(disc_form)
         if categoriser is None:
-            return True, place, None
+            return True, place, place_form, None, None
+        categoriser_form = self.memory.get_form(categoriser)
         objects = self._get_objects(place)
         normalised = self._normalise(objects)
         low, high = categoriser.range
         for obj in zip(objects, normalised):
             if low <= obj[1][categoriser.channel] <= high:
                 if obj[0] == self.pos or obj[0] in self._path:
-                    return False, place, categoriser
-        return True, place, categoriser
+                    return False, place, place_form, categoriser, categoriser_form
+        return True, place, place_form, categoriser, categoriser_form
 
     def _get_forms_for_path(self, path, path2):
         '''Returns forms for meanings used to discriminate path from path2 (and other things)..'''
