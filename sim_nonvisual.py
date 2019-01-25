@@ -5,7 +5,6 @@ import datetime
 import os
 import numpy as np
 from disc_tree import Categoriser
-import matplotlib.pyplot as plt
 import pickle
 import pprint
 
@@ -103,7 +102,7 @@ if __name__ == "__main__":
     params = {'play_guessing': False,
               'gather_stats': True,
               'random_behaviour': False,
-              'steps': 20000,
+              'steps': 100000,
               'create_trees': False,
               'agents': 1}
 
