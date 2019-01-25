@@ -199,3 +199,47 @@ class Layout:
 #         model.grid.place_agent(action_center, (1, 11))
 #
 #         return {'action_center': action_center}
+
+
+# ALL THE SHELVES
+class Layout:
+    width = 16
+    height = 7
+
+    def draw_block_from_point (self, grid, x, y, width, height, cls):
+        cells = []
+        for w in range(width):
+            for h in range(height):
+                cell = (x+w, y+h)
+                cells.append(cell)
+                grid.place_agent(cls(w+h, self), cell)
+        return cells
+
+    def draw_room_from_point (self, grid, x, y, width, height):
+        for i in range(width):
+            self.draw_block_from_point(grid, x+i, y, 1, height, Wall)
+
+    def create_world(self, model, play_guessing):
+        # Side walls
+        self.draw_block_from_point(model.grid, 0, 1, 1, 5, Wall)
+        self.draw_block_from_point(model.grid, 15, 1, 1, 5, Wall)
+
+        # Top and bottom
+        self.draw_block_from_point(model.grid, 0, 6, 16, 1, Wall)
+        self.draw_block_from_point(model.grid, 0, 0, 16, 1, Wall)
+
+
+        shelf_cells = []
+
+        # Horizontal shelves
+        shelf_cells += self.draw_block_from_point(model.grid, 7, 1, 8, 1, Shelf)
+        # self.draw_block_from_point(model.grid, 11, 10, 8, 1, Shelf)
+        shelf_cells += self.draw_block_from_point(model.grid, 7, 3, 8, 1, Shelf)
+        shelf_cells += self.draw_block_from_point(model.grid, 7, 5, 8, 1, Shelf)
+        # self.draw_block_from_point(model.grid, 11, 14, 8, 1, Shelf)
+
+        # Action center
+        action_center = ActionCenter(0, model, shelf_cells)
+        model.grid.place_agent(action_center, (1, 3))
+
+        return {'action_center': action_center}

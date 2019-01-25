@@ -9,12 +9,11 @@ from disc_tree import Discriminator
 import copy
 
 class AgentBasic(Agent):
-    def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True, premade_lang=False,
+    def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True,
                  utility_threshold=2, gather_stats=False, random_behaviour=False):
         super().__init__(unique_id, model)
         self._guessing_game = guessing_game
         self.neighborhood_rotation = neighborhood_rotation
-        self._premade_lang = premade_lang
         self._utility_threshold = utility_threshold
         self._gather_stats = gather_stats
         self._rand_behaviour = random_behaviour
@@ -46,65 +45,13 @@ class AgentBasic(Agent):
         self._blocked = None
         self._last_delivery = 0
 
-        # if self._premade_lang:
-        #     self.discriminator.grow(0)
-        #     self.memory.create_association(self.discriminator.trees[0].root.child1, 'LEFT')
-        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child1, 'LEFT')
-        #     self.memory.create_association(self.discriminator.trees[0].root.child2, 'RIGHT')
-        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child2, 'RIGHT')
-        #     self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
-        #     self.memory.strengthen_form((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
-        #     self.memory._update_utility((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), -100)
+    def _save_memory(self):
+        # self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
+        pass
 
-        # if self._premade_lang:
-        #     self.discriminator.grow(0)
-        #     self.discriminator.trees[0].root.child1.grow()
-        #     self.memory.create_association(self.discriminator.trees[0].root.child1.child1, 'VERY_LEFT')
-        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child1.child1, 'VERY_LEFT')
-        #     self.memory.create_association(self.discriminator.trees[0].root.child1.child2, 'SEMI_LEFT')
-        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child1.child2, 'SEMI_LEFT')
-        #     self.memory.create_association(self.discriminator.trees[0].root.child2, 'RIGHT')
-        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child2, 'RIGHT')
-        #     self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
-        #     self.memory.strengthen_form((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
-        #     self.memory._update_utility((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), -100)
-
-        # if self._premade_lang:
-        #     self.discriminator.grow(0)
-        #     self.discriminator.trees[0].root.child1.grow()
-        #     self.discriminator.trees[0].root.child2.grow()
-        #     self.memory.create_association(self.discriminator.trees[0].root.child1.child1, 'VERY_LEFT')
-        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child1.child1, 'VERY_LEFT')
-        #     self.memory.create_association(self.discriminator.trees[0].root.child1.child2, 'SEMI_LEFT')
-        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child1.child2, 'SEMI_LEFT')
-        #     self.memory.create_association(self.discriminator.trees[0].root.child2.child1, 'SEMI_RIGHT')
-        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child2.child1, 'SEMI_RIGHT')
-        #     self.memory.create_association(self.discriminator.trees[0].root.child2.child2, 'VERY_RIGHT')
-        #     self.memory.strengthen_form(self.discriminator.trees[0].root.child2.child2, 'VERY_RIGHT')
-        #     self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
-        #     self.memory.strengthen_form((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
-        #     self.memory._update_utility((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), -100)
-
-        if self._premade_lang:
-            self.discriminator.grow(0)
-            self.discriminator.grow(1)
-            self.discriminator.trees[0].root.child1.grow()
-            self.discriminator.trees[0].root.child2.grow()
-            self.memory.create_association(self.discriminator.trees[1].root.child1, 'DOWN')
-            self.memory.strengthen_form(self.discriminator.trees[1].root.child1, 'DOWN')
-            self.memory.create_association(self.discriminator.trees[1].root.child2, 'UP')
-            self.memory.strengthen_form(self.discriminator.trees[1].root.child2, 'UP')
-            self.memory.create_association(self.discriminator.trees[0].root.child1.child1, 'VERY_LEFT')
-            self.memory.strengthen_form(self.discriminator.trees[0].root.child1.child1, 'VERY_LEFT')
-            self.memory.create_association(self.discriminator.trees[0].root.child1.child2, 'SEMI_LEFT')
-            self.memory.strengthen_form(self.discriminator.trees[0].root.child1.child2, 'SEMI_LEFT')
-            self.memory.create_association(self.discriminator.trees[0].root.child2.child1, 'SEMI_RIGHT')
-            self.memory.strengthen_form(self.discriminator.trees[0].root.child2.child1, 'SEMI_RIGHT')
-            self.memory.create_association(self.discriminator.trees[0].root.child2.child2, 'VERY_RIGHT')
-            self.memory.strengthen_form(self.discriminator.trees[0].root.child2.child2, 'VERY_RIGHT')
-            self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
-            self.memory.strengthen_form((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'CORRIDOR')
-            self.memory._update_utility((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), -100)
+    def _save_discriminater(self):
+        # self.stat_dict['discriminators'].append((copy.deepcopy(self.discriminator), self._age))
+        pass
 
     def _get_highest_meaning_on_path(self, path):
         '''Finds out the most important thing on the agent's path.
@@ -259,7 +206,7 @@ class AgentBasic(Agent):
         if categoriser is None:
             self.discriminator.grow(disc_objects=disc_objects, topic_objects=topic_objects)
             if self._gather_stats:
-                self.stat_dict['discriminators'].append((copy.deepcopy(self.discriminator), self._age))
+                self._save_discriminator()
         return categoriser
 
     def observational_transmit(self, game_dict):
@@ -268,9 +215,9 @@ class AgentBasic(Agent):
         interpretation = self.memory.get_meaning(game_dict['form'])
         game_dict['hearer_meaning'] = meaning
         game_dict['hearer_interpretation'] = interpretation
-        game_dict['hearer_memory'] = self.stat_dict['memories'][-1]
+        game_dict['hearer_memory'] = (copy.deepcopy(self.memory), self._age)
         self.memory.strengthen_form(meaning, game_dict['form'], speaker=False)
-        self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
+        self._save_memory()
         self.model.report_place_game(game_dict)
 
     def guessing_transmit(self, disc_form):
@@ -285,7 +232,7 @@ class AgentBasic(Agent):
         categoriser = self._last_broadcast['categoriser']
         self.memory.strengthen_form(categoriser, disc_form, speaker=False)
         if self._gather_stats:
-            self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
+            self._save_memory()
         return True
 
     def _play_guessing_game(self, place, hearer):
@@ -305,7 +252,7 @@ class AgentBasic(Agent):
             self.memory.strengthen_form(categoriser, form, speaker=True)
             if self._gather_stats:
                 self.stat_dict['q-game_map'][self.pos] += 1
-                self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
+                self._save_memory()
 
     def _play_observational_game(self, hearer):
         '''Start the observational game as the speaker.'''
@@ -318,10 +265,10 @@ class AgentBasic(Agent):
         self.memory.report_form_use(meaning, form)
         self.memory.strengthen_form(meaning, form, speaker=True)
         if self._gather_stats:
-            self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
+            self._save_memory()
         game_dict = {'form': form,
                      'speaker_meaning': meaning,
-                     'speaker_memory': self.stat_dict['memories'][-1]}
+                     'speaker_memory': (copy.deepcopy(self.memory), self._age)}
         hearer.observational_transmit(game_dict)
         if self._guessing_game:
             self._play_guessing_game(meaning, hearer)
