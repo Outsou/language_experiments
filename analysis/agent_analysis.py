@@ -83,12 +83,10 @@ def get_buckets(stats, steps, bucket_size):
             for delivery_time in agent['delivery_times']:
                 bucket = int(delivery_time[1] / bucket_size)
                 buckets[bucket].append(delivery_time[0])
-    return [sum(bucket) / len(bucket) for bucket in buckets]
+    return buckets
 
 def create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, steps, bucket_size, language_dir):
     '''Creates a delivery time plot. X-axis is time step.'''
-    lang_buckets = [[] for _ in range(int(steps/bucket_size))]
-
     print('Loading query stats...')
     perfect_queries, one_right_queries, x = get_success_buckets(language_dir, steps, bucket_size)
     print('Done...\n')
@@ -96,6 +94,12 @@ def create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, steps, b
 
     lang_buckets = get_buckets(lang_stats, steps, bucket_size)
     no_lang_buckets = get_buckets(no_lang_stats, steps, bucket_size)
+
+    print('Last bucket size language: {}'.format(len(lang_buckets[-1])))
+    print('Last bucket size no language: {}'.format(len(no_lang_buckets[-1])))
+
+    lang_buckets = [sum(bucket) / len(bucket) for bucket in lang_buckets]
+    no_lang_buckets = [sum(bucket) / len(bucket) for bucket in no_lang_buckets]
 
     fig, ax1 = plt.subplots()
     lns1 = ax1.plot(x, lang_buckets, 'r-.', label='Post-language')
@@ -246,9 +250,9 @@ if __name__ == '__main__':
     lang_stats = get_stats(result_dir_lang)
     print('Done loading...')
 
-    create_first_option_selected_plot(lang_stats, analysis_dir, param_dict_lang['steps'])
-
-    analyse_disc_trees(lang_stats, analysis_dir)
+    # create_first_option_selected_plot(lang_stats, analysis_dir, param_dict_lang['steps'])
+    #
+    # analyse_disc_trees(lang_stats, analysis_dir)
 
     print('Loading no language stats...')
     no_lang_stats = get_stats(result_dir_no_lang)
@@ -256,4 +260,4 @@ if __name__ == '__main__':
 
     print('Creating delivery time plots...')
     # create_delivery_time_plots2(lang_stats, no_lang_stats, analysis_dir)
-    create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, param_dict_lang['steps'], 500, result_dir_lang)
+    create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, param_dict_lang['steps'], 1000, result_dir_lang)
