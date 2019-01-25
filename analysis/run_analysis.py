@@ -61,6 +61,7 @@ def analyse_run(run_dir, steps):
     # top_meaning = (('.', '.', '.'), ('S', 'X', 'S'), ('S', '.', 'S'))
     deliveries = 0
     collisions = 0
+    delivery_times = []
 
     pickles = [os.path.join(run_dir, file) for file in os.listdir(run_dir)
                if file[-2:] == '.p' and file[:5] != 'place' and file[:5] != 'query']
@@ -72,6 +73,7 @@ def analyse_run(run_dir, steps):
     for stats in agent_stats:
         deliveries += stats['items_delivered']
         collisions += stats['obs_game_init']
+        delivery_times += [x[0] for x in stats['delivery_times']]
         for i in range(len(stats['memories'])):
             start = stats['memories'][i][1]
             if i < len(stats['memories']) - 1:
@@ -81,21 +83,18 @@ def analyse_run(run_dir, steps):
             form = stats['memories'][i][0].get_form(top_meaning)
             if form is not None:
                 for j in range(start, end):
-                    try:
-                        if form not in step_words[j]:
-                            step_words[j][form] = 0
-                        step_words[j][form] += 1
-                    except:
-                        print('asd')
+                    if form not in step_words[j]:
+                        step_words[j][form] = 0
+                    step_words[j][form] += 1
 
     run_id = os.path.basename(run_dir)
     last_idx = make_most_common_plot(step_words, len(agent_stats), run_id)
-    make_word_battle_plot(step_words, last_idx, run_id)
+    # make_word_battle_plot(step_words, last_idx, run_id)
 
-    return deliveries, collisions, len(agent_stats)
+    return deliveries, collisions, len(agent_stats), delivery_times
 
 if __name__ == '__main__':
-    result_dir = r'D:\resultit\100000\results_18-01-19_09-41-39_shortest_language_extended'
+    result_dir = r'/home/ottohant/language_experiments/results_25-01-19_13-15-57_1_agent'
     analysis_dir = 'run_analysis'
 
     with open(os.path.join(result_dir, 'params.txt'), 'r') as file:
@@ -106,18 +105,25 @@ if __name__ == '__main__':
     print('')
     os.mkdir(analysis_dir)
 
+    with open(os.path.join(result_dir, 'params.txt'), 'r') as file:
+        params_s = file.read().replace('\n', '')
+    param_dict_lang = ast.literal_eval(params_s)
+
     run_dirs = sorted(get_dirs_in_path(result_dir))
     i = 0
     deliveries = []
     collisions = []
+    delivery_times = []
     for run_dir in run_dirs:
         i += 1
         print('Analysing run {}/{}'.format(i, len(run_dirs)))
-        run_deliveries, run_collisions, agents = analyse_run(run_dir, param_dict['steps'])
+        run_deliveries, run_collisions, agents, run_times = analyse_run(run_dir, params_s['steps'])
         deliveries.append(run_deliveries / agents)
         collisions.append(run_collisions / agents)
+        delivery_times += run_times
 
     mean, h = mean_confidence_interval(deliveries)
     print('Deliveries mean: {} {}'.format(mean, h))
     mean, h = mean_confidence_interval(collisions)
     print('Collisions mean: {} {}'.format(mean, h))
+    print('Delivery mean: {}'.format(sum(delivery_times) / len(delivery_times)))

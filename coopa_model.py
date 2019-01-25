@@ -99,3 +99,7 @@ class CoopaModel(Model):
 
     # def queue_move(self, start, end, agent):
     #     self.move_queue.append((start, end, agent))
+
+    def finalize(self):
+        for agent in self.agents:
+            agent.finalize()

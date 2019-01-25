@@ -5,7 +5,6 @@ import datetime
 import os
 import numpy as np
 from disc_tree import Categoriser
-import matplotlib.pyplot as plt
 import pickle
 import pprint
 
@@ -100,7 +99,8 @@ if __name__ == "__main__":
               'gather_stats': True,
               'random_behaviour': False,
               'steps': 100000,
-              'create_trees': False}
+              'create_trees': False,
+              'agents': 1}
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     rand = 'random' if params['random_behaviour'] else 'shortest'

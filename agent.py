@@ -475,6 +475,10 @@ class AgentBasic(Agent):
                 self._has_item = True
                 self._path = self._calculate_path(self.map)
 
+    def finalize(self):
+        self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
+        self.stat_dict['discriminators'].append((copy.deepcopy(self.discriminator), self._age))
+
 
 SYMBOLS = {
     # AgentBasic: 'A',
