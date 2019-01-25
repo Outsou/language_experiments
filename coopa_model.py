@@ -14,7 +14,7 @@ import numpy as np
 class CoopaModel(Model):
     """A model with some number of agents."""
 
-    def __init__(self, play_guessing, premade_lang=False, gather_stats=False, random_behaviour=False, agents=6):
+    def __init__(self, play_guessing, gather_stats=False, random_behaviour=False, agents=1):
         self.running = True
         self.grid = SingleGrid(Layout.width, Layout.height, False)  # True=toroidal
         self.schedule = RandomActivation(self)
@@ -35,7 +35,7 @@ class CoopaModel(Model):
         colors = ['blue', 'black', 'green', 'purple', 'red', 'pink']
 
         for i in range(agents):
-            a = AgentBasic(100 + i, self, colors[i], guessing_game=play_guessing, premade_lang=premade_lang,
+            a = AgentBasic(100 + i, self, colors[i], guessing_game=play_guessing,
                            gather_stats=gather_stats, random_behaviour=random_behaviour)
             self.schedule.add(a)
             self.agents.append(a)

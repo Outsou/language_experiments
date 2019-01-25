@@ -10,11 +10,12 @@ import pickle
 import pprint
 
 
-def run_experiment(run_id, directory, play_guessing, premade_lang, gather_stats, random_behaviour, steps, create_trees):
+def run_experiment(run_id, directory, play_guessing, gather_stats, random_behaviour, steps, create_trees,
+                   agents):
     run_dir = os.path.join(directory, str(run_id))
     os.makedirs(run_dir)
     print('Running experiment...')
-    model = CoopaModel(play_guessing, premade_lang, gather_stats, random_behaviour)
+    model = CoopaModel(play_guessing, gather_stats, random_behaviour, agents)
     times = []
     start_time = time.time()
     period_start = time.time()
@@ -95,8 +96,7 @@ if __name__ == "__main__":
     runs = 100
 
     # AGENT PARAMS
-    params = {'play_guessing': True,
-              'premade_lang': False,
+    params = {'play_guessing': False,
               'gather_stats': True,
               'random_behaviour': False,
               'steps': 100000,
