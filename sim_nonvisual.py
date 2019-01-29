@@ -93,13 +93,13 @@ if __name__ == "__main__":
     collision_maps = []
     qgame_maps = []
     times = []
-    runs = 5
+    runs = 100
 
     # AGENT PARAMS
     params = {'play_guessing': True,
               'gather_stats': True,
-              'random_behaviour': False,
-              'steps': 5000,
+              'random_behaviour': True,
+              'steps': 100000,
               'create_trees': False,
               'agents': 6}
 
