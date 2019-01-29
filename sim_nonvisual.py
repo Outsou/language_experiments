@@ -25,6 +25,7 @@ def run_experiment(run_id, directory, play_guessing, gather_stats, random_behavi
             period_start = time.time()
             print('Time left: {}'.format(sum(times) / len(times) * ((steps - i) / timing_steps)))
         model.step()
+    model.finalize()
     print()
     result_str = ''
     for agent in model.agents:
@@ -92,20 +93,21 @@ if __name__ == "__main__":
     collision_maps = []
     qgame_maps = []
     times = []
-    runs = 100
+    runs = 5
 
     # AGENT PARAMS
     params = {'play_guessing': True,
               'gather_stats': True,
               'random_behaviour': False,
-              'steps': 100000,
+              'steps': 5000,
               'create_trees': False,
               'agents': 6}
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     rand = 'random' if params['random_behaviour'] else 'shortest'
     lang = 'lang' if params['play_guessing'] else 'prelang'
-    directory = r'D:\resultit\restricted_shelves\extended\results_{}_{}_{}'.format(date_time, rand, lang)
+    # directory = r'D:\resultit\restricted_shelves\extended\results_{}_{}_{}'.format(date_time, rand, lang)
+    directory = r'D:\resultit\restricted_shelves\results_{}_{}_{}'.format(date_time, rand, lang)
     os.makedirs(directory)
 
     # Save params to file

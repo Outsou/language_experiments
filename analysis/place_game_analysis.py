@@ -12,7 +12,7 @@ def get_stats(result_path):
     run_dirs = sorted(get_dirs_in_path(result_path))
     stats = {}
     i = 0
-    for run_dir in run_dirs:
+    for run_dir in run_dirs[:2]:
         i += 1
         print('Loading run {}/{}'.format(i, len(run_dirs)))
         run_id = int(os.path.basename(run_dir))
@@ -238,7 +238,7 @@ def analyse_synonymy(result_path):
 
 
 if __name__ == '__main__':
-    result_dir = r'D:\resultit\restricted_shelves\results_28-01-19_09-05-26_shortest_prelang'
+    result_dir = r'D:\resultit\restricted_shelves\results_29-01-19_10-04-54_shortest_lang'
     # result_dir = r'D:\resultit\100000\results_17-01-19_14-44-48_shortest_prelang'
     analysis_dir = 'place_game_analysis'
 
@@ -254,9 +254,9 @@ if __name__ == '__main__':
     print('')
     os.mkdir(analysis_dir)
 
-    print('Analysing synonymy...')
-    analyse_synonymy(result_dir)
-    print('Done...')
+    # print('Analysing synonymy...')
+    # analyse_synonymy(result_dir)
+    # print('Done...')
 
     print('Loading place game stats...')
     stats_dict = get_stats(result_dir)
