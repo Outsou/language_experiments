@@ -49,7 +49,7 @@ class AgentBasic(Agent):
         # self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))
         pass
 
-    def _save_discriminater(self):
+    def _save_discriminator(self):
         # self.stat_dict['discriminators'].append((copy.deepcopy(self.discriminator), self._age))
         pass
 
@@ -237,8 +237,6 @@ class AgentBasic(Agent):
 
     def _play_guessing_game(self, place, hearer):
         '''Start the guessing game as the speaker.'''
-        if self._premade_lang:
-            return
         if self._last_broadcast is None:
             return
         if self._last_broadcast['place'] != place:

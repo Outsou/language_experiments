@@ -94,7 +94,7 @@ def analyse_run(run_dir, steps):
     return deliveries, collisions, len(agent_stats), delivery_times
 
 if __name__ == '__main__':
-    result_dir = r'/home/ottohant/language_experiments/results_25-01-19_13-15-57_1_agent'
+    result_dir = r'D:\resultit\restricted_shelves\results_28-01-19_09-05-26_shortest_prelang'
     analysis_dir = 'run_analysis'
 
     with open(os.path.join(result_dir, 'params.txt'), 'r') as file:
@@ -105,10 +105,6 @@ if __name__ == '__main__':
     print('')
     os.mkdir(analysis_dir)
 
-    with open(os.path.join(result_dir, 'params.txt'), 'r') as file:
-        params_s = file.read().replace('\n', '')
-    param_dict_lang = ast.literal_eval(params_s)
-
     run_dirs = sorted(get_dirs_in_path(result_dir))
     i = 0
     deliveries = []
@@ -117,7 +113,7 @@ if __name__ == '__main__':
     for run_dir in run_dirs:
         i += 1
         print('Analysing run {}/{}'.format(i, len(run_dirs)))
-        run_deliveries, run_collisions, agents, run_times = analyse_run(run_dir, params_s['steps'])
+        run_deliveries, run_collisions, agents, run_times = analyse_run(run_dir, param_dict['steps'])
         deliveries.append(run_deliveries / agents)
         collisions.append(run_collisions / agents)
         delivery_times += run_times

@@ -95,17 +95,17 @@ if __name__ == "__main__":
     runs = 100
 
     # AGENT PARAMS
-    params = {'play_guessing': False,
+    params = {'play_guessing': True,
               'gather_stats': True,
               'random_behaviour': False,
               'steps': 100000,
               'create_trees': False,
-              'agents': 1}
+              'agents': 6}
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     rand = 'random' if params['random_behaviour'] else 'shortest'
     lang = 'lang' if params['play_guessing'] else 'prelang'
-    directory = r'D:\resultit\results_{}_{}_{}'.format(date_time, rand, lang)
+    directory = r'D:\resultit\restricted_shelves\extended\results_{}_{}_{}'.format(date_time, rand, lang)
     os.makedirs(directory)
 
     # Save params to file
