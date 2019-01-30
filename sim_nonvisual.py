@@ -98,7 +98,7 @@ if __name__ == "__main__":
     # AGENT PARAMS
     params = {'play_guessing': True,
               'gather_stats': True,
-              'random_behaviour': True,
+              'random_behaviour': False,
               'steps': 100000,
               'create_trees': False,
               'agents': 6}

@@ -94,7 +94,7 @@ def analyse_run(run_dir, steps):
     return deliveries, collisions, len(agent_stats), delivery_times
 
 if __name__ == '__main__':
-    result_dir = r'D:\resultit\restricted_shelves\results_28-01-19_09-05-26_shortest_prelang'
+    result_dir = r'D:\resultit\restricted_shelves\results_29-01-19_10-09-45_random_lang'
     analysis_dir = 'run_analysis'
 
     with open(os.path.join(result_dir, 'params.txt'), 'r') as file:

@@ -3,6 +3,7 @@ import os
 import pickle
 import matplotlib.pyplot as plt
 from utils import get_dirs_in_path
+import numpy as np
 
 
 def get_stats(result_path):
@@ -17,33 +18,16 @@ def get_stats(result_path):
         stats[run_id] = pkl
     return stats
 
-def trim_games(stats_dict):
-    '''Removes games where speaker and hearer don't have the same observation.
-    Returns a list where all runs have the same amount of game rounds.'''
-    games = stats_dict.values()
-    trimmed_games = []
-    total_count = 0
-    trimmed_count = 0
-    for run_games in games:
-        trimmed = [x for x in run_games if x['speaker_meaning'] == x['hearer_meaning']]
-        total_count += len(run_games)
-        trimmed_count += len(trimmed)
-        trimmed_games.append(trimmed)
-
-    print('Trimmed proportion: {}'.format(trimmed_count / total_count))
-    # trimmed_games = stats_dict.values()
-
-    min_games = min([len(x) for x in trimmed_games])
-    return [x[:min_games] for x in trimmed_games], [x[:min_games] for x in stats_dict.values()]
-
 def get_success_buckets(result_dir, steps, bucket_size):
     '''Returns ratios of partial and perfect success buckezied'''
-    stat_dict = get_stats(result_dir)
+    run_dirs = sorted(get_dirs_in_path(result_dir))
     perfect_buckets = [[] for _ in range(int(steps / bucket_size))]
     one_right_buckets = [[] for _ in range(int(steps / bucket_size))]
-    hearers = len(list(stat_dict.values())[0][0]['answers'])
-    for run in stat_dict.values():
-        for game in run:
+    for run_dir in run_dirs:
+        pkl_file = os.path.join(run_dir, 'query_games.p')
+        pkl = pickle.load(open(pkl_file, 'rb'))
+        hearers = len(list(pkl[0]['answers']))
+        for game in pkl:
             bucket_idx = int(game['time'] / bucket_size)
             speaker_categoriser = game['categoriser']
             speaker_place = game['place']
@@ -71,15 +55,31 @@ def get_success_buckets(result_dir, steps, bucket_size):
     one_right_ratios = [sum(bucket_vals) / len(bucket_vals) for bucket_vals in one_right_buckets]
     return perfect_ratios, one_right_ratios, x
 
-def create_success_plot(stat_dict, analysis_dir, bucket_size=100):
+def get_min_games(result_dir):
+    run_dirs = sorted(get_dirs_in_path(result_dir))
+    min = np.inf
+    for run_dir in run_dirs:
+        pkl_file = os.path.join(run_dir, 'query_games.p')
+        pkl = pickle.load(open(pkl_file, 'rb'))
+        if len(pkl) < min:
+            min = len(pkl)
+    return min
+
+def create_success_plot(result_dir, analysis_dir, bucket_size=100):
     '''Creates of success rate for partial and perfect success. Also creates a plot that shows
     the portion of agents that made correct interpretations.'''
-    min_games = min([len(games) for games in stat_dict.values()])
+    run_dirs = sorted(get_dirs_in_path(result_dir))
+    min_games = get_min_games(result_dir)
     correct_interpretations = [[] for _ in range(min_games)]
     all_correct = [[] for _ in range(min_games)]
     partial_correct = [[] for _ in range(min_games)]
-    hearers = len(list(stats_dict.values())[0][0]['answers'])
-    for run in stats_dict.values():
+    run_num = 0
+    for run_dir in run_dirs:
+        run_num += 1
+        print('Run {}/{}'.format(run_num, len(run_dirs)))
+        pkl_file = os.path.join(run_dir, 'query_games.p')
+        run = pickle.load(open(pkl_file, 'rb'))
+        hearers = len(list(run[0]['answers']))
         for i in range(min_games):
             speaker_categoriser = run[i]['categoriser']
             speaker_place = run[i]['place']
@@ -130,11 +130,18 @@ def create_success_plot(stat_dict, analysis_dir, bucket_size=100):
     plt.savefig(os.path.join(analysis_dir, '{}.pdf'.format('query_success_ratio')))
     plt.close()
 
-def analyse_synonymy(stats_dict):
+def analyse_synonymy(result_dir):
+    run_dirs = sorted(get_dirs_in_path(result_dir))
     correct_count = 0
     synonymy_count = 0
-    for run in stats_dict.values():
-        for game in run:
+
+    run = 0
+    for run_dir in run_dirs:
+        run += 1
+        print('Analysing run {}/{}'.format(run, len(run_dirs)))
+        pkl_file = os.path.join(run_dir, 'query_games.p')
+        pkl = pickle.load(open(pkl_file, 'rb'))
+        for game in pkl:
             for answer in game['answers'].values():
                 if answer['categoriser'] == game['categoriser']:
                     correct_count += 1
@@ -148,17 +155,19 @@ def get_pickles_in_path(path):
     return pickles
 
 if __name__ == '__main__':
-    result_dir = r'D:\resultit\100000\results_18-01-19_14-52-44_shortest_language'
+    result_dir = r'D:\resultit\restricted_shelves\results_29-01-19_10-09-45_random_lang'
     analysis_dir = 'query_game_analysis'
 
     shutil.rmtree(analysis_dir, ignore_errors=True)
     print('')
     os.mkdir(analysis_dir)
 
-    print('Loading query game stats...')
-    stats_dict = get_stats(result_dir)
+    # print('Loading query game stats...')
+    # stats_dict = get_stats(result_dir)
 
-    analyse_synonymy(stats_dict)
+    # print('Analysing synonymy...')
+    # analyse_synonymy(result_dir)
+    # print('Done.')
 
-    # create_success_plot(stats_dict, analysis_dir)
-
+    print('Creating plots...')
+    create_success_plot(result_dir, analysis_dir)

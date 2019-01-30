@@ -238,8 +238,7 @@ def analyse_synonymy(result_path):
 
 
 if __name__ == '__main__':
-    result_dir = r'D:\resultit\restricted_shelves\results_29-01-19_10-09-34_random_prelang'
-    # result_dir = r'D:\resultit\100000\results_17-01-19_14-44-48_shortest_prelang'
+    result_dir = r'D:\resultit\restricted_shelves\results_29-01-19_10-09-45_random_lang'
     analysis_dir = 'place_game_analysis'
 
     pkl_dir = 'pkls'
@@ -264,7 +263,7 @@ if __name__ == '__main__':
     # Trim stats
     games, asym_games = trim_games(stats_dict)
 
-    collisions_plot(stats_dict, analysis_dir, param_dict['steps'])
+    # collisions_plot(stats_dict, analysis_dir, param_dict['steps'])
 
     pkl_label = 'Query Game setup' if param_dict['play_guessing'] else 'Place Game setup'
     create_success_plot(games, asym_games, analysis_dir,

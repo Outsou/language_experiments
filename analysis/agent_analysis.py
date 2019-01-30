@@ -91,7 +91,6 @@ def create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, steps, b
     perfect_queries, one_right_queries, x = get_success_buckets(language_dir, steps, bucket_size)
     print('Done...\n')
 
-
     lang_buckets = get_buckets(lang_stats, steps, bucket_size)
     no_lang_buckets = get_buckets(no_lang_stats, steps, bucket_size)
 
@@ -234,8 +233,8 @@ def get_stats(result_path):
     return stats
 
 if __name__ == '__main__':
-    result_dir_lang = r'D:\resultit\100000\results_18-01-19_14-52-44_shortest_language'
-    result_dir_no_lang = r'D:\resultit\100000\results_17-01-19_14-44-48_shortest_prelang'
+    result_dir_lang = r'D:\resultit\restricted_shelves\results_29-01-19_10-09-45_random_lang'
+    result_dir_no_lang = r'D:\resultit\restricted_shelves\results_29-01-19_10-09-34_random_prelang'
     analysis_dir = 'agent_analysis'
 
     with open(os.path.join(result_dir_lang, 'params.txt'), 'r') as file:
@@ -250,9 +249,9 @@ if __name__ == '__main__':
     lang_stats = get_stats(result_dir_lang)
     print('Done loading...')
 
-    # create_first_option_selected_plot(lang_stats, analysis_dir, param_dict_lang['steps'])
-    #
-    # analyse_disc_trees(lang_stats, analysis_dir)
+    create_first_option_selected_plot(lang_stats, analysis_dir, param_dict_lang['steps'])
+
+    analyse_disc_trees(lang_stats, analysis_dir)
 
     print('Loading no language stats...')
     no_lang_stats = get_stats(result_dir_no_lang)
