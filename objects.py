@@ -46,3 +46,7 @@ class ActionCenter(Agent):
 
     def get_mission(self):
         return random.choice(self._shelves)
+
+class Beer(Agent):
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)

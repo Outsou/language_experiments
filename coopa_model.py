@@ -3,7 +3,7 @@ from mesa.time import RandomActivation
 from mesa.space import SingleGrid
 from message_dispatcher import MessageDispatcher
 from layout import Layout
-from objects import Wall, Shelf, ActionCenter
+from objects import Wall, Shelf, ActionCenter, Beer
 from mesa.datacollection import DataCollector
 from search.util import build_map
 from agent import AgentBasic
@@ -24,7 +24,7 @@ class CoopaModel(Model):
         # self.move_queue = []
         self.agents = []
         self.action_center = self.layout.create_world(self, play_guessing)['action_center']
-        self.map = build_map(self.grid, (Wall, Shelf, ActionCenter))
+        self.map = build_map(self.grid, (Wall, Shelf, ActionCenter, Beer))
         self.not_moved = []
         self.place_games = []
         self.query_games = []
