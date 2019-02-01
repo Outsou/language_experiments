@@ -10,11 +10,11 @@ import pprint
 
 
 def run_experiment(run_id, directory, play_guessing, gather_stats, random_behaviour, steps, create_trees,
-                   agents):
+                   agents, env_name):
     run_dir = os.path.join(directory, str(run_id))
     os.makedirs(run_dir)
     print('Running experiment...')
-    model = CoopaModel(play_guessing, gather_stats, random_behaviour, agents)
+    model = CoopaModel(play_guessing, env_name, gather_stats, random_behaviour, agents)
     times = []
     start_time = time.time()
     period_start = time.time()
@@ -93,15 +93,16 @@ if __name__ == "__main__":
     collision_maps = []
     qgame_maps = []
     times = []
-    runs = 100
+    runs = 5
 
-    # AGENT PARAMS
+    # PARAMS
     params = {'play_guessing': True,
               'gather_stats': True,
               'random_behaviour': False,
-              'steps': 100000,
+              'steps': 10000,
               'create_trees': False,
-              'agents': 6}
+              'agents': 6,
+              'env_name': 'default'}
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     rand = 'random' if params['random_behaviour'] else 'shortest'
