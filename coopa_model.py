@@ -1,8 +1,7 @@
 from mesa import Model
 from mesa.time import RandomActivation
-from mesa.space import SingleGrid
 from message_dispatcher import MessageDispatcher
-from layout import Layout
+from layout import create_env
 from objects import Wall, Shelf, ActionCenter, Beer
 from mesa.datacollection import DataCollector
 from search.util import build_map
@@ -14,16 +13,14 @@ import numpy as np
 class CoopaModel(Model):
     """A model with some number of agents."""
 
-    def __init__(self, play_guessing, gather_stats=False, random_behaviour=False, agents=1):
+    def __init__(self, play_guessing, env_name, gather_stats=False, random_behaviour=False, agents=1):
         self.running = True
-        self.grid = SingleGrid(Layout.width, Layout.height, False)  # True=toroidal
+        self.action_center = create_env(env_name, self)['action_center']
         self.schedule = RandomActivation(self)
         self.message_dispatcher = MessageDispatcher()
-        self.layout = Layout()
         self.datacollector = DataCollector()  # An agent attribute
         # self.move_queue = []
         self.agents = []
-        self.action_center = self.layout.create_world(self, play_guessing)['action_center']
         self.map = build_map(self.grid, (Wall, Shelf, ActionCenter, Beer))
         self.not_moved = []
         self.place_games = []
