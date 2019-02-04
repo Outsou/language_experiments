@@ -10,11 +10,11 @@ import pprint
 
 
 def run_experiment(run_id, directory, play_guessing, gather_stats, random_behaviour, steps, create_trees,
-                   agents, env_name):
+                   agents, env_name, route_conceptualization):
     run_dir = os.path.join(directory, str(run_id))
     os.makedirs(run_dir)
     print('Running experiment...')
-    model = CoopaModel(play_guessing, env_name, gather_stats, random_behaviour, agents)
+    model = CoopaModel(play_guessing, env_name, gather_stats, random_behaviour, agents, route_conceptualization)
     times = []
     start_time = time.time()
     period_start = time.time()
@@ -23,7 +23,8 @@ def run_experiment(run_id, directory, play_guessing, gather_stats, random_behavi
         if i % timing_steps == 0:
             times.append(time.time() - period_start)
             period_start = time.time()
-            print('Time left: {}'.format(sum(times) / len(times) * ((steps - i) / timing_steps)))
+            time_left = sum(times) / len(times) * ((steps - i) / timing_steps)
+            print('Time left {}'.format(str(datetime.timedelta(seconds=time_left))))
         model.step()
     model.finalize()
     print()
@@ -81,7 +82,7 @@ def run_experiment(run_id, directory, play_guessing, gather_stats, random_behavi
         print(result_str, file=text_file)
 
     print(result_str)
-    print('Simulation took: {}'.format(time.time() - start_time))
+    print('Simulation took: {}'.format(str(datetime.timedelta(seconds=time.time() - start_time))))
     print()
     return items_delivered, collisions, collision_map, qgame_map
 
@@ -93,22 +94,24 @@ if __name__ == "__main__":
     collision_maps = []
     qgame_maps = []
     times = []
-    runs = 5
+    runs = 100
 
     # PARAMS
     params = {'play_guessing': True,
               'gather_stats': True,
-              'random_behaviour': False,
-              'steps': 10000,
+              'random_behaviour': True,
+              'steps': 100000,
               'create_trees': False,
               'agents': 6,
-              'env_name': 'default'}
+              'env_name': 'default',
+              'route_conceptualization': True}
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     rand = 'random' if params['random_behaviour'] else 'shortest'
     lang = 'lang' if params['play_guessing'] else 'prelang'
     # directory = r'D:\resultit\restricted_shelves\extended\results_{}_{}_{}'.format(date_time, rand, lang)
-    directory = r'D:\resultit\restricted_shelves\results_{}_{}_{}'.format(date_time, rand, lang)
+    # directory = r'D:\resultit\restricted_shelves\results_{}_{}_{}'.format(date_time, rand, lang)
+    directory = 'results_{}_{}_{}'.format(date_time, rand, lang)
     os.makedirs(directory)
 
     # Save params to file

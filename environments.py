@@ -11,6 +11,42 @@ def draw_block_from_point(model, x, y, width, height, cls):
             model.grid.place_agent(cls(w + h, model), cell)
     return cells
 
+class BeerOnlyEnvironment:
+    width = 17
+    height = 20
+    name = 'beer_only'
+
+    @staticmethod
+    def create_env(model):
+        model.grid = SingleGrid(BeerEnvironment.width, BeerEnvironment.height, False)  # True=toroidal
+
+        # Side walls
+        draw_block_from_point(model, 0, 1, 1, 18, Wall)
+        draw_block_from_point(model, 16, 1, 1, 18, Wall)
+
+        # Bottom and top
+        draw_block_from_point(model, 0, 0, 17, 1, Wall)
+        draw_block_from_point(model, 0, 19, 17, 1, Wall)
+
+        shelf_cells = []
+
+        # Shelves
+        shelf_cells += draw_block_from_point(model, 1, 18, 6, 1, Shelf)
+        shelf_cells += draw_block_from_point(model, 10, 18, 6, 1, Shelf)
+
+        # Action center
+        action_center = ActionCenter(0, model, shelf_cells)
+        model.grid.place_agent(action_center, (8, 3))
+
+        # Beer
+        draw_block_from_point(model, 1, 7, 2, 8, Beer)
+        draw_block_from_point(model, 4, 7, 2, 8, Beer)
+        draw_block_from_point(model, 7, 7, 3, 12, Beer)
+        draw_block_from_point(model, 11, 7, 2, 8, Beer)
+        draw_block_from_point(model, 14, 7, 2, 8, Beer)
+
+        return {'action_center': action_center}
+
 class BeerEnvironment:
     width = 25
     height = 29
@@ -19,6 +55,7 @@ class BeerEnvironment:
     @staticmethod
     def create_env(model):
         model.grid = SingleGrid(BeerEnvironment.width, BeerEnvironment.height, False)  # True=toroidal
+
         # Side walls
         draw_block_from_point(model, 0, 13, 1, 15, Wall)
         draw_block_from_point(model, 15, 1, 1, 9, Wall)
@@ -35,7 +72,6 @@ class BeerEnvironment:
         # Horizontal shelf area walls
         draw_block_from_point(model, 16, 9, 9, 1, Wall)
         draw_block_from_point(model, 24, 10, 1, 5, Wall)
-
 
         # Bottom and top
         draw_block_from_point(model, 6, 0, 10, 1, Wall)
@@ -92,7 +128,6 @@ class DefaultEnvironment:
         draw_block_from_point(model, 11, 9, 9, 1, Wall)
         draw_block_from_point(model, 19, 10, 1, 5, Wall)
 
-
         shelf_cells = []
 
         # Vertical shelves
@@ -141,7 +176,6 @@ class DoubleEnvironment:
         # Horizontal shelf area walls
         draw_block_from_point(model, 11, 17, 17, 1, Wall)
         draw_block_from_point(model, 27, 18, 1, 5, Wall)
-
 
         shelf_cells = []
 

@@ -10,13 +10,14 @@ import copy
 
 class AgentBasic(Agent):
     def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True,
-                 utility_threshold=2, gather_stats=False, random_behaviour=False):
+                 utility_threshold=2, gather_stats=False, random_behaviour=False, route_conceptualization=False):
         super().__init__(unique_id, model)
         self._guessing_game = guessing_game
         self.neighborhood_rotation = neighborhood_rotation
         self._utility_threshold = utility_threshold
         self._gather_stats = gather_stats
         self._rand_behaviour = random_behaviour
+        self._route_conceptualization = route_conceptualization
         self._destination = model.action_center.pos
         self._path = None
         self.color = color
@@ -58,15 +59,18 @@ class AgentBasic(Agent):
         Importance is determined by absolute value of a meaning's perceived utility.'''
         max_meaning = None
         max_utility = -math.inf
+        cells = {}
         for pos in path:
             meaning = self._get_neighborhood(pos)
+            if meaning not in cells:
+                cells[meaning] = []
+            cells[meaning].append(pos)
             utility = self.memory.get_utility(meaning)
             if utility is not None and abs(utility) > max_utility:
                 max_utility = abs(utility)
                 max_meaning = meaning
-        # if max_utility < self._utility_threshold:
-        #     return None
-        return max_meaning
+        meaning_cells = [] if max_meaning is None else cells[max_meaning]
+        return max_meaning, meaning_cells
 
     def _get_free_neighbors(self):
         '''Returns the coordinates of the cells around the agent that are empty.'''
@@ -280,7 +284,8 @@ class AgentBasic(Agent):
             x, y = neighbor.pos
             env_map[x][y] = 1
         if self._blocked is not None:
-            env_map[self._blocked] = 1
+            for cell in self._blocked:
+                env_map[cell] = 1
         new_path = astar(env_map, self.pos, self._destination, False)[1:]
         return new_path
 
@@ -331,7 +336,7 @@ class AgentBasic(Agent):
 
     def _get_forms_for_path(self, path, path2):
         '''Returns forms for meanings used to discriminate path from path2 (and other things)..'''
-        place = self._get_highest_meaning_on_path(path)
+        place, _ = self._get_highest_meaning_on_path(path)
         # place = (('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S'))
         if place is None:
             return None, None, None, None, None
@@ -359,14 +364,24 @@ class AgentBasic(Agent):
     def _get_options(self):
         option1 = self._calculate_path(self.model.map)
         map = np.copy(self.model.map)
-        map[option1[-2]] = 1
-        option2 = self._calculate_path(map)
-        return option1, option2
+        if not self._route_conceptualization:
+            map[option1[-2]] = 1
+            blocked1 = [option1[-2]]
+            option2 = self._calculate_path(map)
+            blocked2 = [option2[-2]]
+        else:
+            _, blocked1 = self._get_highest_meaning_on_path(option1)
+            for cell in blocked1:
+                map[cell] = 1
+            option2 = self._calculate_path(map)
+            _, blocked2 = self._get_highest_meaning_on_path(option2)
+
+        return option1, option2, blocked1, blocked2
 
     def _broadcast_question(self):
         '''Considers two shortest paths to the destination and returns the one that is okay with other agents.'''
         # self.map = np.copy(self.model.map)
-        option1, option2 = self._get_options()
+        option1, option2, blocked1, blocked2 = self._get_options()
 
         if len(option2) == 0:
             self._blocked = None
@@ -377,15 +392,15 @@ class AgentBasic(Agent):
         if not self._guessing_game:
             if self._rand_behaviour:
                 if np.random.random() < 0.5:
-                    self._blocked = option2[-2]
+                    self._blocked = blocked2
                     self.stat_dict['selected_options'].append((1, self.model.start_time))
                     return option1
                 else:
-                    self._blocked = option1[-2]
+                    self._blocked = blocked1
                     self.stat_dict['selected_options'].append((2, self.model.start_time))
                     return option2
             else:
-                self._blocked = option2[-2]
+                self._blocked = blocked2
                 return option1
 
         broadcast1, broadcast2 = None, None
@@ -405,7 +420,7 @@ class AgentBasic(Agent):
                           'topic_objects': topic_objects}
             if self.model.broadcast_question(place, place_form, categoriser, disc_form, self):
                 self.stat_dict['option1_selected'] += 1
-                self._blocked = option2[-2]
+                self._blocked = blocked2
                 self._last_broadcast = broadcast1
                 self.stat_dict['selected_options'].append((1, self.model.start_time))
                 return option1
@@ -422,7 +437,7 @@ class AgentBasic(Agent):
             if self.model.broadcast_question(place, place_form, categoriser, disc_form, self):
                 self.stat_dict['extra_distance'] += len(option2) - len(option1)
                 self.stat_dict['option2_selected'] += 1
-                self._blocked = option1[-2]
+                self._blocked = blocked1
                 self._last_broadcast = broadcast2
                 self.stat_dict['selected_options'].append((2, self.model.start_time))
                 return option2
@@ -431,13 +446,13 @@ class AgentBasic(Agent):
         if self._rand_behaviour:
             if np.random.random() < 0.5:
                 self.stat_dict['option1_selected'] += 1
-                self._blocked = option2[-2]
+                self._blocked = blocked2
                 self._last_broadcast = broadcast1
                 self.stat_dict['selected_options'].append((1, self.model.start_time))
                 return option1
 
             self.stat_dict['option2_selected'] += 1
-            self._blocked = option1[-2]
+            self._blocked = blocked1
             self._last_broadcast = broadcast2
             self.stat_dict['selected_options'].append((2, self.model.start_time))
             return option2
@@ -445,7 +460,7 @@ class AgentBasic(Agent):
         # Shortest path selection
         self._last_broadcast = None
         self.stat_dict['option1_selected'] += 1
-        self._blocked = option2[-2]
+        self._blocked = blocked2
         self.stat_dict['selected_options'].append((1, self.model.start_time))
         return option1
 
