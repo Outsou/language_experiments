@@ -18,7 +18,7 @@ class BeerOnlyEnvironment:
 
     @staticmethod
     def create_env(model):
-        model.grid = SingleGrid(BeerEnvironment.width, BeerEnvironment.height, False)  # True=toroidal
+        model.grid = SingleGrid(BeerOnlyEnvironment.width, BeerOnlyEnvironment.height, False)  # True=toroidal
 
         # Side walls
         draw_block_from_point(model, 0, 1, 1, 18, Wall)
@@ -31,8 +31,8 @@ class BeerOnlyEnvironment:
         shelf_cells = []
 
         # Shelves
-        shelf_cells += draw_block_from_point(model, 1, 18, 6, 1, Shelf)
-        shelf_cells += draw_block_from_point(model, 10, 18, 6, 1, Shelf)
+        shelf_cells += draw_block_from_point(model, 1, 15, 1, 4, Shelf)
+        shelf_cells += draw_block_from_point(model, 15, 15, 1, 4, Shelf)
 
         # Action center
         action_center = ActionCenter(0, model, shelf_cells)
@@ -41,7 +41,8 @@ class BeerOnlyEnvironment:
         # Beer
         draw_block_from_point(model, 1, 7, 2, 8, Beer)
         draw_block_from_point(model, 4, 7, 2, 8, Beer)
-        draw_block_from_point(model, 7, 7, 3, 12, Beer)
+        draw_block_from_point(model, 7, 7, 3, 8, Beer)
+        draw_block_from_point(model, 8, 15, 1, 4, Beer)
         draw_block_from_point(model, 11, 7, 2, 8, Beer)
         draw_block_from_point(model, 14, 7, 2, 8, Beer)
 

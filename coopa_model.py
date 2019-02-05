@@ -14,7 +14,7 @@ class CoopaModel(Model):
     """A model with some number of agents."""
 
     def __init__(self, play_guessing, env_name, gather_stats=False, random_behaviour=False, agents=1,
-                 route_conceptualization=False):
+                 route_conceptualization='hack1'):
         self.running = True
         self.action_center = create_env(env_name, self)['action_center']
         self.schedule = RandomActivation(self)

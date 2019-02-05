@@ -94,17 +94,18 @@ if __name__ == "__main__":
     collision_maps = []
     qgame_maps = []
     times = []
-    runs = 100
+    runs = 10
 
     # PARAMS
     params = {'play_guessing': True,
               'gather_stats': True,
-              'random_behaviour': True,
-              'steps': 100000,
+              'random_behaviour': False,
+              'steps': 50000,
               'create_trees': False,
-              'agents': 6,
-              'env_name': 'default',
-              'route_conceptualization': True}
+              'agents': 4,
+              'env_name': 'beer_only',              #default, beer, beer_only, double
+              'route_conceptualization': 'hack2'}   #hack1, hack2, conceptualize
+    pprint.pprint(params)
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     rand = 'random' if params['random_behaviour'] else 'shortest'
@@ -113,6 +114,7 @@ if __name__ == "__main__":
     # directory = r'D:\resultit\restricted_shelves\results_{}_{}_{}'.format(date_time, rand, lang)
     directory = 'results_{}_{}_{}'.format(date_time, rand, lang)
     os.makedirs(directory)
+    print(directory)
 
     # Save params to file
     with open(os.path.join(directory, 'params.txt'), 'w') as text_file:
@@ -131,7 +133,7 @@ if __name__ == "__main__":
         print('Finished run, time left {}'.format(str(datetime.timedelta(seconds=time_left))))
         print()
 
-    model = CoopaModel(False)
+    model = CoopaModel(False, params['env_name'])
     collision_map = np.rot90(sum(collision_maps)) / runs
     qgame_map = np.rot90(sum(qgame_maps)) / runs
     create_heatmap(collision_map, model.grid, os.path.join(directory, 'collision_map.pdf'))

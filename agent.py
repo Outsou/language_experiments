@@ -2,7 +2,7 @@ from mesa import Agent
 import numpy as np
 from search.astar import astar
 from memory import MFAssociationMemory
-from objects import Wall, ActionCenter, Shelf
+from objects import Wall, ActionCenter, Shelf, Beer
 import random
 import math
 from disc_tree import Discriminator
@@ -10,7 +10,14 @@ import copy
 
 class AgentBasic(Agent):
     def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True,
-                 utility_threshold=2, gather_stats=False, random_behaviour=False, route_conceptualization=False):
+                 utility_threshold=2, gather_stats=False, random_behaviour=False, route_conceptualization='hack1',
+                 reroute_threshold=3):
+        '''
+        :param route_conceptualization:
+            'hack1': last cell in route blocks
+            'hack2': first 3 and last 3 cells block
+            'conceptualize': meaning used to determine what blocks
+        '''
         super().__init__(unique_id, model)
         self._guessing_game = guessing_game
         self.neighborhood_rotation = neighborhood_rotation
@@ -18,6 +25,7 @@ class AgentBasic(Agent):
         self._gather_stats = gather_stats
         self._rand_behaviour = random_behaviour
         self._route_conceptualization = route_conceptualization
+        self._reroute_threshold = reroute_threshold
         self._destination = model.action_center.pos
         self._path = None
         self.color = color
@@ -69,6 +77,7 @@ class AgentBasic(Agent):
             if utility is not None and abs(utility) > max_utility:
                 max_utility = abs(utility)
                 max_meaning = meaning
+        max_meaning = (('B', 'B', 'B'), ('.', 'X', '.'), ('B', 'B', 'B'))
         meaning_cells = [] if max_meaning is None else cells[max_meaning]
         return max_meaning, meaning_cells
 
@@ -83,13 +92,13 @@ class AgentBasic(Agent):
 
     def _handle_backing_move(self):
         '''Used to move when the agent is backing, i.e. giving way to another agent.'''
-        neighbors = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False, radius=1)
-        self.map = np.copy(self.model.map)
-        for neighbor in neighbors:
-            x, y = neighbor.pos
-            self.map[x][y] = 1
+        env_map = np.copy(self.model.map)
+        if self._blocked is not None:
+            for cell in self._blocked:
+                env_map[cell] = 1
+        shortest_path = astar(env_map, self.pos, self._destination, False)[1:]
         path = self._reroute()
-        if len(path) > 0:
+        if len(path) > 0 and len(path) - len(shortest_path) < self._reroute_threshold:
             # Route is clear, stop backing
             self._path = path
             self._backing_off = False
@@ -126,7 +135,7 @@ class AgentBasic(Agent):
         neighbor = self.model.grid[x][y]
         if type(neighbor) is AgentBasic:
             reroute = self._reroute()
-            if len(reroute) > 0:
+            if len(reroute) > 0 and len(reroute) - len(self._path) < self._reroute_threshold:
                 self._path = reroute
                 old_pos = self.pos
                 self.model.grid.move_agent(self, self._path[0])
@@ -277,7 +286,7 @@ class AgentBasic(Agent):
         return meaning
 
     def _reroute(self):
-        '''Finds a new route to destination assuming that the first step in the current route is blocked.'''
+        '''Finds a new route to destination.'''
         neighborhood = self.model.grid.get_neighbors(self.pos, False)
         env_map = np.copy(self.map)
         for neighbor in neighborhood:
@@ -364,17 +373,25 @@ class AgentBasic(Agent):
     def _get_options(self):
         option1 = self._calculate_path(self.model.map)
         map = np.copy(self.model.map)
-        if not self._route_conceptualization:
+        if self._route_conceptualization == 'hack1':
             map[option1[-2]] = 1
             blocked1 = [option1[-2]]
             option2 = self._calculate_path(map)
             blocked2 = [option2[-2]]
-        else:
+        elif self._route_conceptualization == 'hack2':
+            blocked1 = [option1[int(len(option1) / 2)]]
+            for cell in blocked1:
+                map[cell] = 1
+            option2 = self._calculate_path(map)
+            blocked2 = [option2[int(len(option2) / 2)]]
+        elif self._route_conceptualization == 'conceptualize':
             _, blocked1 = self._get_highest_meaning_on_path(option1)
             for cell in blocked1:
                 map[cell] = 1
             option2 = self._calculate_path(map)
             _, blocked2 = self._get_highest_meaning_on_path(option2)
+        else:
+            raise Exception('Unknown route conceptualization: {}'.format(self._route_conceptualization))
 
         return option1, option2, blocked1, blocked2
 
@@ -500,5 +517,6 @@ SYMBOLS = {
     Shelf: 'S',
     ActionCenter: 'C',
     type(None): '.',
-    'self': 'X'
+    'self': 'X',
+    Beer: 'B'
 }
