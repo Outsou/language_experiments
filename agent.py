@@ -274,7 +274,7 @@ class AgentBasic(Agent):
             form = self.memory.invent_form()
             self.memory.create_association(meaning, form)
         self.memory.report_form_use(meaning, form)
-        self.memory.strengthen_form(meaning, form, speaker=True)
+        # self.memory.strengthen_form(meaning, form, speaker=True)
         if self._gather_stats:
             self._save_memory()
         game_dict = {'form': form,
@@ -377,7 +377,7 @@ class AgentBasic(Agent):
             map[option1[-2]] = 1
             blocked1 = [option1[-2]]
             option2 = self._calculate_path(map)
-            blocked2 = [option2[-2]]
+            blocked2 = [option2[-2]] if len(option2) > 1 else []
         elif self._route_conceptualization == 'hack2':
             blocked1 = [option1[int(len(option1) / 2)]]
             for cell in blocked1:

@@ -97,14 +97,14 @@ if __name__ == "__main__":
     runs = 10
 
     # PARAMS
-    params = {'play_guessing': True,
+    params = {'play_guessing': False,
               'gather_stats': True,
               'random_behaviour': False,
-              'steps': 50000,
+              'steps': 100000,
               'create_trees': False,
               'agents': 4,
               'env_name': 'beer_only',              #default, beer, beer_only, double
-              'route_conceptualization': 'hack2'}   #hack1, hack2, conceptualize
+              'route_conceptualization': 'hack1'}   #hack1, hack2, conceptualize
     pprint.pprint(params)
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     lang = 'lang' if params['play_guessing'] else 'prelang'
     # directory = r'D:\resultit\restricted_shelves\extended\results_{}_{}_{}'.format(date_time, rand, lang)
     # directory = r'D:\resultit\restricted_shelves\results_{}_{}_{}'.format(date_time, rand, lang)
-    directory = 'results_{}_{}_{}'.format(date_time, rand, lang)
+    directory = 'results/results_{}_{}_{}'.format(date_time, rand, lang)
     os.makedirs(directory)
     print(directory)
 
