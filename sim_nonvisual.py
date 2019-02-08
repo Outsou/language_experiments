@@ -94,17 +94,17 @@ if __name__ == "__main__":
     collision_maps = []
     qgame_maps = []
     times = []
-    runs = 10
+    runs = 2
 
     # PARAMS
     params = {'play_guessing': False,
               'gather_stats': True,
-              'random_behaviour': False,
-              'steps': 100000,
+              'random_behaviour': True,
+              'steps': 50000,
               'create_trees': False,
               'agents': 4,
               'env_name': 'beer_only',              #default, beer, beer_only, double
-              'route_conceptualization': 'hack1'}   #hack1, hack2, conceptualize
+              'route_conceptualization': 'hack2'}   #hack1, hack2, conceptualize
     pprint.pprint(params)
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")

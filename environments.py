@@ -28,23 +28,28 @@ class BeerOnlyEnvironment:
         draw_block_from_point(model, 0, 0, 17, 1, Wall)
         draw_block_from_point(model, 0, 19, 17, 1, Wall)
 
+        draw_block_from_point(model, 8, 18, 1, 1, Wall)
+        # draw_block_from_point(model, 1, 15, 1, 4, Wall)
+        # draw_block_from_point(model, 15, 15, 1, 4, Wall)
+
         shelf_cells = []
 
         # Shelves
-        shelf_cells += draw_block_from_point(model, 1, 15, 1, 4, Shelf)
-        shelf_cells += draw_block_from_point(model, 15, 15, 1, 4, Shelf)
+        shelf_cells += draw_block_from_point(model, 3, 18, 5, 1, Shelf)
+        shelf_cells += draw_block_from_point(model, 9, 18, 5, 1, Shelf)
+        shelf_cells += draw_block_from_point(model, 8, 15, 1, 3, Shelf)
+        # draw_block_from_point(model, 8, 15, 1, 3, Wall)
 
         # Action center
         action_center = ActionCenter(0, model, shelf_cells)
         model.grid.place_agent(action_center, (8, 3))
 
         # Beer
-        draw_block_from_point(model, 1, 7, 2, 8, Beer)
+        draw_block_from_point(model, 1, 7, 2, 12, Beer)
         draw_block_from_point(model, 4, 7, 2, 8, Beer)
         draw_block_from_point(model, 7, 7, 3, 8, Beer)
-        draw_block_from_point(model, 8, 15, 1, 4, Beer)
         draw_block_from_point(model, 11, 7, 2, 8, Beer)
-        draw_block_from_point(model, 14, 7, 2, 8, Beer)
+        draw_block_from_point(model, 14, 7, 2, 12, Beer)
 
         return {'action_center': action_center}
 

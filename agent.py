@@ -268,6 +268,8 @@ class AgentBasic(Agent):
     def _play_observational_game(self, hearer):
         '''Start the observational game as the speaker.'''
         self.stat_dict['obs_game_init'] += 1
+        if self.stat_dict['obs_game_init'] > 3000:
+            print('what')
         meaning = self._get_neighborhood(self.pos)
         form = self.memory.get_form(meaning)
         if form is None:
@@ -287,7 +289,7 @@ class AgentBasic(Agent):
 
     def _reroute(self):
         '''Finds a new route to destination.'''
-        neighborhood = self.model.grid.get_neighbors(self.pos, False)
+        neighborhood = self.model.grid.get_neighbors(self.pos, True)
         env_map = np.copy(self.map)
         for neighbor in neighborhood:
             x, y = neighbor.pos
