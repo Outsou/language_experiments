@@ -10,11 +10,12 @@ import pprint
 
 
 def run_experiment(run_id, directory, play_guessing, gather_stats, random_behaviour, steps, create_trees,
-                   agents, env_name, route_conceptualization):
+                   agents, env_name, route_conceptualization, score_threshold):
     run_dir = os.path.join(directory, str(run_id))
     os.makedirs(run_dir)
     print('Running experiment...')
-    model = CoopaModel(play_guessing, env_name, gather_stats, random_behaviour, agents, route_conceptualization)
+    model = CoopaModel(play_guessing, env_name, gather_stats, random_behaviour, agents, route_conceptualization,
+                       score_threshold)
     times = []
     start_time = time.time()
     period_start = time.time()
@@ -99,12 +100,13 @@ if __name__ == "__main__":
     # PARAMS
     params = {'play_guessing': True,
               'gather_stats': True,
-              'random_behaviour': False,
+              'random_behaviour': True,
               'steps': 100000,
               'create_trees': False,
-              'agents': 4,
-              'env_name': 'beer_only',              #default, beer, beer_only, double
-              'route_conceptualization': 'conceptualize'}   #hack1, hack2, conceptualize
+              'agents': 6,
+              'env_name': 'default',                #default, beer, beer_only, double
+              'route_conceptualization': 'hack1',   #hack1, hack2, conceptualize
+              'score_threshold': 0.5}
     pprint.pprint(params)
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")

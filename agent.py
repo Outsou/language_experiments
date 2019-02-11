@@ -11,7 +11,7 @@ import copy
 class AgentBasic(Agent):
     def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True,
                  utility_threshold=2, gather_stats=False, random_behaviour=False, route_conceptualization='hack1',
-                 reroute_threshold=3):
+                 reroute_threshold=3, score_threshold=0.0):
         '''
         :param route_conceptualization:
             'hack1': last cell in route blocks
@@ -22,6 +22,7 @@ class AgentBasic(Agent):
         self._guessing_game = guessing_game
         self.neighborhood_rotation = neighborhood_rotation
         self._utility_threshold = utility_threshold
+        self._score_threshold = score_threshold
         self._gather_stats = gather_stats
         self._rand_behaviour = random_behaviour
         self._route_conceptualization = route_conceptualization
@@ -70,14 +71,15 @@ class AgentBasic(Agent):
         cells = {}
         for pos in path:
             meaning = self._get_neighborhood(pos)
-            if meaning not in cells:
-                cells[meaning] = []
-            cells[meaning].append(pos)
-            utility = self.memory.get_utility(meaning)
-            if utility is not None and abs(utility) > max_utility:
-                max_utility = abs(utility)
-                max_meaning = meaning
-        max_meaning = (('B', 'B', 'B'), ('.', 'X', '.'), ('B', 'B', 'B'))
+            if self.memory.get_highest_score(meaning) >= self._score_threshold:
+                if meaning not in cells:
+                    cells[meaning] = []
+                cells[meaning].append(pos)
+                utility = self.memory.get_utility(meaning)
+                if utility is not None and abs(utility) > max_utility:
+                    max_utility = abs(utility)
+                    max_meaning = meaning
+        # max_meaning = (('B', 'B', 'B'), ('.', 'X', '.'), ('B', 'B', 'B'))
         meaning_cells = [] if max_meaning is None else cells[max_meaning]
         return max_meaning, meaning_cells
 
@@ -248,17 +250,16 @@ class AgentBasic(Agent):
     def guessing_transmit(self, disc_form):
         '''Speaker uses this to transmit form to hearer in the guessing game.'''
         if self._last_broadcast is None or self._last_broadcast['categoriser'] is None:
-            return False
+            return
         current_place = self._get_neighborhood(self.pos)
         if current_place != self._last_broadcast['place']:
-            return False
+            return
         if self.pos not in self._last_broadcast['topic_objects']:
-            return False
+            return
         categoriser = self._last_broadcast['categoriser']
         self.memory.strengthen_form(categoriser, disc_form, speaker=False)
         if self._gather_stats:
             self._save_memory()
-        return True
 
     def _play_guessing_game(self, place, hearer):
         '''Start the guessing game as the speaker.'''
@@ -268,20 +269,21 @@ class AgentBasic(Agent):
             return
         if self.pos not in self._last_broadcast['topic_objects']:
             return
-        categoriser = self._last_broadcast['categoriser']
+        # categoriser = self._last_broadcast['categoriser']
         self.stat_dict['guessing_game_init'] += 1
         form = self._last_broadcast['disc_form']
-        if hearer.guessing_transmit(form):
-            self.memory.strengthen_form(categoriser, form, speaker=True)
-            if self._gather_stats:
-                self.stat_dict['q-game_map'][self.pos] += 1
-                self._save_memory()
+        # if hearer.guessing_transmit(form):
+            # self.memory.strengthen_form(categoriser, form, speaker=True)
+        hearer.guessing_transmit(form)
+        if self._gather_stats:
+            self.stat_dict['q-game_map'][self.pos] += 1
+            self._save_memory()
 
     def _play_observational_game(self, hearer):
         '''Start the observational game as the speaker.'''
         self.stat_dict['obs_game_init'] += 1
-        if self.stat_dict['obs_game_init'] > 3000:
-            print('what')
+        # if self.stat_dict['obs_game_init'] > 3000:
+        #     print('what')
         meaning = self._get_neighborhood(self.pos)
         form = self.memory.get_form(meaning)
         if form is None:

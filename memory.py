@@ -99,6 +99,15 @@ class MFAssociationMemory:
         # form, score = max(forms, key=operator.itemgetter(1))
         return None if len(max_forms) == 0 else random.choice(max_forms)
 
+    def get_highest_score(self, meaning):
+        max_score = 0.0
+        if meaning not in self.mf_dict:
+            return max_score
+        for form, score in self.mf_dict[meaning].items():
+            if score > max_score:
+                max_score = score
+        return max_score
+
     def get_meaning(self, form):
         strongest = None
         score = 0
