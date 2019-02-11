@@ -107,14 +107,26 @@ class AgentBasic(Agent):
         else:
             # Route not clear, choose random move
             movement_options = self._get_free_neighbors()
-            x_dist = abs(self.pos[0] - self.model.action_center.pos[0])
-            y_dist = abs(self.pos[1] - self.model.action_center.pos[1])
-            movement_options = [x for x in movement_options
-                                if abs(x[0] - self.model.action_center.pos[0]) < x_dist
-                                or abs(x[1] - self.model.action_center.pos[1]) < y_dist]
-            if len(movement_options) > 0:
+            dists = [(pos[0] - self.model.action_center.pos[0]) ** 2 + (pos[1] - self.model.action_center.pos[1]) ** 2
+                     for pos in movement_options]
+            shortest_options = []
+            if len(dists) > 0:
+                shortest_dist = dists[0]
+                for i in range(len(dists)):
+                    if dists[i] < shortest_dist:
+                        shortest_dist = dists[i]
+                        shortest_options = []
+                    if dists[i] == shortest_dist:
+                        shortest_options.append(movement_options[i])
+            # movement_options, _ = zip(*sorted(zip(movement_options, dists)))
+            # x_dist = abs(self.pos[0] - self.model.action_center.pos[0])
+            # y_dist = abs(self.pos[1] - self.model.action_center.pos[1])
+            # movement_options = [x for x in movement_options
+            #                     if abs(x[0] - self.model.action_center.pos[0]) < x_dist
+            #                     or abs(x[1] - self.model.action_center.pos[1]) < y_dist]
+            if len(shortest_options) > 0:
                 old_pos = self.pos
-                self.model.grid.move_agent(self, random.choice(movement_options))
+                self.model.grid.move_agent(self, random.choice(shortest_options))
                 self._update_direction(old_pos, self.pos)
             return True
         return False
