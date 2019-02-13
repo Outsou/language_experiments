@@ -107,9 +107,9 @@ if __name__ == "__main__":
                   'random_behaviour': True,
                   'steps': 100000,
                   'create_trees': False,
-                  'agents': 4,
-                  'env_name': 'beer_only',                #default, beer, beer_only, double
-                  'route_conceptualization': 'conceptualize',   #'hack1', 'hack2', 'conceptualize', None
+                  'agents': 6,
+                  'env_name': 'default',                #default, beer, beer_only, double
+                  'route_conceptualization': 'hack1',   #'hack1', 'hack2', 'conceptualize', None
                   'score_threshold': threshold}
         pprint.pprint(params)
 

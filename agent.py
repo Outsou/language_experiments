@@ -107,7 +107,8 @@ class AgentBasic(Agent):
             self._path = path
             self._backing_off = False
             utility = self._backing_info['start_age'] - self._age
-            self.memory._update_utility(self._backing_info['meaning'], utility)
+            if abs(utility) > 0:
+                self.memory._update_utility(self._backing_info['meaning'], utility)
         else:
             # Route not clear, choose random move
             movement_options = self._get_free_neighbors()

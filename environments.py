@@ -12,7 +12,7 @@ def draw_block_from_point(model, x, y, width, height, cls):
     return cells
 
 # class BeerOnlyEnvironment:
-#     width = 21
+#     width = 17
 #     height = 20
 #     name = 'beer_only'
 #
@@ -22,39 +22,39 @@ def draw_block_from_point(model, x, y, width, height, cls):
 #
 #         # Side walls
 #         draw_block_from_point(model, 0, 1, 1, 18, Wall)
-#         draw_block_from_point(model, 20, 1, 1, 18, Wall)
+#         draw_block_from_point(model, 16, 1, 1, 18, Wall)
 #
 #         # Bottom and top
-#         draw_block_from_point(model, 0, 0, 21, 1, Wall)
-#         draw_block_from_point(model, 0, 19, 21, 1, Wall)
+#         draw_block_from_point(model, 0, 0, 17, 1, Wall)
+#         draw_block_from_point(model, 0, 19, 17, 1, Wall)
 #
-#         draw_block_from_point(model, 10, 18, 1, 1, Wall)
+#         draw_block_from_point(model, 8, 18, 1, 1, Wall)
 #         # draw_block_from_point(model, 1, 15, 1, 4, Wall)
 #         # draw_block_from_point(model, 15, 15, 1, 4, Wall)
 #
 #         shelf_cells = []
 #
 #         # Shelves
-#         shelf_cells += draw_block_from_point(model, 4, 18, 6, 1, Shelf)
-#         shelf_cells += draw_block_from_point(model, 11, 18, 6, 1, Shelf)
-#         shelf_cells += draw_block_from_point(model, 10, 15, 1, 3, Shelf)
+#         shelf_cells += draw_block_from_point(model, 3, 18, 5, 1, Shelf)
+#         shelf_cells += draw_block_from_point(model, 9, 18, 5, 1, Shelf)
+#         shelf_cells += draw_block_from_point(model, 8, 15, 1, 3, Shelf)
 #         # draw_block_from_point(model, 8, 15, 1, 3, Wall)
 #
 #         # Action center
 #         action_center = ActionCenter(0, model, shelf_cells)
-#         model.grid.place_agent(action_center, (10, 3))
+#         model.grid.place_agent(action_center, (8, 3))
 #
 #         # Beer
-#         draw_block_from_point(model, 1, 7, 3, 8, Beer)
-#         draw_block_from_point(model, 5, 7, 3, 8, Beer)
-#         draw_block_from_point(model, 9, 7, 3, 8, Beer)
-#         draw_block_from_point(model, 13, 7, 3, 8, Beer)
-#         draw_block_from_point(model, 17, 7, 3, 8, Beer)
+#         draw_block_from_point(model, 1, 7, 2, 12, Beer)
+#         draw_block_from_point(model, 4, 7, 2, 8, Beer)
+#         draw_block_from_point(model, 7, 7, 3, 8, Beer)
+#         draw_block_from_point(model, 11, 7, 2, 8, Beer)
+#         draw_block_from_point(model, 14, 7, 2, 12, Beer)
 #
 #         return {'action_center': action_center}
 
 class BeerOnlyEnvironment:
-    width = 17
+    width = 18
     height = 20
     name = 'beer_only'
 
@@ -64,22 +64,23 @@ class BeerOnlyEnvironment:
 
         # Side walls
         draw_block_from_point(model, 0, 1, 1, 18, Wall)
-        draw_block_from_point(model, 16, 1, 1, 18, Wall)
+        draw_block_from_point(model, 17, 1, 1, 18, Wall)
 
         # Bottom and top
-        draw_block_from_point(model, 0, 0, 17, 1, Wall)
-        draw_block_from_point(model, 0, 19, 17, 1, Wall)
+        draw_block_from_point(model, 0, 0, 18, 1, Wall)
+        draw_block_from_point(model, 0, 19, 18, 1, Wall)
 
-        draw_block_from_point(model, 8, 18, 1, 1, Wall)
+        draw_block_from_point(model, 8, 18, 2, 1, Wall)
         # draw_block_from_point(model, 1, 15, 1, 4, Wall)
         # draw_block_from_point(model, 15, 15, 1, 4, Wall)
 
         shelf_cells = []
 
         # Shelves
-        shelf_cells += draw_block_from_point(model, 3, 18, 5, 1, Shelf)
-        shelf_cells += draw_block_from_point(model, 9, 18, 5, 1, Shelf)
+        shelf_cells += draw_block_from_point(model, 1, 18, 7, 1, Shelf)
+        shelf_cells += draw_block_from_point(model, 10, 18, 7, 1, Shelf)
         shelf_cells += draw_block_from_point(model, 8, 15, 1, 3, Shelf)
+        shelf_cells += draw_block_from_point(model, 9, 15, 1, 3, Shelf)
         # draw_block_from_point(model, 8, 15, 1, 3, Wall)
 
         # Action center
@@ -87,11 +88,11 @@ class BeerOnlyEnvironment:
         model.grid.place_agent(action_center, (8, 3))
 
         # Beer
-        draw_block_from_point(model, 1, 7, 2, 12, Beer)
+        draw_block_from_point(model, 1, 7, 2, 8, Beer)
         draw_block_from_point(model, 4, 7, 2, 8, Beer)
-        draw_block_from_point(model, 7, 7, 3, 8, Beer)
-        draw_block_from_point(model, 11, 7, 2, 8, Beer)
-        draw_block_from_point(model, 14, 7, 2, 12, Beer)
+        draw_block_from_point(model, 7, 7, 4, 8, Beer)
+        draw_block_from_point(model, 12, 7, 2, 8, Beer)
+        draw_block_from_point(model, 15, 7, 2, 8, Beer)
 
         return {'action_center': action_center}
 
