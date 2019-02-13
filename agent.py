@@ -429,7 +429,8 @@ class AgentBasic(Agent):
         self.stat_dict['route_concepts'].append({'option1': {'meaning': meaning1,
                                                              'blocked': blocked1},
                                                  'option2': {'meaning': meaning2,
-                                                             'blocked': blocked2}})
+                                                             'blocked': blocked2},
+                                                 'time': self.model.start_time})
 
         return option1, option2, blocked1, blocked2
 
