@@ -10,8 +10,8 @@ import copy
 
 class AgentBasic(Agent):
     def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True,
-                 utility_threshold=2, gather_stats=False, random_behaviour=False, route_conceptualization='hack1',
-                 reroute_threshold=3, score_threshold=0.0):
+                 utility_threshold=2, gather_stats=False, random_behaviour=False, route_conceptualization=None,
+                 score_threshold=0.0):
         '''
         :param route_conceptualization:
             'hack1': last cell in route blocks
@@ -26,7 +26,7 @@ class AgentBasic(Agent):
         self._gather_stats = gather_stats
         self._rand_behaviour = random_behaviour
         self._route_conceptualization = route_conceptualization
-        self._reroute_threshold = reroute_threshold
+        # self._reroute_threshold = reroute_threshold
         self._destination = model.action_center.pos
         self._path = None
         self.color = color
@@ -46,7 +46,8 @@ class AgentBasic(Agent):
                           'collision_map': np.zeros(self.map.shape),
                           'q-game_map': np.zeros(self.map.shape),
                           'delivery_times': [],
-                          'selected_options': []}
+                          'selected_options': [],
+                          'route_concepts': []}
         self._has_item = False
         self._backing_off = False
         self._backing_info = None
@@ -98,9 +99,10 @@ class AgentBasic(Agent):
         if self._blocked is not None:
             for cell in self._blocked:
                 env_map[cell] = 1
-        shortest_path = astar(env_map, self.pos, self._destination, False)[1:]
+        # shortest_path = astar(env_map, self.pos, self._destination, False)[1:]
         path = self._reroute()
-        if len(path) > 0 and len(path) - len(shortest_path) < self._reroute_threshold:
+        # if len(path) > 0 and len(path) - len(shortest_path) < self._reroute_threshold:
+        if len(path) > 0:
             # Route is clear, stop backing
             self._path = path
             self._backing_off = False
@@ -147,24 +149,26 @@ class AgentBasic(Agent):
 
         # Path is not free
         neighbor = self.model.grid[x][y]
-        if type(neighbor) is AgentBasic:
+        if not self._has_item and type(neighbor) is AgentBasic:
             reroute = self._reroute()
-            if len(reroute) > 0 and len(reroute) - len(self._path) < self._reroute_threshold:
+            # if len(reroute) > 0 and len(reroute) - len(self._path) < self._reroute_threshold:
+            if len(reroute) > 0:
                 self._path = reroute
                 old_pos = self.pos
                 self.model.grid.move_agent(self, self._path[0])
                 del self._path[0]
                 self._update_direction(old_pos, self.pos)
                 return True
-            # There is an agent in the way, check if game should be played
-            if not self._has_item:
-                self.stat_dict['collision_map'][self.pos] += 1
-                self._backing_off = True
-                meaning = self._play_observational_game(neighbor)
-                self._backing_info = {'start_age': self._age,
-                                      'meaning': meaning}
-            elif self.model.has_agent_moved(neighbor):
-                return True
+
+            # Start backing and play games
+            self.stat_dict['collision_map'][self.pos] += 1
+            self._backing_off = True
+            meaning = self._play_observational_game(neighbor)
+            self._backing_info = {'start_age': self._age,
+                                  'meaning': meaning}
+        elif self.model.has_agent_moved(neighbor):
+            # Agents with an item refuse to reroute
+            return True
         return False
 
     def move(self):
@@ -312,6 +316,12 @@ class AgentBasic(Agent):
             for cell in self._blocked:
                 env_map[cell] = 1
         new_path = astar(env_map, self.pos, self._destination, False)[1:]
+        if len(new_path) == 0:
+            env_map = np.copy(self.map)
+            for neighbor in neighborhood:
+                x, y = neighbor.pos
+                env_map[x][y] = 1
+                new_path = astar(env_map, self.pos, self._destination, False)[1:]
         return new_path
 
     def _update_direction(self, old_pos, new_pos):
@@ -388,26 +398,38 @@ class AgentBasic(Agent):
 
     def _get_options(self):
         option1 = self._calculate_path(self.model.map)
+        if self._route_conceptualization is None:
+            return option1, None, None, None
+
         map = np.copy(self.model.map)
         if self._route_conceptualization == 'hack1':
             map[option1[-2]] = 1
             blocked1 = [option1[-2]]
+            meaning1 = self._get_neighborhood(blocked1[0])
             option2 = self._calculate_path(map)
             blocked2 = [option2[-2]] if len(option2) > 1 else []
+            meaning2 = self._get_neighborhood(blocked2[0])
         elif self._route_conceptualization == 'hack2':
             blocked1 = [option1[int(len(option1) / 2)]]
+            meaning1 = self._get_neighborhood(blocked1[0])
             for cell in blocked1:
                 map[cell] = 1
             option2 = self._calculate_path(map)
             blocked2 = [option2[int(len(option2) / 2)]]
+            meaning2 = self._get_neighborhood(blocked2[0])
         elif self._route_conceptualization == 'conceptualize':
-            _, blocked1 = self._get_highest_meaning_on_path(option1)
+            meaning1, blocked1 = self._get_highest_meaning_on_path(option1)
             for cell in blocked1:
                 map[cell] = 1
             option2 = self._calculate_path(map)
-            _, blocked2 = self._get_highest_meaning_on_path(option2)
+            meaning2, blocked2 = self._get_highest_meaning_on_path(option2)
         else:
             raise Exception('Unknown route conceptualization: {}'.format(self._route_conceptualization))
+
+        self.stat_dict['route_concepts'].append({'option1': {'meaning': meaning1,
+                                                             'blocked': blocked1},
+                                                 'option2': {'meaning': meaning2,
+                                                             'blocked': blocked2}})
 
         return option1, option2, blocked1, blocked2
 
@@ -416,7 +438,7 @@ class AgentBasic(Agent):
         # self.map = np.copy(self.model.map)
         option1, option2, blocked1, blocked2 = self._get_options()
 
-        if len(option2) == 0:
+        if option2 is None or len(option2) == 0:
             self._blocked = None
             self._last_broadcast = None
             # Only one option

@@ -95,19 +95,21 @@ if __name__ == "__main__":
     collision_maps = []
     qgame_maps = []
     times = []
-    runs = 1
+    runs = 5
+    # thresholds = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    thresholds = [0.0]
 
-    for threshold in [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]:
+    for threshold in thresholds:
 
         # PARAMS
-        params = {'play_guessing': True,
+        params = {'play_guessing': False,
                   'gather_stats': True,
                   'random_behaviour': True,
                   'steps': 100000,
                   'create_trees': False,
                   'agents': 4,
                   'env_name': 'beer_only',                #default, beer, beer_only, double
-                  'route_conceptualization': 'conceptualize',   #hack1, hack2, conceptualize
+                  'route_conceptualization': 'conceptualize',   #'hack1', 'hack2', 'conceptualize', None
                   'score_threshold': threshold}
         pprint.pprint(params)
 
@@ -116,7 +118,7 @@ if __name__ == "__main__":
         lang = 'lang' if params['play_guessing'] else 'prelang'
         # directory = r'D:\resultit\restricted_shelves\extended\results_{}_{}_{}'.format(date_time, rand, lang)
         # directory = r'D:\resultit\restricted_shelves\results_{}_{}_{}'.format(date_time, rand, lang)
-        directory = 'results2/results_{}_{}_{}'.format(date_time, rand, lang)
+        directory = 'results/{}/results_{}_{}_{}'.format(params['env_name'], date_time, rand, lang)
         os.makedirs(directory)
         print(directory)
 
