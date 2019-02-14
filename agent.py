@@ -107,8 +107,8 @@ class AgentBasic(Agent):
             self._path = path
             self._backing_off = False
             utility = self._backing_info['start_age'] - self._age
-            if abs(utility) > 0:
-                self.memory._update_utility(self._backing_info['meaning'], utility)
+            # if abs(utility) > 0:
+            self.memory._update_utility(self._backing_info['meaning'], utility)
         else:
             # Route not clear, choose random move
             movement_options = self._get_free_neighbors()
@@ -317,12 +317,6 @@ class AgentBasic(Agent):
             for cell in self._blocked:
                 env_map[cell] = 1
         new_path = astar(env_map, self.pos, self._destination, False)[1:]
-        if len(new_path) == 0:
-            env_map = np.copy(self.map)
-            for neighbor in neighborhood:
-                x, y = neighbor.pos
-                env_map[x][y] = 1
-                new_path = astar(env_map, self.pos, self._destination, False)[1:]
         return new_path
 
     def _update_direction(self, old_pos, new_pos):
@@ -397,6 +391,14 @@ class AgentBasic(Agent):
         topic_objects = [obj for obj in objects if obj in path]
         return place, place_form, categoriser, disc_form, topic_objects
 
+    def _check_block_validity(self, blocked):
+        '''Checks if route can be found with certain blocks.'''
+        env_map = np.copy(self.map)
+        for cell in blocked:
+            env_map[cell] = 1
+        path = astar(env_map, self.pos, self._destination, False)[1:]
+        return len(path) > 0
+
     def _get_options(self):
         option1 = self._calculate_path(self.model.map)
         if self._route_conceptualization is None:
@@ -433,6 +435,10 @@ class AgentBasic(Agent):
                                                              'blocked': blocked2},
                                                  'time': self.model.start_time})
 
+        if not self._check_block_validity(blocked1):
+            blocked1 = None
+        if not self._check_block_validity(blocked2):
+            blocked2 = None
         return option1, option2, blocked1, blocked2
 
     def _broadcast_question(self):
