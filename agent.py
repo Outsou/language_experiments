@@ -347,6 +347,9 @@ class AgentBasic(Agent):
 
     def ask_if_free(self, place_form, disc_form):
         '''Used to ask an agent if a place is free. Returns the answer and interpreted place and categoriser.'''
+        # if not self._has_item:
+        #     return True, None, None, None, None
+
         place = self.memory.get_meaning(place_form)
         if place is None:
             return True, None, None, None, None
@@ -446,6 +449,10 @@ class AgentBasic(Agent):
         # self.map = np.copy(self.model.map)
         option1, option2, blocked1, blocked2 = self._get_options()
 
+        # self._blocked = blocked1
+        # self._last_broadcast = None
+        # return option2
+
         if option2 is None or len(option2) == 0:
             self._blocked = None
             self._last_broadcast = None
@@ -487,6 +494,12 @@ class AgentBasic(Agent):
                 self._last_broadcast = broadcast1
                 self.stat_dict['selected_options'].append((1, self.model.start_time))
                 return option1
+
+        # self.stat_dict['option2_selected'] += 1
+        # self._blocked = blocked1
+        # self._last_broadcast = broadcast2
+        # self.stat_dict['selected_options'].append((2, self.model.start_time))
+        # return option2
 
         # If option1 wasn't free, check option2
         place, place_form, categoriser, disc_form, topic_objects = self._get_forms_for_path(option2, option1)
@@ -550,6 +563,7 @@ class AgentBasic(Agent):
                 self._destination = self.model.action_center.pos
                 self._has_item = True
                 self._path = self._calculate_path(self.map)
+                # self._path = self._broadcast_question()
 
     def finalize(self):
         self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))

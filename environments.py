@@ -55,7 +55,7 @@ def draw_block_from_point(model, x, y, width, height, cls):
 
 class BeerOnlyEnvironment:
     width = 18
-    height = 20
+    height = 19
     name = 'beer_only'
 
     @staticmethod
@@ -63,22 +63,22 @@ class BeerOnlyEnvironment:
         model.grid = SingleGrid(BeerOnlyEnvironment.width, BeerOnlyEnvironment.height, False)  # True=toroidal
 
         # Side walls
-        draw_block_from_point(model, 0, 1, 1, 18, Wall)
-        draw_block_from_point(model, 17, 1, 1, 18, Wall)
+        draw_block_from_point(model, 0, 1, 1, 17, Wall)
+        draw_block_from_point(model, 17, 1, 1, 17, Wall)
 
         # Bottom and top
         draw_block_from_point(model, 0, 0, 18, 1, Wall)
-        draw_block_from_point(model, 0, 19, 18, 1, Wall)
+        draw_block_from_point(model, 0, 18, 18, 1, Wall)
 
-        draw_block_from_point(model, 8, 18, 2, 1, Wall)
+        # draw_block_from_point(model, 8, 18, 2, 1, Wall)
         # draw_block_from_point(model, 1, 15, 1, 4, Wall)
         # draw_block_from_point(model, 15, 15, 1, 4, Wall)
 
         shelf_cells = []
 
         # Shelves
-        shelf_cells += draw_block_from_point(model, 1, 18, 7, 1, Shelf)
-        shelf_cells += draw_block_from_point(model, 10, 18, 7, 1, Shelf)
+        # shelf_cells += draw_block_from_point(model, 1, 18, 7, 1, Shelf)
+        # shelf_cells += draw_block_from_point(model, 10, 18, 7, 1, Shelf)
         shelf_cells += draw_block_from_point(model, 8, 15, 1, 3, Shelf)
         shelf_cells += draw_block_from_point(model, 9, 15, 1, 3, Shelf)
         # draw_block_from_point(model, 8, 15, 1, 3, Wall)

@@ -95,62 +95,67 @@ if __name__ == "__main__":
     collision_maps = []
     qgame_maps = []
     times = []
-    runs = 50
-    # thresholds = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-    thresholds = [0.9, 1.0]
+    runs = 5
 
-    for threshold in thresholds:
+    # PARAMS
+    params = {'play_guessing': True,
+              'gather_stats': True,
+              'random_behaviour': True,
+              'steps': 100000,
+              'create_trees': False,
+              'agents': 3,
+              'env_name': 'beer_only',                #default, beer, beer_only, double
+              'route_conceptualization': 'conceptualize',   #'hack1', 'hack2', 'conceptualize', None
+              'score_threshold': 0.3} # 0.3 is best
+    # params = {'play_guessing': False,
+    #           'gather_stats': True,
+    #           'random_behaviour': False,
+    #           'steps': 100000,
+    #           'create_trees': False,
+    #           'agents': 3,
+    #           'env_name': 'beer_only',                #default, beer, beer_only, double
+    #           'route_conceptualization': 'hack2',   #'hack1', 'hack2', 'conceptualize', None
+    #           'score_threshold': 0.0} # 0.3 is best
+    pprint.pprint(params)
 
-        # PARAMS
-        params = {'play_guessing': True,
-                  'gather_stats': True,
-                  'random_behaviour': True,
-                  'steps': 100000,
-                  'create_trees': False,
-                  'agents': 4,
-                  'env_name': 'beer_only',                #default, beer, beer_only, double
-                  'route_conceptualization': 'conceptualize',   #'hack1', 'hack2', 'conceptualize', None
-                  'score_threshold': threshold}
-        pprint.pprint(params)
+    date_time = time.strftime("%d-%m-%y_%H-%M-%S")
+    rand = 'random' if params['random_behaviour'] else 'shortest'
+    lang = 'lang' if params['play_guessing'] else 'prelang'
+    # directory = r'D:\resultit\restricted_shelves\extended\results_{}_{}_{}'.format(date_time, rand, lang)
+    # directory = r'D:\resultit\{}\results_{}_{}_{}'.format(params['env_name'], date_time, rand, lang)
+    directory = 'results/{}/results_{}_{}_{}'.format(params['env_name'], date_time, rand, lang)
+    os.makedirs(directory)
+    print(directory)
 
-        date_time = time.strftime("%d-%m-%y_%H-%M-%S")
-        rand = 'random' if params['random_behaviour'] else 'shortest'
-        lang = 'lang' if params['play_guessing'] else 'prelang'
-        # directory = r'D:\resultit\restricted_shelves\extended\results_{}_{}_{}'.format(date_time, rand, lang)
-        directory = r'D:\resultit\{}\results_{}_{}_{}'.format(params['env_name'], date_time, rand, lang)
-        # directory = 'results/{}/results_{}_{}_{}'.format(params['env_name'], date_time, rand, lang)
-        os.makedirs(directory)
-        print(directory)
+    # Save params to file
+    with open(os.path.join(directory, 'params.txt'), 'w') as text_file:
+        pprint.pprint(params, stream=text_file)
 
-        # Save params to file
-        with open(os.path.join(directory, 'params.txt'), 'w') as text_file:
-            pprint.pprint(params, stream=text_file)
+    for i in range(1, runs + 1):
+        start_time = time.time()
+        print('Starting run {}'.format(i))
+        run_delivered, run_collisions, run_collision_map, run_qgame_map = run_experiment(i, directory=directory, **params)
+        items_delivered.append(run_delivered)
+        collisions.append(run_collisions)
+        collision_maps.append(run_collision_map)
+        qgame_maps.append(run_qgame_map)
+        times.append(time.time() - start_time)
+        time_left = sum(times) / len(times) * (runs - i)
+        print('Finished run, time left {}'.format(str(datetime.timedelta(seconds=time_left))))
+        print()
 
-        for i in range(1, runs + 1):
-            start_time = time.time()
-            print('Starting run {}'.format(i))
-            run_delivered, run_collisions, run_collision_map, run_qgame_map = run_experiment(i, directory=directory, **params)
-            items_delivered.append(run_delivered)
-            collisions.append(run_collisions)
-            collision_maps.append(run_collision_map)
-            qgame_maps.append(run_qgame_map)
-            times.append(time.time() - start_time)
-            time_left = sum(times) / len(times) * (runs - i)
-            print('Finished run, time left {}'.format(str(datetime.timedelta(seconds=time_left))))
-            print()
+    model = CoopaModel(False, params['env_name'])
+    collision_map = np.rot90(sum(collision_maps)) / runs
+    qgame_map = np.rot90(sum(qgame_maps)) / runs
+    create_heatmap(collision_map, model.grid, os.path.join(directory, 'collision_map.pdf'))
+    create_heatmap(qgame_map, model.grid, os.path.join(directory, 'qgame_map.pdf'))
 
-        model = CoopaModel(False, params['env_name'])
-        collision_map = np.rot90(sum(collision_maps)) / runs
-        qgame_map = np.rot90(sum(qgame_maps)) / runs
-        create_heatmap(collision_map, model.grid, os.path.join(directory, 'collision_map.pdf'))
-        create_heatmap(qgame_map, model.grid, os.path.join(directory, 'qgame_map.pdf'))
+    with open(os.path.join(directory, 'final.txt'), 'w') as text_file:
+        print('Delivered: {}, avg: {}'.format(items_delivered, np.mean(items_delivered)), file=text_file)
+        print('Collisions: {}, avg: {}\n'.format(collisions, np.mean(collisions)), file=text_file)
+        print(collision_map)
+    # print(resources_delivered)
+    # print(collisions)
 
-        with open(os.path.join(directory, 'final.txt'), 'w') as text_file:
-            print('Delivered: {}, avg: {}'.format(items_delivered, np.mean(items_delivered)), file=text_file)
-            print('Collisions: {}, avg: {}\n'.format(collisions, np.mean(collisions)), file=text_file)
-            print(collision_map)
-        # print(resources_delivered)
-        # print(collisions)
-
-        print('{}, finished'.format(directory))
-        pprint.pprint(params)
+    print('{}, finished'.format(directory))
+    pprint.pprint(params)

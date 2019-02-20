@@ -63,7 +63,7 @@ def analyse_route_concepts(stats):
         print()
 
 if __name__ == '__main__':
-    result_dir = r'D:\resultit2\beer_only\results_14-02-19_09-48-41_random_lang'
+    result_dir = r'/home/ottohant/Desktop/beer_only/results_19-02-19_09-37-44_random_prelang'
     analysis_dir = 'conceptualization_analysis'
 
     with open(os.path.join(result_dir, 'params.txt'), 'r') as file:
