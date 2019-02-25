@@ -238,7 +238,7 @@ def analyse_synonymy(result_path):
 
 
 if __name__ == '__main__':
-    result_dir = r'/home/ottohant/Desktop/beer_only/results_19-02-19_09-37-44_random_prelang'
+    result_dir = r'/home/ottohant/Desktop/agent_amounts/results_22-02-19_11-51-31_shortest_prelang'
     analysis_dir = 'place_game_analysis'
 
     pkl_dir = 'pkls'

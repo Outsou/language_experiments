@@ -98,24 +98,24 @@ if __name__ == "__main__":
     runs = 5
 
     # PARAMS
-    params = {'play_guessing': True,
-              'gather_stats': True,
-              'random_behaviour': True,
-              'steps': 100000,
-              'create_trees': False,
-              'agents': 3,
-              'env_name': 'beer_only',                #default, beer, beer_only, double
-              'route_conceptualization': 'conceptualize',   #'hack1', 'hack2', 'conceptualize', None
-              'score_threshold': 0.3} # 0.3 is best
-    # params = {'play_guessing': False,
+    # params = {'play_guessing': True,
     #           'gather_stats': True,
-    #           'random_behaviour': False,
+    #           'random_behaviour': True,
     #           'steps': 100000,
     #           'create_trees': False,
-    #           'agents': 3,
+    #           'agents': 5,
     #           'env_name': 'beer_only',                #default, beer, beer_only, double
-    #           'route_conceptualization': 'hack2',   #'hack1', 'hack2', 'conceptualize', None
-    #           'score_threshold': 0.0} # 0.3 is best
+    #           'route_conceptualization': 'conceptualize',   #'hack1', 'hack2', 'conceptualize', None
+    #           'score_threshold': 0.3} # 0.3 is best
+    params = {'play_guessing': False,
+              'gather_stats': True,
+              'random_behaviour': False,
+              'steps': 100000,
+              'create_trees': False,
+              'agents': 5,
+              'env_name': 'beer_only',                #default, beer, beer_only, double
+              'route_conceptualization': 'hack2',   #'hack1', 'hack2', 'conceptualize', None
+              'score_threshold': 0.0} # 0.3 is best
     pprint.pprint(params)
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
