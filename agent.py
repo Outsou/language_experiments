@@ -27,14 +27,39 @@ class AgentBasic(Agent):
         self._rand_behaviour = random_behaviour
         self._route_conceptualization = route_conceptualization
         # self._reroute_threshold = reroute_threshold
-        self._destination = model.action_center.pos
         self._path = None
         self.color = color
         self.memory = MFAssociationMemory()
         self.heading_x = 1
         self.heading_y = 0
         self.discriminator = Discriminator([(0, 1), (0, 1)])
+        self.reset(model)
+        # self.create_x_axis()
+
+    def create_x_axis(self):
+        tree = self.discriminator.trees[0]
+        tree.grow()
+        tree.root.child1.grow()
+        tree.root.child2.grow()
+        self.memory.create_association(tree.root.child1, 'left', 1)
+        self.memory.create_association(tree.root.child2, 'right', 1)
+        self.memory.create_association(tree.root.child1.child1, 'leftleft', 1)
+        self.memory.create_association(tree.root.child1.child2, 'leftright', 1)
+        self.memory.create_association(tree.root.child2.child1, 'rightleft', 1)
+        self.memory.create_association(tree.root.child2.child2, 'rightright', 1)
+
+    def reset(self, model):
+        self.model = model
         self.map = np.copy(self.model.map)
+        self._destination = model.action_center.pos
+        self._path = None
+        self._has_item = False
+        self._backing_off = False
+        self._backing_info = None
+        self._age = 0
+        self._last_broadcast = None
+        self._blocked = None
+        self._last_delivery = 0
         self.stat_dict = {'obs_game_init': 0,
                           'items_delivered': 0,
                           'guessing_game_init': 0,
@@ -48,13 +73,6 @@ class AgentBasic(Agent):
                           'delivery_times': [],
                           'selected_options': [],
                           'route_concepts': []}
-        self._has_item = False
-        self._backing_off = False
-        self._backing_info = None
-        self._age = 0
-        self._last_broadcast = None
-        self._blocked = None
-        self._last_delivery = 0
 
     def _save_memory(self):
         # self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))

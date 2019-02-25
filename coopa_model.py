@@ -14,7 +14,7 @@ class CoopaModel(Model):
     """A model with some number of agents."""
 
     def __init__(self, play_guessing, env_name, gather_stats=False, random_behaviour=False, agents=1,
-                 route_conceptualization='hack1', score_threshold=0.0):
+                 route_conceptualization='hack1', score_threshold=0.0, old_agents=None):
         self.running = True
         self.action_center = create_env(env_name, self)['action_center']
         self.schedule = RandomActivation(self)
@@ -32,14 +32,19 @@ class CoopaModel(Model):
         self.agents = []
         colors = ['blue', 'black', 'green', 'purple', 'red', 'pink']
 
-        for i in range(agents):
-            a = AgentBasic(100 + i, self, colors[i], guessing_game=play_guessing,
-                           gather_stats=gather_stats, random_behaviour=random_behaviour,
-                           route_conceptualization=route_conceptualization, score_threshold=score_threshold)
-            self.schedule.add(a)
-            self.agents.append(a)
+        if old_agents is None:
+            for i in range(agents):
+                a = AgentBasic(100 + i, self, colors[i], guessing_game=play_guessing,
+                               gather_stats=gather_stats, random_behaviour=random_behaviour,
+                               route_conceptualization=route_conceptualization, score_threshold=score_threshold)
+                self.agents.append(a)
+        else:
+            self.agents = old_agents
+            for agent in self.agents:
+                agent.reset(self)
 
         for agent in self.agents:
+            self.schedule.add(agent)
             self.grid.position_agent(agent)
 
         np.set_printoptions(linewidth=320)

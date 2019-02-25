@@ -7,17 +7,10 @@ import numpy as np
 from disc_tree import Categoriser
 import pickle
 import pprint
+import random
 
-
-def run_experiment(run_id, directory, play_guessing, gather_stats, random_behaviour, steps, create_trees,
-                   agents, env_name, route_conceptualization, score_threshold):
-    run_dir = os.path.join(directory, str(run_id))
-    os.makedirs(run_dir)
-    print('Running experiment...')
-    model = CoopaModel(play_guessing, env_name, gather_stats, random_behaviour, agents, route_conceptualization,
-                       score_threshold)
+def execute_steps(model, steps):
     times = []
-    start_time = time.time()
     period_start = time.time()
     timing_steps = 10000
     for i in range(1, steps + 1):
@@ -27,6 +20,27 @@ def run_experiment(run_id, directory, play_guessing, gather_stats, random_behavi
             time_left = sum(times) / len(times) * ((steps - i) / timing_steps)
             print('Time left {}'.format(str(datetime.timedelta(seconds=time_left))))
         model.step()
+
+def run_experiment(run_id, directory, play_guessing, gather_stats, random_behaviour, steps, create_trees,
+                   agents, env_name, route_conceptualization, score_threshold, env2=None, env2_agents=None):
+    run_dir = os.path.join(directory, str(run_id))
+    os.makedirs(run_dir)
+    print('Running experiment...')
+    model = CoopaModel(play_guessing, env_name, gather_stats, random_behaviour, agents, route_conceptualization,
+                       score_threshold)
+    start_time = time.time()
+
+    print('Running first env...')
+    execute_steps(model, steps)
+
+    if env2 is not None:
+        old_agents = model.agents
+        old_agents = random.sample(old_agents, env2_agents)
+        model = CoopaModel(play_guessing, env2, gather_stats, random_behaviour, agents, route_conceptualization,
+                           score_threshold, old_agents)
+        print('Running second env...')
+        execute_steps(model, steps)
+
     model.finalize()
     print()
     result_str = ''
@@ -95,27 +109,29 @@ if __name__ == "__main__":
     collision_maps = []
     qgame_maps = []
     times = []
-    runs = 5
+    runs = 2
 
     # PARAMS
-    # params = {'play_guessing': True,
+    params = {'play_guessing': True,
+              'gather_stats': True,
+              'random_behaviour': True,
+              'steps': 50000,
+              'create_trees': False,
+              'agents': 4,
+              'env_name': 'beer_only',                #default, beer, beer_only, double
+              'route_conceptualization': 'conceptualize',   #'hack1', 'hack2', 'conceptualize', None
+              'score_threshold': 0.5,   # 0.5 is best
+              'env2': None,
+              'env2_agents': None}
+    # params = {'play_guessing': False,
     #           'gather_stats': True,
-    #           'random_behaviour': True,
+    #           'random_behaviour': False,
     #           'steps': 100000,
     #           'create_trees': False,
     #           'agents': 5,
     #           'env_name': 'beer_only',                #default, beer, beer_only, double
-    #           'route_conceptualization': 'conceptualize',   #'hack1', 'hack2', 'conceptualize', None
-    #           'score_threshold': 0.3} # 0.3 is best
-    params = {'play_guessing': False,
-              'gather_stats': True,
-              'random_behaviour': False,
-              'steps': 100000,
-              'create_trees': False,
-              'agents': 5,
-              'env_name': 'beer_only',                #default, beer, beer_only, double
-              'route_conceptualization': 'hack2',   #'hack1', 'hack2', 'conceptualize', None
-              'score_threshold': 0.0} # 0.3 is best
+    #           'route_conceptualization': 'hack2',   #'hack1', 'hack2', 'conceptualize', None
+    #           'score_threshold': 0.0} # 0.5 is best
     pprint.pprint(params)
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
@@ -144,7 +160,10 @@ if __name__ == "__main__":
         print('Finished run, time left {}'.format(str(datetime.timedelta(seconds=time_left))))
         print()
 
-    model = CoopaModel(False, params['env_name'])
+    if params['env2'] is None:
+        model = CoopaModel(False, params['env_name'])
+    else:
+        model = CoopaModel(False, params['env2'])
     collision_map = np.rot90(sum(collision_maps)) / runs
     qgame_map = np.rot90(sum(qgame_maps)) / runs
     create_heatmap(collision_map, model.grid, os.path.join(directory, 'collision_map.pdf'))

@@ -27,12 +27,16 @@ class MFAssociationMemory:
             self.meaning_stats[meaning]['use_counts'][form] = 0
         self.meaning_stats[meaning]['use_counts'][form] += 1
 
-    def create_association(self, meaning, form):
+    def create_association(self, meaning, form, start_val=None):
+        if start_val is not None:
+            val = start_val
+        else:
+            val = self.increment
         if meaning not in self.mf_dict:
-            self.mf_dict[meaning] = {form: self.increment}
+            self.mf_dict[meaning] = {form: val}
             self.meaning_stats[meaning] = copy.deepcopy(self.stat_start_vals)
         elif form not in self.mf_dict[meaning]:
-            self.mf_dict[meaning][form] = self.min
+            self.mf_dict[meaning][form] = val
         self.known_forms.add(form)
 
     def strengthen_form(self, meaning, form, speaker=None, utility=None):

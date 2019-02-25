@@ -233,8 +233,8 @@ def get_stats(result_path):
     return stats
 
 if __name__ == '__main__':
-    result_dir_lang = r'D:\resultit\restricted_shelves\results_29-01-19_10-09-45_random_lang'
-    result_dir_no_lang = r'D:\resultit\restricted_shelves\results_29-01-19_10-09-34_random_prelang'
+    result_dir_lang = r'/home/ottohant/Desktop/beer_only/results_21-02-19_23-33-10_random_lang'
+    result_dir_no_lang = r'/home/ottohant/Desktop/beer_only/results_21-02-19_23-32-14_shortest_prelang'
     analysis_dir = 'agent_analysis'
 
     with open(os.path.join(result_dir_lang, 'params.txt'), 'r') as file:
