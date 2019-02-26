@@ -188,6 +188,13 @@ class AgentBasic(Agent):
         elif self.model.has_agent_moved(neighbor):
             # Agents with an item refuse to reroute
             return True
+        elif neighbor._has_item:
+            # Back off if neighbor also has item
+            self.stat_dict['collision_map'][self.pos] += 1
+            self._backing_off = True
+            meaning = self._play_observational_game(neighbor)
+            self._backing_info = {'start_age': self._age,
+                                  'meaning': meaning}
         return False
 
     def move(self):

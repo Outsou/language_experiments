@@ -55,7 +55,11 @@ class CoopaModel(Model):
         self.not_moved = [a for a in self.agents]
         random.shuffle(self.not_moved)
 
+        counter = 0
         while len(self.not_moved) > 0:
+            counter += 1
+            if counter > 100:
+                print('asd')
             for agent in self.not_moved:
                 if agent.move():
                     self.not_moved.remove(agent)
