@@ -22,7 +22,8 @@ def execute_steps(model, steps):
         model.step()
 
 def run_experiment(run_id, directory, play_guessing, gather_stats, random_behaviour, steps, create_trees,
-                   agents, env_name, route_conceptualization, score_threshold, env2=None, env2_agents=None):
+                   agents, env_name, route_conceptualization, score_threshold, env2=None, env2_agents=None,
+                   env2_steps=None):
     run_dir = os.path.join(directory, str(run_id))
     os.makedirs(run_dir)
     print('Running experiment...')
@@ -39,7 +40,7 @@ def run_experiment(run_id, directory, play_guessing, gather_stats, random_behavi
         model = CoopaModel(play_guessing, env2, gather_stats, random_behaviour, agents, route_conceptualization,
                            score_threshold, old_agents)
         print('Running second env...')
-        execute_steps(model, steps)
+        execute_steps(model, env2_steps)
 
     model.finalize()
     print()
@@ -109,37 +110,40 @@ if __name__ == "__main__":
     collision_maps = []
     qgame_maps = []
     times = []
-    runs = 2
+    runs = 100
 
     # PARAMS
     params = {'play_guessing': True,
               'gather_stats': True,
               'random_behaviour': True,
-              'steps': 50000,
+              'steps': 100000,
               'create_trees': False,
-              'agents': 4,
-              'env_name': 'beer_only',                #default, beer, beer_only, double
+              'agents': 6,
+              'env_name': 'default',                #default, beer, beer_only, double
               'route_conceptualization': 'conceptualize',   #'hack1', 'hack2', 'conceptualize', None
               'score_threshold': 0.5,   # 0.5 is best
-              'env2': None,
-              'env2_agents': None}
+              'env2': 'beer_only',
+              'env2_agents': 4,
+              'env2_steps': 20000}
     # params = {'play_guessing': False,
     #           'gather_stats': True,
-    #           'random_behaviour': False,
-    #           'steps': 100000,
+    #           'random_behaviour': True,
+    #           'steps': 50000,
     #           'create_trees': False,
-    #           'agents': 5,
-    #           'env_name': 'beer_only',                #default, beer, beer_only, double
-    #           'route_conceptualization': 'hack2',   #'hack1', 'hack2', 'conceptualize', None
-    #           'score_threshold': 0.0} # 0.5 is best
+    #           'agents': 4,
+    #           'env_name': 'small',                #default, beer, beer_only, double
+    #           'route_conceptualization': 'hack1',   #'hack1', 'hack2', 'conceptualize', None
+    #           'score_threshold': 0.0,
+    #           'env2': None,
+    #           'env2_agents': None}
     pprint.pprint(params)
 
     date_time = time.strftime("%d-%m-%y_%H-%M-%S")
     rand = 'random' if params['random_behaviour'] else 'shortest'
     lang = 'lang' if params['play_guessing'] else 'prelang'
     # directory = r'D:\resultit\restricted_shelves\extended\results_{}_{}_{}'.format(date_time, rand, lang)
-    # directory = r'D:\resultit\{}\results_{}_{}_{}'.format(params['env_name'], date_time, rand, lang)
-    directory = 'results/{}/results_{}_{}_{}'.format(params['env_name'], date_time, rand, lang)
+    directory = r'D:\resultit\vaihtis\results_{}_{}_{}'.format(date_time, rand, lang)
+    # directory = 'results/{}/results_{}_{}_{}'.format(params['env_name'], date_time, rand, lang)
     os.makedirs(directory)
     print(directory)
 

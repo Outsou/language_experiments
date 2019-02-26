@@ -50,9 +50,22 @@ def get_success_buckets(result_dir, steps, bucket_size):
             else:
                 one_right_buckets[bucket_idx].append(0)
 
-    perfect_ratios = [sum(bucket_vals) / len(bucket_vals) for bucket_vals in perfect_buckets]
+    perfect_ratios = []
+    for bucket_vals in perfect_buckets:
+        if len(bucket_vals) > 0:
+            perfect_ratios.append(sum(bucket_vals) / len(bucket_vals))
+        else:
+            perfect_ratios.append(0)
+    # perfect_ratios = [sum(bucket_vals) / len(bucket_vals) for bucket_vals in perfect_buckets]
     x = [bucket_size * i for i in range(1, len(perfect_ratios) + 1)]
-    one_right_ratios = [sum(bucket_vals) / len(bucket_vals) for bucket_vals in one_right_buckets]
+
+    one_right_ratios = []
+    for bucket_vals in one_right_buckets:
+        if len(bucket_vals) > 0:
+            one_right_ratios.append(sum(bucket_vals) / len(bucket_vals))
+        else:
+            one_right_ratios.append(0)
+    # one_right_ratios = [sum(bucket_vals) / len(bucket_vals) for bucket_vals in one_right_buckets]
     return perfect_ratios, one_right_ratios, x
 
 def get_min_games(result_dir):

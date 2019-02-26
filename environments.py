@@ -202,6 +202,49 @@ class DefaultEnvironment:
 
         return {'action_center': action_center}
 
+class SmallEnvironment:
+    width = 11
+    height = 16
+    name = 'small'
+
+    @staticmethod
+    def create_env(model):
+        model.grid = SingleGrid(SmallEnvironment.width, SmallEnvironment.height, False)
+
+        # Side walls
+        draw_block_from_point(model, 0, 1, 1, 14, Wall)
+        draw_block_from_point(model, 10, 1, 1, 14, Wall)
+
+        # Top and bottom
+        draw_block_from_point(model, 0, 0, 11, 1, Wall)
+        draw_block_from_point(model, 0, 15, 11, 1, Wall)
+        # draw_block_from_point(model, 0, 15, 20, 1, Wall)
+
+        #Corner
+        # draw_block_from_point(model, 11, 0, 9, 9, Wall)
+
+        # Horizontal shelf area walls
+        # draw_block_from_point(model, 11, 9, 9, 1, Wall)
+        # draw_block_from_point(model, 19, 10, 1, 5, Wall)
+
+        shelf_cells = []
+
+        # Vertical shelves
+        # shelf_cells += self.draw_block_from_point(model.grid, 1, 1, 1, 8, Shelf)
+        draw_block_from_point(model, 1, 1, 1, 8, Shelf)
+        shelf_cells += draw_block_from_point(model, 3, 1, 1, 8, Shelf)
+        shelf_cells += draw_block_from_point(model, 5, 1, 1, 8, Shelf)
+        shelf_cells += draw_block_from_point(model, 7, 1, 1, 8, Shelf)
+        # self.draw_block_from_point(model.grid, 7, 1, 1, 8, Shelf)
+        # shelf_cells += self.draw_block_from_point(model.grid, 9, 1, 1, 8, Shelf)
+        draw_block_from_point(model, 9, 1, 1, 8, Shelf)
+
+        # Action center
+        action_center = ActionCenter(0, model, shelf_cells)
+        model.grid.place_agent(action_center, (5, 12))
+
+        return {'action_center': action_center}
+
 class DoubleEnvironment:
     width = 28
     height = 24

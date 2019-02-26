@@ -580,8 +580,8 @@ class AgentBasic(Agent):
             else:
                 self._destination = self.model.action_center.pos
                 self._has_item = True
-                self._path = self._calculate_path(self.map)
-                # self._path = self._broadcast_question()
+                # self._path = self._calculate_path(self.map)
+                self._path = self._broadcast_question()
 
     def finalize(self):
         self.stat_dict['memories'].append((copy.deepcopy(self.memory), self._age))

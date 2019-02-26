@@ -121,6 +121,27 @@ def create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, steps, b
     plt.savefig(os.path.join(analysis_dir, 'times_and_game_success.pdf'))
     plt.close()
 
+    fig, ax1 = plt.subplots()
+    lns1 = ax1.plot(x, lang_buckets, 'r-.', label='Delivery time')
+    # lns2 = ax1.plot(x, no_lang_buckets, 'r:', label='Pre-language')
+    ax1.set_xlabel('Time step')
+    # plt.legend()
+    # Make the y-axis label, ticks and tick labels match the line color.
+    ax1.set_ylabel('Delivery time', color='r')
+    ax1.tick_params('y', colors='r')
+    ax2 = ax1.twinx()
+    lns3 = ax2.plot(x, perfect_queries, 'b-', label='Perfect success')
+    lns4 = ax2.plot(x, one_right_queries, 'b--', label='Partial success')
+    ax2.set_ylabel('Success ratio', color='b')
+    ax2.tick_params('y', colors='b')
+
+    lns = lns1 + lns3 + lns4
+    labs = [l.get_label() for l in lns]
+    ax1.legend(lns, labs, loc=7)
+
+    plt.savefig(os.path.join(analysis_dir, 'times_and_game_success_lang_only.pdf'))
+    plt.close()
+
 def get_tree_size(tree):
     nodes = [tree.root]
     size = 0
@@ -233,8 +254,8 @@ def get_stats(result_path):
     return stats
 
 if __name__ == '__main__':
-    result_dir_lang = r'/home/ottohant/Desktop/beer_only/results_21-02-19_23-33-10_random_lang'
-    result_dir_no_lang = r'/home/ottohant/Desktop/beer_only/results_21-02-19_23-32-14_shortest_prelang'
+    result_dir_lang = r'D:\resultit\vaihtis\results_26-02-19_12-39-16_random_lang'
+    result_dir_no_lang = r'D:\resultit\vaihtis\results_26-02-19_12-50-32_random_lang'
     analysis_dir = 'agent_analysis'
 
     with open(os.path.join(result_dir_lang, 'params.txt'), 'r') as file:
@@ -249,9 +270,9 @@ if __name__ == '__main__':
     lang_stats = get_stats(result_dir_lang)
     print('Done loading...')
 
-    create_first_option_selected_plot(lang_stats, analysis_dir, param_dict_lang['steps'])
+    # create_first_option_selected_plot(lang_stats, analysis_dir, param_dict_lang['steps'])
 
-    analyse_disc_trees(lang_stats, analysis_dir)
+    # analyse_disc_trees(lang_stats, analysis_dir)
 
     print('Loading no language stats...')
     no_lang_stats = get_stats(result_dir_no_lang)
