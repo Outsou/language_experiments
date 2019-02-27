@@ -34,7 +34,11 @@ class AgentBasic(Agent):
         self.heading_y = 0
         self.discriminator = Discriminator([(0, 1), (0, 1)])
         self.reset(model)
-        # self.create_x_axis()
+        self.create_x_axis()
+        self.create_beer_corridor()
+
+    def create_beer_corridor(self):
+        self.memory.create_association((('B', 'B', 'B'), ('.', 'X', '.'), ('B', 'B', 'B')), 'beer', 1)
 
     def create_x_axis(self):
         tree = self.discriminator.trees[0]
