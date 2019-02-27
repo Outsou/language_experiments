@@ -110,19 +110,19 @@ if __name__ == "__main__":
     collision_maps = []
     qgame_maps = []
     times = []
-    runs = 100
+    runs = 2
 
     # PARAMS
     params = {'play_guessing': True,
               'gather_stats': True,
               'random_behaviour': True,
-              'steps': 100000,
+              'steps': 20000,
               'create_trees': False,
-              'agents': 6,
-              'env_name': 'default',                #default, beer, beer_only, double
+              'agents': 4,
+              'env_name': 'beer_only',                #default, beer, beer_only, double
               'route_conceptualization': 'conceptualize',   #'hack1', 'hack2', 'conceptualize', None
               'score_threshold': 0.5,   # 0.5 is best
-              'env2': 'beer_only',
+              'env2': None,
               'env2_agents': 4,
               'env2_steps': 20000}
     # params = {'play_guessing': False,
@@ -142,8 +142,8 @@ if __name__ == "__main__":
     rand = 'random' if params['random_behaviour'] else 'shortest'
     lang = 'lang' if params['play_guessing'] else 'prelang'
     # directory = r'D:\resultit\restricted_shelves\extended\results_{}_{}_{}'.format(date_time, rand, lang)
-    directory = r'D:\resultit\vaihtis\results_{}_{}_{}'.format(date_time, rand, lang)
-    # directory = 'results/{}/results_{}_{}_{}'.format(params['env_name'], date_time, rand, lang)
+    # directory = r'D:\resultit\vaihtis\results_{}_{}_{}'.format(date_time, rand, lang)
+    directory = 'results/stuff/results_{}_{}_{}'.format(date_time, rand, lang)
     os.makedirs(directory)
     print(directory)
 

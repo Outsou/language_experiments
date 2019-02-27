@@ -17,7 +17,7 @@ if __name__ == '__main__':
     dirs = sorted(get_dirs_in_path(result_path))
     regex = re.compile('\[.*?\]')
     deliveries_dict = {}
-    pass
+
     for dir in dirs:
         with open(os.path.join(dir, 'params.txt'), 'r') as file:
             params_s = file.read().replace('\n', '')
@@ -63,5 +63,3 @@ if __name__ == '__main__':
 
     fig.tight_layout()
     plt.savefig(os.path.join(analysis_dir, 'amounts_deliveries.pdf'))
-
-    pass
