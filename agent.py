@@ -11,7 +11,7 @@ import copy
 class AgentBasic(Agent):
     def __init__(self, unique_id, model, color, neighborhood_rotation=False, guessing_game=True,
                  utility_threshold=2, gather_stats=False, random_behaviour=False, route_conceptualization=None,
-                 score_threshold=0.0):
+                 score_threshold=0.0, premade_lang=False):
         '''
         :param route_conceptualization:
             'hack1': last cell in route blocks
@@ -34,11 +34,13 @@ class AgentBasic(Agent):
         self.heading_y = 0
         self.discriminator = Discriminator([(0, 1), (0, 1)])
         self.reset(model)
-        self.create_x_axis()
-        self.create_beer_corridor()
+        if premade_lang:
+            self.create_x_axis()
+            # self.create_corridors()
 
-    def create_beer_corridor(self):
+    def create_corridors(self):
         self.memory.create_association((('B', 'B', 'B'), ('.', 'X', '.'), ('B', 'B', 'B')), 'beer', 1)
+        self.memory.create_association((('S', 'S', 'S'), ('.', 'X', '.'), ('S', 'S', 'S')), 'shelf', 1)
 
     def create_x_axis(self):
         tree = self.discriminator.trees[0]
@@ -380,13 +382,11 @@ class AgentBasic(Agent):
         #     return True, None, None, None, None
 
         place = self.memory.get_meaning(place_form)
-        if place is None:
-            return True, None, None, None, None
-        place_form = self.memory.get_form(place)
         categoriser = self.memory.get_meaning(disc_form)
-        if categoriser is None:
-            return True, place, place_form, None, None
-        categoriser_form = self.memory.get_form(categoriser)
+        place_form = self.memory.get_form(place)
+        categoriser_form = self.memory.get_form(place)
+        if place is None or categoriser is None:
+            return True, place, place_form, categoriser, categoriser_form
         objects = self._get_objects(place)
         normalised = self._normalise(objects)
         low, high = categoriser.range

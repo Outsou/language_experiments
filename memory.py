@@ -89,7 +89,7 @@ class MFAssociationMemory:
         return form
 
     def get_form(self, meaning):
-        if meaning not in self.mf_dict:
+        if meaning is None or meaning not in self.mf_dict:
             return None
         max_forms = []
         max_score = -1

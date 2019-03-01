@@ -168,7 +168,7 @@ def get_pickles_in_path(path):
     return pickles
 
 if __name__ == '__main__':
-    result_dir = r'D:\resultit\beer_only2\results_26-02-19_23-21-35_random_lang'
+    result_dir = r'/home/ottohant/language_experiments/results/stuff/results_01-03-19_10-51-02_random_lang'
     analysis_dir = 'query_game_analysis'
 
     shutil.rmtree(analysis_dir, ignore_errors=True)

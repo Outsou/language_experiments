@@ -10,7 +10,7 @@ import scipy.stats
 
 def get_dirs_in_path(path):
     '''Returns directories in path.'''
-    dirs = [os.path.join(path, file) for file in os.listdir(path) if os.path.isdir(os.path.join(path, file))]
+    dirs = [os.path.join(path, file) for file in os.listdir(path) if os.path.isdir(os.path.join(path, file)) and file[:6] != 'IGNORE']
     return dirs
 
 def _line_special_cases(x1, y1, x2, y2, dx, dy):

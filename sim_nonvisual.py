@@ -23,12 +23,12 @@ def execute_steps(model, steps):
 
 def run_experiment(run_id, directory, play_guessing, gather_stats, random_behaviour, steps, create_trees,
                    agents, env_name, route_conceptualization, score_threshold, env2=None, env2_agents=None,
-                   env2_steps=None):
+                   env2_steps=None, premade_lang=False):
     run_dir = os.path.join(directory, str(run_id))
     os.makedirs(run_dir)
     print('Running experiment...')
     model = CoopaModel(play_guessing, env_name, gather_stats, random_behaviour, agents, route_conceptualization,
-                       score_threshold)
+                       score_threshold, premade_lang=premade_lang)
     start_time = time.time()
 
     print('Running first env...')
@@ -38,7 +38,7 @@ def run_experiment(run_id, directory, play_guessing, gather_stats, random_behavi
         old_agents = model.agents
         old_agents = random.sample(old_agents, env2_agents)
         model = CoopaModel(play_guessing, env2, gather_stats, random_behaviour, agents, route_conceptualization,
-                           score_threshold, old_agents)
+                           score_threshold, old_agents, premade_lang)
         print('Running second env...')
         execute_steps(model, env2_steps)
 
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     collision_maps = []
     qgame_maps = []
     times = []
-    runs = 100
+    runs = 5
 
     # PARAMS
     params = {'play_guessing': True,
@@ -124,7 +124,8 @@ if __name__ == "__main__":
               'score_threshold': 0.5,   # 0.5 is best
               'env2': None,
               'env2_agents': 4,
-              'env2_steps': 20000}
+              'env2_steps': 20000,
+              'premade_lang': False}
     # params = {'play_guessing': False,
     #           'gather_stats': True,
     #           'random_behaviour': True,
@@ -142,8 +143,8 @@ if __name__ == "__main__":
     rand = 'random' if params['random_behaviour'] else 'shortest'
     lang = 'lang' if params['play_guessing'] else 'prelang'
     # directory = r'D:\resultit\restricted_shelves\extended\results_{}_{}_{}'.format(date_time, rand, lang)
-    directory = r'D:\resultit\vaihtis_small\results_{}_{}_{}'.format(date_time, rand, lang)
-    # directory = 'results/stuff/results_{}_{}_{}'.format(date_time, rand, lang)
+    # directory = r'D:\resultit\vaihtis_small\results_{}_{}_{}'.format(date_time, rand, lang)
+    directory = 'results/vaihtis_small/results_{}_{}_{}'.format(date_time, rand, lang)
     os.makedirs(directory)
     print(directory)
 
