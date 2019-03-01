@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import shutil
 
 if __name__ == '__main__':
-    result_path = r'/home/ottohant/Desktop/agent_amounts'
+    result_path = r'D:\resultit\beer_only2'
     analysis_dir = 'agent_amount_analysis'
 
     shutil.rmtree(analysis_dir, ignore_errors=True)

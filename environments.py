@@ -11,48 +11,6 @@ def draw_block_from_point(model, x, y, width, height, cls):
             model.grid.place_agent(cls(w + h, model), cell)
     return cells
 
-# class BeerOnlyEnvironment:
-#     width = 17
-#     height = 20
-#     name = 'beer_only'
-#
-#     @staticmethod
-#     def create_env(model):
-#         model.grid = SingleGrid(BeerOnlyEnvironment.width, BeerOnlyEnvironment.height, False)  # True=toroidal
-#
-#         # Side walls
-#         draw_block_from_point(model, 0, 1, 1, 18, Wall)
-#         draw_block_from_point(model, 16, 1, 1, 18, Wall)
-#
-#         # Bottom and top
-#         draw_block_from_point(model, 0, 0, 17, 1, Wall)
-#         draw_block_from_point(model, 0, 19, 17, 1, Wall)
-#
-#         draw_block_from_point(model, 8, 18, 1, 1, Wall)
-#         # draw_block_from_point(model, 1, 15, 1, 4, Wall)
-#         # draw_block_from_point(model, 15, 15, 1, 4, Wall)
-#
-#         shelf_cells = []
-#
-#         # Shelves
-#         shelf_cells += draw_block_from_point(model, 3, 18, 5, 1, Shelf)
-#         shelf_cells += draw_block_from_point(model, 9, 18, 5, 1, Shelf)
-#         shelf_cells += draw_block_from_point(model, 8, 15, 1, 3, Shelf)
-#         # draw_block_from_point(model, 8, 15, 1, 3, Wall)
-#
-#         # Action center
-#         action_center = ActionCenter(0, model, shelf_cells)
-#         model.grid.place_agent(action_center, (8, 3))
-#
-#         # Beer
-#         draw_block_from_point(model, 1, 7, 2, 12, Beer)
-#         draw_block_from_point(model, 4, 7, 2, 8, Beer)
-#         draw_block_from_point(model, 7, 7, 3, 8, Beer)
-#         draw_block_from_point(model, 11, 7, 2, 8, Beer)
-#         draw_block_from_point(model, 14, 7, 2, 12, Beer)
-#
-#         return {'action_center': action_center}
-
 class BeerOnlyEnvironment:
     width = 18
     height = 19

@@ -27,6 +27,7 @@ class CoopaModel(Model):
         self.place_games = []
         self.query_games = []
         self.start_time = None
+        self.env_name = env_name
 
         # Agents
         self.agents = []

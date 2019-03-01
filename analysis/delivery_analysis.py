@@ -9,7 +9,7 @@ def get_buckets(stats, steps, bucket_size):
     buckets = [0 for _ in range(int(steps / bucket_size))]
     for run in stats.values():
         for agent in run.values():
-            for delivery_time in agent['delivery_times']:
+            for delivery_time in agent:
                 bucket = int(delivery_time[1] / bucket_size)
                 buckets[bucket] += 1
     buckets = [bucket / len(stats.values()) for bucket in buckets]
@@ -24,7 +24,11 @@ def get_stats(result_path):
     '''Loads pickles in result path to a dictionary.'''
     run_dirs = sorted(get_dirs_in_path(result_path))
     stats = {}
+    count = 0
+    print('loading runs...')
     for run_dir in run_dirs:
+        count +=1
+        print('{}/{}'.format(count, len(run_dirs)))
         run_id = int(os.path.basename(run_dir))
         # print(run_id)
         stats[run_id] = {}
@@ -33,13 +37,11 @@ def get_stats(result_path):
             fname = os.path.splitext(os.path.basename(pkl_file))[0]
             if fname.isdigit():
                 pkl = pickle.load(open(pkl_file, 'rb'))
-                pkl['memories'] = pkl['memories'][-1]
-                pkl['discriminators'] = pkl['discriminators'][-1]
-                stats[run_id][fname] = pkl
+                stats[run_id][fname] = pkl['delivery_times']
     return stats
 
 if __name__ == '__main__':
-    result_path = r'/home/ottohant/language_experiments/results/stuff'
+    result_path = r'D:\resultit\vaihtis_small'
     analysis_dir = 'delivery_analysis'
 
     shutil.rmtree(analysis_dir, ignore_errors=True)

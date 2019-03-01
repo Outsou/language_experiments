@@ -206,7 +206,7 @@ def print_utilities(lexicons):
         print(util)
         print()
 
-    return [sorted_utilities[0][0], sorted_utilities[1][0]]
+    return [sorted_utilities[0][0], sorted_utilities[1][0], sorted_utilities[2][0]]
 
 def collisions_plot(stats_dict, analysis_dir, steps, bucket_size=500):
     '''Creates a plot of collisions happening in the last bucket_size time steps.'''
@@ -238,7 +238,7 @@ def analyse_synonymy(result_path):
 
 
 if __name__ == '__main__':
-    result_dir = r'/home/ottohant/Desktop/agent_amounts/results_22-02-19_11-51-31_shortest_prelang'
+    result_dir = r'D:\resultit\beer_only2\results_26-02-19_23-21-35_random_lang'
     analysis_dir = 'place_game_analysis'
 
     pkl_dir = 'pkls'
@@ -274,5 +274,5 @@ if __name__ == '__main__':
 
     print('Loading lexicons...')
     lexicons = get_lexicons(result_dir)
-    top2 = print_utilities(lexicons)
-    calculate_lexicon_cohesion(lexicons, top2)
+    top3 = print_utilities(lexicons)
+    calculate_lexicon_cohesion(lexicons, top3)
