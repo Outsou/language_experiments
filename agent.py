@@ -193,6 +193,13 @@ class AgentBasic(Agent):
                                   'meaning': meaning}
         elif self.model.has_agent_moved(neighbor):
             # Agents with an item refuse to reroute
+            reroute = self._reroute()
+            if len(reroute) == len(self._path):
+                self._path = reroute
+                old_pos = self.pos
+                self.model.grid.move_agent(self, self._path[0])
+                del self._path[0]
+                self._update_direction(old_pos, self.pos)
             return True
         elif neighbor._has_item:
             # Back off if neighbor also has item
@@ -584,6 +591,7 @@ class AgentBasic(Agent):
                 self._destination = ac.get_mission()
                 if self._has_item:
                     self.stat_dict['items_delivered'] += 1
+                    self.model.deliveries += 1
                     self.stat_dict['delivery_times'].append((self._age - self._last_delivery, self.model.start_time))
                     self._last_delivery = self._age
                 self._has_item = False
@@ -591,7 +599,7 @@ class AgentBasic(Agent):
             else:
                 self._destination = self.model.action_center.pos
                 self._has_item = True
-                if self.model.env_name == 'small':
+                if self.model.env_name in ['small', 'default']:
                     self._path = self._calculate_path(self.map)
                 else:
                     self._path = self._broadcast_question()

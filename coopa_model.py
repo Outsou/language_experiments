@@ -28,6 +28,7 @@ class CoopaModel(Model):
         self.query_games = []
         self.start_time = None
         self.env_name = env_name
+        self.deliveries = 0
 
         # Agents
         self.agents = []
@@ -56,6 +57,10 @@ class CoopaModel(Model):
         self.schedule.step()
         self.not_moved = [a for a in self.agents]
         random.shuffle(self.not_moved)
+
+        if self.schedule.time == 95000:
+            if self.deliveries < 20000:
+                print('asd')
 
         counter = 0
         while len(self.not_moved) > 0:
