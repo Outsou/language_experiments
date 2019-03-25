@@ -238,7 +238,7 @@ def analyse_synonymy(result_path):
 
 
 if __name__ == '__main__':
-    result_dir = r'D:\resultit\beer_only2\results_26-02-19_23-21-35_random_lang'
+    result_dir = r'/home/ottohant/Desktop/riisults/full_setup/results_20-03-19_12-27-13_random_prelang'
     analysis_dir = 'place_game_analysis'
 
     pkl_dir = 'pkls'
@@ -253,26 +253,26 @@ if __name__ == '__main__':
     print('')
     os.mkdir(analysis_dir)
 
-    # print('Analysing synonymy...')
-    # analyse_synonymy(result_dir)
-    # print('Done...')
+    print('Analysing synonymy...')
+    analyse_synonymy(result_dir)
+    print('Done...')
 
-    print('Loading place game stats...')
-    stats_dict = get_stats(result_dir)
-
-    # Trim stats
-    games, asym_games = trim_games(stats_dict)
-
-    # collisions_plot(stats_dict, analysis_dir, param_dict['steps'])
-
-    pkl_label = 'Query Game setup' if param_dict['play_guessing'] else 'Place Game setup'
-    create_success_plot(games, asym_games, analysis_dir,
-                        os.path.join(pkl_dir, os.path.basename(result_dir) + '.p'), pkl_label,
-                        param_dict['steps'], bucket_size=500)
-
-    create_success_plot_from_pkls(pkl_dir, analysis_dir, 20000)
-
-    print('Loading lexicons...')
-    lexicons = get_lexicons(result_dir)
-    top3 = print_utilities(lexicons)
-    calculate_lexicon_cohesion(lexicons, top3)
+    # print('Loading place game stats...')
+    # stats_dict = get_stats(result_dir)
+    #
+    # # Trim stats
+    # games, asym_games = trim_games(stats_dict)
+    #
+    # # collisions_plot(stats_dict, analysis_dir, param_dict['steps'])
+    #
+    # pkl_label = 'Query Game setup' if param_dict['play_guessing'] else 'Place Game setup'
+    # create_success_plot(games, asym_games, analysis_dir,
+    #                     os.path.join(pkl_dir, os.path.basename(result_dir) + '.p'), pkl_label,
+    #                     param_dict['steps'], bucket_size=500)
+    #
+    # create_success_plot_from_pkls(pkl_dir, analysis_dir, 20000)
+    #
+    # print('Loading lexicons...')
+    # lexicons = get_lexicons(result_dir)
+    # top3 = print_utilities(lexicons)
+    # calculate_lexicon_cohesion(lexicons, top3)

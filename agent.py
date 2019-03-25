@@ -390,18 +390,18 @@ class AgentBasic(Agent):
 
         place = self.memory.get_meaning(place_form)
         categoriser = self.memory.get_meaning(disc_form)
-        place_form = self.memory.get_form(place)
-        categoriser_form = self.memory.get_form(place)
+        place_form_self = self.memory.get_form(place)
+        categoriser_form_self = self.memory.get_form(categoriser)
         if place is None or categoriser is None:
-            return True, place, place_form, categoriser, categoriser_form
+            return True, place, place_form_self, categoriser, categoriser_form_self
         objects = self._get_objects(place)
         normalised = self._normalise(objects)
         low, high = categoriser.range
         for obj in zip(objects, normalised):
             if low <= obj[1][categoriser.channel] <= high:
                 if obj[0] == self.pos or obj[0] in self._path:
-                    return False, place, place_form, categoriser, categoriser_form
-        return True, place, place_form, categoriser, categoriser_form
+                    return False, place, place_form_self, categoriser, categoriser_form_self
+        return True, place, place_form_self, categoriser, categoriser_form_self
 
     def _get_forms_for_path(self, path, path2):
         '''Returns forms for meanings used to discriminate path from path2 (and other things)..'''
