@@ -168,7 +168,7 @@ def get_pickles_in_path(path):
     return pickles
 
 if __name__ == '__main__':
-    result_dir = r'/home/ottohant/language_experiments/results/stuff/results_01-03-19_10-51-02_random_lang'
+    result_dir = r'/home/ottohant/Desktop/riisults/full_setup/results_21-03-19_08-56-18_random_lang'
     analysis_dir = 'query_game_analysis'
 
     shutil.rmtree(analysis_dir, ignore_errors=True)
@@ -178,9 +178,9 @@ if __name__ == '__main__':
     # print('Loading query game stats...')
     # stats_dict = get_stats(result_dir)
 
-    # print('Analysing synonymy...')
-    # analyse_synonymy(result_dir)
-    # print('Done.')
+    print('Analysing synonymy...')
+    analyse_synonymy(result_dir)
+    print('Done.')
 
-    print('Creating plots...')
-    create_success_plot(result_dir, analysis_dir)
+    # print('Creating plots...')
+    # create_success_plot(result_dir, analysis_dir)
