@@ -115,16 +115,16 @@ if __name__ == "__main__":
     # PARAMS
     params = {'play_guessing': True,
               'gather_stats': True,
-              'random_behaviour': False,
-              'steps': 100000,
+              'random_behaviour': True,
+              'steps': 10000,
               'create_trees': False,
-              'agents': 6,
-              'env_name': 'default',                #default, beer, beer_only, double
-              'route_conceptualization': 'hack1',   #'hack1', 'hack2', 'conceptualize', None
-              'score_threshold': 0.0,   # 0.5 is best
-              'env2': None,
-              'env2_agents': None,
-              'env2_steps': None,
+              'agents': 4,
+              'env_name': 'beer_only',                #default, beer, beer_only, double
+              'route_conceptualization': 'conceptualize',   #'hack1', 'hack2', 'conceptualize', None
+              'score_threshold': 0.5,   # 0.5 is best
+              'env2': 'small',
+              'env2_agents': 4,
+              'env2_steps': 20000,
               'premade_lang': False}
     # params = {'play_guessing': False,
     #           'gather_stats': True,
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     rand = 'random' if params['random_behaviour'] else 'shortest'
     lang = 'lang' if params['play_guessing'] else 'prelang'
     # directory = r'D:\resultit\restricted_shelves\extended\results_{}_{}_{}'.format(date_time, rand, lang)
-    directory = r'D:\resultit\new_runs\results_{}_{}_{}'.format(date_time, rand, lang)
+    directory = r'D:\resultit\asd\results_{}_{}_{}'.format(date_time, rand, lang)
     # directory = 'results/vaihtis_small/results_{}_{}_{}'.format(date_time, rand, lang)
     os.makedirs(directory)
     print(directory)

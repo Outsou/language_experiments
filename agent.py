@@ -599,7 +599,7 @@ class AgentBasic(Agent):
             else:
                 self._destination = self.model.action_center.pos
                 self._has_item = True
-                if self.model.env_name in ['small', 'default']:
+                if self.model.env_name in ['small', 'default', 'double']:
                     self._path = self._calculate_path(self.map)
                 else:
                     self._path = self._broadcast_question()

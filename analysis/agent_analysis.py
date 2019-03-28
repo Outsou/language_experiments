@@ -254,8 +254,8 @@ def get_stats(result_path):
     return stats
 
 if __name__ == '__main__':
-    result_dir_lang = r'/home/ottohant/Desktop/riisults/full_setup/results_21-03-19_08-56-18_random_lang'
-    result_dir_no_lang = r'D:\resultit\vaihtis\results_26-02-19_12-50-32_random_lang'
+    result_dir_lang = r'D:\resultit\new_runs\results_25-03-19_18-23-30_random_lang'
+    result_dir_no_lang = r'D:\resultit\new_runs\results_20-03-19_12-27-13_random_prelang'
     analysis_dir = 'agent_analysis'
 
     with open(os.path.join(result_dir_lang, 'params.txt'), 'r') as file:
@@ -272,12 +272,12 @@ if __name__ == '__main__':
 
     # create_first_option_selected_plot(lang_stats, analysis_dir, param_dict_lang['steps'])
 
-    analyse_disc_trees(lang_stats, analysis_dir)
+    # analyse_disc_trees(lang_stats, analysis_dir)
 
-    # print('Loading no language stats...')
-    # no_lang_stats = get_stats(result_dir_no_lang)
-    # print('Done loading...')
-    #
-    # print('Creating delivery time plots...')
-    # # create_delivery_time_plots2(lang_stats, no_lang_stats, analysis_dir)
-    # create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, param_dict_lang['steps'], 1000, result_dir_lang)
+    print('Loading no language stats...')
+    no_lang_stats = get_stats(result_dir_no_lang)
+    print('Done loading...')
+
+    print('Creating delivery time plots...')
+    # create_delivery_time_plots2(lang_stats, no_lang_stats, analysis_dir)
+    create_delivery_time_plots(lang_stats, no_lang_stats, analysis_dir, param_dict_lang['steps'], 1000, result_dir_lang)

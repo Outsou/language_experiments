@@ -141,11 +141,15 @@ def create_query_game_success_plot(dirs, analysis_dir):
             label = 'Premade lang'
         else:
             label = training_steps
-        plt.plot(x, perfect_ratio, ls=line_types[line_type_idx], label=label)
-        line_type_idx += 1
+        if label != 0:
+            plt.plot(x, perfect_ratio, ls=line_types[line_type_idx], label=label)
+            line_type_idx += 1
+        else:
+            plt.plot(x, perfect_ratio, marker='.', label=label)
 
         print(label)
         print('Incorrect: {}'.format(total_incorrect / total))
+        print('Incorrect amount: {}'.format(total_incorrect / len(run_dirs)))
         print('Amount of gaems: {}'.format(total / len(run_dirs)))
         print('Both incorrect: {}'.format(both_incorrect / total_incorrect))
         print('Categoriser incorrect: {}'.format(disc_incorrect / total_incorrect))
@@ -163,7 +167,7 @@ def create_query_game_success_plot(dirs, analysis_dir):
     plt.close()
 
 if __name__ == '__main__':
-    result_path = r'/home/ottohant/language_experiments/results/vaihtis_small'
+    result_path = r'D:\resultit\mean_trans'
     analysis_dir = 'delivery_analysis'
 
     shutil.rmtree(analysis_dir, ignore_errors=True)
